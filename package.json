@@ -1,0 +1,16 @@
+{
+  "name": "ejaculation-counter",
+  "version": "1.0.0",
+  "description": "ぴゅっぴゅ数をカウントします",
+  "main": "main.coffee",
+  "dependencies": {
+    "mysql": "^2.9.0",
+    "twitter-promise": "^1.2.5",
+    "cron": "^1.0.9"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Chitoku",
+  "license": "MIT"
+}
