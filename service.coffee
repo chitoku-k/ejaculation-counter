@@ -1,3 +1,6 @@
+require("./db.js")
+db = new ShikoDatabase
+
 ID = process.env.TWITTER_ID
 
 client = require("twitter-promise")(
@@ -7,12 +10,6 @@ client = require("twitter-promise")(
     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 )
 
-db = require("mysql").createConnection(
-    host:     process.env.MYSQL_HOST
-    user:     process.env.MYSQL_USER
-    password: process.env.MYSQL_PASSWORD
-    database: process.env.MYSQL_DATABASE
-)
 
 CronJob = require("cron").CronJob
 job = new CronJob(
@@ -22,36 +19,11 @@ job = new CronJob(
             UpdateStatus current
         .then (update) ->
             UpdateProfile update.profile
-            UpdateDB update.date, update.profile.yesterday
+            db.update update.date, update.profile.yesterday
         .catch (err) ->
             console.error err
     start: true
 )
-
-
-QueryDB = ->
-    args = arguments
-    new Promise (resolve, reject) ->
-        db.query.apply(db, args).on "error", (err) ->
-            reject err
-        .on "result", (rows) ->
-            resolve rows
-
-
-UpdateDB = (date, count) ->
-    check  = "SELECT COUNT(*) AS `total` FROM `shiko_data` WHERE `date` = ?"
-    insert = "INSERT INTO `shiko_data` (`count`, `date`) VALUES (?, ?)"
-    update = "UPDATE `shiko_data` SET `count` = ? WHERE `date` = ?"
-
-    dateString = "#{date.getFullYear()}-#{date.getMonth() + 1}-#{date.getDate()}"
-    QueryDB(check, [dateString]).then (rows) ->
-        if rows.total is 1
-            QueryDB update, [count, dateString]
-        else
-            QueryDB insert, [count, dateString]
-    .then (rows) ->
-        date: date
-        count: count
 
 
 ParseProfile = (profile) ->
@@ -111,18 +83,16 @@ client.stream("user", {}, (stream) ->
         if not data.text or data.retweeted_status or data.user.id_str isnt ID
             return
 
-        if /^TEST:/.test data.text
-            client.post "statuses/destroy/#{data.id_str}", {}
-
-        if (matches = data.text.match /^SQL:\s?(.+)/) isnt null
-            QueryDB(matches[1]).then ((rows) -> (rows)), ((err) -> (err))
+        text = data.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
+        if (matches = text.match /^SQL:\s?(.+)/) isnt null
+            db.query(matches[1]).then ((rows) -> (rows)), ((err) -> (err))
             .then (result) ->
                 client.post "statuses/update", (
                     in_reply_to_status_id: data.id_str
                     status: "@java_shlt\n" + result.enumerate().join("\n").slice 0, 128
                 )
 
-        if not /^ぴゅっ♡$/.test data.text
+        if not /^ぴゅっ♡+($| https:\/\/t\.co)/.test text
             return
 
         current = ParseProfile data.user
@@ -130,7 +100,7 @@ client.stream("user", {}, (stream) ->
 
         Promise.all([
             UpdateProfile current
-            UpdateDB new Date, current.today
+            db.update new Date, current.today
         ]).then (values) ->
             console.log values
     )
