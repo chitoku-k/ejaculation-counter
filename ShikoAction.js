@@ -5,10 +5,6 @@ class ShikoAction {
 }
 
 class UpdateShikoAction extends ShikoAction {
-    constructor(...args) {
-        super(...args);
-    }
-
     invoke(status) {
         if (status.retweeted_status || status.user.id_str !== this.service.ID) {
             return;
@@ -29,30 +25,18 @@ class UpdateShikoAction extends ShikoAction {
 }
 
 class PyuUpdateShikoAction extends UpdateShikoAction {
-    constructor(...args) {
-        super(...args);
-    }
-
     get regex() {
         return /^ぴゅっ♡+($| https:\/\/t\.co)/;
     }
 }
 
 class NijieUpdateShikoAction extends UpdateShikoAction {
-    constructor(...args) {
-        super(...args);
-    }
-
     get regex() {
         return /ニジエの「.*」で抜きました。 #ニジエ/;
     }
 }
 
 class SqlShikoAction extends ShikoAction {
-    constructor(...args) {
-        super(...args);
-    }
-
     get regex() {
         return /^SQL:\s?(.+)/;
     }
