@@ -1,6 +1,7 @@
 const ShikoDatabase = require("./ShikoDatabase.js").ShikoDatabase;
 const CronJob = require("cron").CronJob;
 const TwitterPromise = require("twitter-promise");
+const CreateShikoActions = require("./ShikoAction.js").CreateShikoActions;
 
 class ShikoService {
     constructor() {
@@ -15,43 +16,19 @@ class ShikoService {
         this.job = new CronJob({
             cronTime: "00 00 * * *",
             onTick: () => this.onTick(),
-            start: true,
         });
-        this.startStream();
+        this.start(CreateShikoActions(this));
     }
 
-    startStream() {
+    start(actions) {
+        this.actions = actions;
+        this.job.start();
         this.client.stream("user", {}, stream => {
             stream.on("data", data => {
-                if (!data.text || data.retweeted_status || data.user.id_str !== this.ID) {
-                    return;
+                if (data.text) {
+                    data.text = data.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+                    this.actions.filter(x => x.regex.test(data.text)).forEach(x => x.invoke(data));
                 }
-
-                const text = data.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-                const [, sql] = text.match(/^SQL:\s?(.+)/) || [];
-                if (sql) {
-                    return this.db.query(sql).then(result => {
-                        const response = Object.keys(result).map(x => `${x}: ${result[x]}`).join("\n").slice(0, 128);
-                        return this.client.post("statuses/update", {
-                            in_reply_to_status_id: data.id_str,
-                            status: `@java_shlt\n${response}`,
-                        });
-                    });
-                }
-
-                if (!/^ぴゅっ♡+($| https:\/\/t\.co)/.test(text)) {
-                    return;
-                }
-
-                const current = this.parseProfile(data.user);
-                current.today++;
-
-                return Promise.all([
-                    this.updateProfile(current),
-                    this.db.update(new Date, current.today),
-                ]).then(values => {
-                    console.log(values);
-                });
             });
 
             stream.on("error", err => {
