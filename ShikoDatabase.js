@@ -31,4 +31,4 @@ exports.ShikoDatabase = class ShikoDatabase {
             count: count,
         }));
     }
-}
+};
