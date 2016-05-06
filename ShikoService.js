@@ -77,7 +77,7 @@ class ShikoService {
         const date = new Date;
         date.setDate(date.getDate() - 1);
 
-        let message = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+        let message = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} `;
         message += profile.yesterday === profile.today ? "も" : "は";
 
         if (profile.today > 0) {
