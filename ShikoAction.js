@@ -65,8 +65,9 @@ class ShindanmakerShikoAction extends ShikoAction {
             },
         }).then(body => {
             const [, result] = body.match(/<textarea(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
-            this.reply(status.id_str, `@${status.user.screen_name}\n${result}`);
+            this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
         }).catch(err => {
+            console.error(err);
             this.reply(status.id_str, `@${status.user.screen_name} おちんちんぴゅっぴゅ管理官が不在のためぴゅっぴゅしちゃダメです`);
         });
     }
