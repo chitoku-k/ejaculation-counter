@@ -4,9 +4,10 @@
   "description": "ぴゅっぴゅ数をカウントします",
   "main": "ShikoService.js",
   "dependencies": {
+    "cron": "^1.1.0",
     "mysql": "^2.10.2",
-    "twitter-promise": "github:chitoku-k/node-twitter-promise#bd85b197b5441b71df5879fcb194be2f54ca15dd",
-    "cron": "^1.1.0"
+    "request-promise": "^3.0.0",
+    "twitter-promise": "github:chitoku-k/node-twitter-promise#bd85b197b5441b71df5879fcb194be2f54ca15dd"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

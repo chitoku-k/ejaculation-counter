@@ -1,6 +1,15 @@
+const request = require("request-promise");
+
 class ShikoAction {
     constructor(service) {
         this.service = service;
+    }
+
+    reply(id, status) {
+        return this.service.client.post("statuses/update", {
+            in_reply_to_status_id: id,
+            status: status,
+        });
     }
 }
 
@@ -36,6 +45,33 @@ class NijieUpdateShikoAction extends UpdateShikoAction {
     }
 }
 
+class ShindanmakerShikoAction extends ShikoAction {
+    get regex() {
+        return /ぴゅっぴゅしていい[\?|？]/;
+    }
+
+    invoke(status) {
+        if (status.retweeted_status || status.user.id_str !== this.service.ID) {
+            return;
+        }
+
+        // 名前の一部を取り出す
+        const name = status.user.name.replace(/(@.+|[\(（].*[\)）])$/g, "");
+        request({
+            method: "POST",
+            uri: "https://shindanmaker.com/a/503598",
+            form: {
+                u: name,
+            },
+        }).then(body => {
+            const [, result] = body.match(/<textarea(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
+            this.reply(status.id_str, `@${status.user.screen_name}\n${result}`);
+        }).catch(err => {
+            this.reply(status.id_str, `@${status.user.screen_name} おちんちんぴゅっぴゅ管理官が不在のためぴゅっぴゅしちゃダメです`);
+        });
+    }
+}
+
 class SqlShikoAction extends ShikoAction {
     get regex() {
         return /^SQL:\s?(.+)/;
@@ -51,11 +87,10 @@ class SqlShikoAction extends ShikoAction {
             return;
         }
         return this.service.db.query(sql).then(result => {
-            const response = Object.keys(result).map(x => `${x}: ${result[x]}`).join("\n").slice(0, 128);
-            return this.service.client.post("statuses/update", {
-                in_reply_to_status_id: status.id_str,
-                status: `@java_shlt\n${response}`,
-            });
+            const response = Object.keys(result).map(x => `${x}: ${result[x]}`)
+                                                .join("\n")
+                                                .slice(0, 137 - status.user.screen_name.length);
+            return this.reply(status.id_str, `@${status.user.screen_name}\n${response}`);
         });
     }
 }
@@ -64,6 +99,7 @@ exports.CreateShikoActions = function (service) {
     return [
         new SqlShikoAction(service),
         new PyuUpdateShikoAction(service),
+        new ShindanmakerShikoAction(service),
         new NijieUpdateShikoAction(service),
     ];
 };
