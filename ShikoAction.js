@@ -47,7 +47,7 @@ class NijieUpdateShikoAction extends UpdateShikoAction {
 
 class ShindanmakerShikoAction extends ShikoAction {
     get regex() {
-        return /ぴゅっぴゅしていい[\?|？]/;
+        return /ぴゅっぴゅしても?いい[\?|？]/;
     }
 
     invoke(status) {
