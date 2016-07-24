@@ -45,6 +45,12 @@ class NijieUpdateShikoAction extends UpdateShikoAction {
     }
 }
 
+class HorneUpdateShikoAction extends UpdateShikoAction {
+    get regex() {
+        return /ホルネの「.*」でたぎりました。 #ホルネ/;
+    }
+}
+
 class ShindanmakerShikoAction extends ShikoAction {
     get regex() {
         return /ぴゅっぴゅしても?いい[\?|？]/;
@@ -102,5 +108,6 @@ exports.CreateShikoActions = function (service) {
         new PyuUpdateShikoAction(service),
         new ShindanmakerShikoAction(service),
         new NijieUpdateShikoAction(service),
+        new HorneUpdateShikoAction(service),
     ];
 };
