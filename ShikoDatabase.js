@@ -15,20 +15,17 @@ exports.ShikoDatabase = class ShikoDatabase {
     }
 
     update(date, count) {
-        const check = "SELECT COUNT(*) AS `total` FROM `counts` WHERE `date` = ?";
-        const insert = "INSERT INTO `counts` (`count`, `date`) VALUES (?, ?)";
+        const check = "SELECT COUNT(*) AS `total` FROM `counts` WHERE `user` = ? AND `date` = ?"
+        const insert = "INSERT INTO `counts` (`user`, `count`, `date`) VALUES (?, ?, ?)";
         const update = "UPDATE `counts` SET `count` = ? WHERE `date` = ?";
 
         const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-        return this.query(check, [dateString]).then(rows => {
+        return this.query(check, [user, dateString]).then(rows => {
             if (rows.total === 1) {
                 this.query(update, [count, dateString]);
             } else {
-                this.query(insert, [count, dateString]);
+                this.query(insert, [user, count, dateString]);
             }
-        }).then(rows => ({
-            date: date,
-            count: count,
-        }));
+        }).then(rows => ({ date, count }));
     }
 };
