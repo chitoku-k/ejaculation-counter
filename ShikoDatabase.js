@@ -2,6 +2,7 @@ const createConnection = require("mysql").createConnection;
 
 exports.ShikoDatabase = class ShikoDatabase {
     constructor() {
+        this.user = 1;
         this.connection = createConnection({
             host: process.env.MYSQL_HOST,
             user: process.env.MYSQL_USER,
@@ -15,16 +16,16 @@ exports.ShikoDatabase = class ShikoDatabase {
     }
 
     update(date, count) {
-        const check = "SELECT COUNT(*) AS `total` FROM `counts` WHERE `user` = ? AND `date` = ?"
+        const check = "SELECT COUNT(*) AS `total` FROM `counts` WHERE `user` = ? AND `date` = ?";
         const insert = "INSERT INTO `counts` (`user`, `count`, `date`) VALUES (?, ?, ?)";
         const update = "UPDATE `counts` SET `count` = ? WHERE `date` = ?";
 
         const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-        return this.query(check, [user, dateString]).then(rows => {
+        return this.query(check, [this.user, dateString]).then(rows => {
             if (rows.total === 1) {
                 this.query(update, [count, dateString]);
             } else {
-                this.query(insert, [user, count, dateString]);
+                this.query(insert, [this.user, count, dateString]);
             }
         }).then(rows => ({ date, count }));
     }
