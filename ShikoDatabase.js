@@ -15,18 +15,22 @@ exports.ShikoDatabase = class ShikoDatabase {
         return new Promise((resolve, reject) => this.connection.query(...args).on("error", err => reject(err)).on("result", rows => resolve(rows)));
     }
 
-    update(date, count) {
+    async update(date, count) {
         const check = "SELECT COUNT(*) AS `total` FROM `counts` WHERE `user` = ? AND `date` = ?";
         const insert = "INSERT INTO `counts` (`user`, `count`, `date`) VALUES (?, ?, ?)";
         const update = "UPDATE `counts` SET `count` = ? WHERE `date` = ?";
 
         const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-        return this.query(check, [this.user, dateString]).then(rows => {
-            if (rows.total === 1) {
-                this.query(update, [count, dateString]);
-            } else {
-                this.query(insert, [this.user, count, dateString]);
-            }
-        }).then(rows => ({ date, count }));
+        const rows = await this.query(check, [this.user, dateString]);
+        if (rows.total === 1) {
+            await this.query(update, [count, dateString]);
+        } else {
+            await this.query(insert, [this.user, count, dateString]);
+        }
+
+        return {
+            date,
+            count
+        };
     }
 };

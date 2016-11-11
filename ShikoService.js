@@ -38,26 +38,25 @@ class ShikoService {
         });
     }
 
-    onTick() {
-        return this.getProfile().then(current => {
-            return this.updateStatus(current);
-        }).then(update => {
-            this.updateProfile(update.profile);
-            return this.db.update(update.date, update.profile.yesterday);
-        }).catch(err => {
-            return console.error(err);
-        });
+    async onTick() {
+        try {
+            const profile = await this.getProfile();
+            const update = await this.updateStatus(profile);
+            await this.updateProfile(update.profile);
+            return await this.db.update(update.date, update.profile.yesterday);
+        } catch (err) {
+            console.error(err);
+        }
     }
 
-    getProfile() {
-        return this.client.get("users/show", { id: this.ID }).then(obj => {
-            console.log(`name: ${obj.name}`);
-            return this.parseProfile(obj);
-        });
+    async getProfile() {
+        const profile = await this.client.get("users/show", { id: this.ID });
+        console.log(`name: ${profile.name}`);
+        return this.parseProfile(profile);
     }
 
     parseProfile(profile) {
-        const [, name, yesterday, today] = profile.name.match(/(.*)（昨日: (\d+) \/ 今日: (\d+)）/) || [];
+        const [ , name, yesterday, today ] = profile.name.match(/(.*)（昨日: (\d+) \/ 今日: (\d+)）/) || [];
         return {
             name,
             yesterday: +yesterday,
@@ -65,15 +64,14 @@ class ShikoService {
         };
     }
 
-    updateProfile(profile) {
+    async updateProfile(profile) {
         const name = `${profile.name}（昨日: ${profile.yesterday} / 今日: ${profile.today}）`;
-        return this.client.post("account/update_profile", { name }).then(obj => {
-            console.log(`name: ${obj.name}`);
-            return this.parseProfile(obj);
-        });
+        const profile = await this.client.post("account/update_profile", { name });
+        console.log(`name: ${profile.name}`);
+        return this.parseProfile(profile);
     }
 
-    updateStatus(profile) {
+    async updateStatus(profile) {
         const date = new Date;
         date.setDate(date.getDate() - 1);
 
@@ -86,13 +84,12 @@ class ShikoService {
             message += "ぴゅっぴゅしませんでした…";
         }
 
-        return this.client.post("statuses/update", { status: message }).then(obj => {
-            console.log(obj.text);
-            profile.yesterday = profile.today;
-            profile.today = 0;
+        const status = await this.client.post("statuses/profile", { status: message });
+        console.log(status.text);
+        profile.yesterday = profile.today;
+        profile.today = 0;
 
-            return { date, profile };
-        });
+        return { date, profile };
     }
 }
 

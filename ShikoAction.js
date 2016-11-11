@@ -14,7 +14,7 @@ class ShikoAction {
 }
 
 class UpdateShikoAction extends ShikoAction {
-    invoke(status) {
+    async invoke(status) {
         if (status.retweeted_status || status.user.id_str !== this.service.ID) {
             return;
         }
@@ -22,14 +22,15 @@ class UpdateShikoAction extends ShikoAction {
         const current = this.service.parseProfile(status.user);
         current.today++;
 
-        return Promise.all([
-            this.service.updateProfile(current),
-            this.service.db.update(new Date, current.today),
-        ]).then(values => {
-            console.log(values);
-        }, err => {
+        try {
+            const [ profile, db ] = await Promise.all([
+                this.service.updateProfile(current),
+                this.service.db.update(new Date, current.today),
+            ]);
+            console.log(profile, db);
+        } catch (err) {
             console.error(err);
-        });
+        }
     }
 }
 
@@ -56,26 +57,27 @@ class ShindanmakerShikoAction extends ShikoAction {
         return /ぴゅっぴゅしても?いい[\?|？]/;
     }
 
-    invoke(status) {
+    async invoke(status) {
         if (status.retweeted_status || status.user.id_str !== this.service.ID) {
             return;
         }
 
         // 名前の一部を取り出す
         const name = status.user.name.replace(/(@.+|[\(（].*[\)）])$/g, "");
-        request({
-            method: "POST",
-            uri: "https://shindanmaker.com/a/503598",
-            form: {
-                u: name,
-            },
-        }).then(body => {
-            const [, result] = body.match(/<textarea(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
-            this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
-        }).catch(err => {
+        try {
+            const body = await request({
+                method: "POST",
+                uri: "https://shindanmaker.com/a/503598",
+                form: {
+                    u: name,
+                },
+            });
+            const [ , result ] = body.match(/<textarea(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
+        } catch (err) {
             console.error(err);
-            this.reply(status.id_str, `@${status.user.screen_name} おちんちんぴゅっぴゅ管理官が不在のためぴゅっぴゅしちゃダメです`);
-        });
+            await this.reply(status.id_str, `@${status.user.screen_name} おちんちんぴゅっぴゅ管理官が不在のためぴゅっぴゅしちゃダメです`);
+        }
     }
 }
 
@@ -84,21 +86,35 @@ class SqlShikoAction extends ShikoAction {
         return /^SQL:\s?(.+)/;
     }
 
-    invoke(status) {
+    async invoke(status) {
         if (status.retweeted_status || status.user.id_str !== this.service.ID) {
             return;
         }
 
-        const [, sql] = status.text.match(this.regex) || [];
+        const [ , sql ] = status.text.match(this.regex) || [];
         if (!sql) {
             return;
         }
-        return this.service.db.query(sql).then(result => {
-            const response = Object.keys(result).map(x => `${x}: ${result[x]}`)
-                                                .join("\n")
-                                                .slice(0, 137 - status.user.screen_name.length);
-            return this.reply(status.id_str, `@${status.user.screen_name}\n${response}`);
-        });
+
+        let response;
+        try {
+            const result = await this.service.db.query(sql);
+            const lines = [];
+            for (const [ key, value] of Object.entries(result)) {
+                lines.push(`${key}: ${value}`);
+            }
+            response = lines.join("\n");
+        } catch (err) {
+            console.error(err);
+            response = "エラーが発生しました";
+        }
+
+        response = response.slice(0, 140);
+        try {
+            await this.reply(status.id_str, `@${status.user.screen_name}\n${response}`);
+        } catch (err) {
+            console.error(err);
+        }
     }
 }
 
