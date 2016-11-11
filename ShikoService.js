@@ -66,9 +66,9 @@ class ShikoService {
 
     async updateProfile(profile) {
         const name = `${profile.name}（昨日: ${profile.yesterday} / 今日: ${profile.today}）`;
-        const profile = await this.client.post("account/update_profile", { name });
-        console.log(`name: ${profile.name}`);
-        return this.parseProfile(profile);
+        const update = await this.client.post("account/update_profile", { name });
+        console.log(`name: ${update.name}`);
+        return this.parseProfile(update);
     }
 
     async updateStatus(profile) {
