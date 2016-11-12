@@ -42,8 +42,10 @@ class ShikoService {
         try {
             const profile = await this.getProfile();
             const update = await this.updateStatus(profile);
-            await this.updateProfile(update.profile);
-            return await this.db.update(update.date, update.profile.yesterday);
+            await Promise.all([
+                this.updateProfile(update.profile),
+                this.db.update(update.date, update.profile.yesterday),
+            ]);
         } catch (err) {
             console.error(err);
         }
@@ -84,7 +86,7 @@ class ShikoService {
             message += "ぴゅっぴゅしませんでした…";
         }
 
-        const status = await this.client.post("statuses/profile", { status: message });
+        const status = await this.client.post("statuses/update", { status: message });
         console.log(status.text);
         profile.yesterday = profile.today;
         profile.today = 0;
