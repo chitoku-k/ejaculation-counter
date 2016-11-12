@@ -1,4 +1,4 @@
-const createConnection = require("mysql").createConnection;
+const { createConnection } = require("mysql");
 
 exports.ShikoDatabase = class ShikoDatabase {
     constructor() {

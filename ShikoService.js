@@ -1,7 +1,7 @@
-const ShikoDatabase = require("./ShikoDatabase.js").ShikoDatabase;
-const CronJob = require("cron").CronJob;
 const TwitterPromise = require("twitter-promise");
-const CreateShikoActions = require("./ShikoAction.js").CreateShikoActions;
+const { ShikoDatabase } = require("./ShikoDatabase.js");
+const { CronJob } = require("cron");
+const { CreateShikoActions } = require("./ShikoAction.js");
 
 class ShikoService {
     constructor() {
