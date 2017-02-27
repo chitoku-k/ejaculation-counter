@@ -73,11 +73,10 @@ Twitter のプロフィールの更新を利用する場合は名前を変更し
 
 ## 実行
 
-`async/await` を使用しているため現状では `--harmony` フラグをつけて起動する必要があります。  
 環境変数を `.env` として保存して次のコマンドを実行します。
 
 ```bash
-$ env $(cat .env | xargs) node ./ShikoService.js --harmony
+$ env $(cat .env | xargs) node ./ShikoService.js
 ```
 
 [dependencies-link]:    https://gemnasium.com/github.com/chitoku-k/ejaculation-counter
