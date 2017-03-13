@@ -58,7 +58,7 @@ class ShindanmakerShikoAction extends ShikoAction {
     }
 
     async invoke(status) {
-        if (status.retweeted_status || status.user.id_str !== this.service.ID) {
+        if (status.retweeted_status) {
             return;
         }
 
