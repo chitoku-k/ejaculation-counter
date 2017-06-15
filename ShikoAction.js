@@ -91,6 +91,29 @@ class PyuppyuManagerShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 }
 
+class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShikoAction {
+    get regex() {
+        return /ふとん(入|はい|い|行|潜|もぐ)っても?[いよ良]い[?？]/;
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const result = await this.shindan(status);
+            const message = result.replace(/ぴゅっぴゅ|お?ちんちん/g, "おふとん")
+                                  .replace(/しこしこして/g, "もふもふさせて")
+                                  .replace(/しこしこ|しゅっしゅ/g, "もふもふ")
+                                  .replace(/手の平に/g, "朝まで");
+            await this.reply(status.id_str, `@${status.user.screen_name} ${message}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} ふとんがふっとんだｗ`);
+        }
+    }
+}
+
 class BattleChimpoShindanmakerShikoAction extends ShindanmakerShikoAction {
     get regex() {
         return /ちん(ちん|ぽ|こ)に勝[たちつてと]/;
@@ -179,6 +202,7 @@ exports.CreateShikoActions = function (service) {
         new SqlShikoAction(service),
         new PyuUpdateShikoAction(service),
         new PyuppyuManagerShindanmakerShikoAction(service),
+        new OfutonManagerShindanmakerShikoAction(service),
         new BattleChimpoShindanmakerShikoAction(service),
         new ChimpoChallengeShindanmakerShikoAction(service),
         new NijieUpdateShikoAction(service),
