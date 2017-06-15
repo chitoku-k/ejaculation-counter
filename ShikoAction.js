@@ -198,15 +198,13 @@ class SqlShikoAction extends ShikoAction {
     }
 }
 
-exports.CreateShikoActions = function (service) {
-    return [
-        new SqlShikoAction(service),
-        new PyuUpdateShikoAction(service),
-        new PyuppyuManagerShindanmakerShikoAction(service),
-        new OfutonManagerShindanmakerShikoAction(service),
-        new BattleChimpoShindanmakerShikoAction(service),
-        new ChimpoChallengeShindanmakerShikoAction(service),
-        new NijieUpdateShikoAction(service),
-        new HorneUpdateShikoAction(service),
-    ];
-};
+exports.CreateShikoActions = service => [
+    new SqlShikoAction(service),
+    new PyuUpdateShikoAction(service),
+    new PyuppyuManagerShindanmakerShikoAction(service),
+    new OfutonManagerShindanmakerShikoAction(service),
+    new BattleChimpoShindanmakerShikoAction(service),
+    new ChimpoChallengeShindanmakerShikoAction(service),
+    new NijieUpdateShikoAction(service),
+    new HorneUpdateShikoAction(service),
+];
