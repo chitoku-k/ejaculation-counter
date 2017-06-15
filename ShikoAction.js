@@ -114,6 +114,29 @@ class BattleChimpoShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 }
 
+class ChimpoChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
+    get regex() {
+        return /(^|[^#＃])ちん(ちん|ぽ|こ)[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
+    }
+
+    get uri() {
+        return "https://shindanmaker.com/656461";
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const result = await this.shindan(status);
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} チャレンジできませんでした……。`);
+        }
+    }
+}
+
 class SqlShikoAction extends ShikoAction {
     get regex() {
         return /^SQL:\s?(.+)/;
@@ -133,7 +156,7 @@ class SqlShikoAction extends ShikoAction {
         try {
             const result = await this.service.db.query(sql);
             const lines = [];
-            for (const [ key, value] of Object.entries(result)) {
+            for (const [ key, value ] of Object.entries(result)) {
                 lines.push(`${key}: ${value}`);
             }
             response = lines.join("\n");
@@ -157,6 +180,7 @@ exports.CreateShikoActions = function (service) {
         new PyuUpdateShikoAction(service),
         new PyuppyuManagerShindanmakerShikoAction(service),
         new BattleChimpoShindanmakerShikoAction(service),
+        new ChimpoChallengeShindanmakerShikoAction(service),
         new NijieUpdateShikoAction(service),
         new HorneUpdateShikoAction(service),
     ];
