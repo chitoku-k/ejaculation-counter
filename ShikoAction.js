@@ -93,7 +93,7 @@ class PyuppyuManagerShindanmakerShikoAction extends ShindanmakerShikoAction {
 
 class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShikoAction {
     get regex() {
-        return /ふとん(入|はい|い|行|潜|もぐ)っても?[いよ良]い[?？]/;
+        return /ふとん(し|(入|はい|い|行|潜|もぐ)っ)ても?[いよ良]い[?？]/;
     }
 
     async invoke(status) {
@@ -103,9 +103,10 @@ class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShi
 
         try {
             const result = await this.shindan(status);
-            const message = result.replace(/ぴゅっぴゅ|お?ちんちん/g, "おふとん")
-                                  .replace(/しこしこして/g, "もふもふさせて")
+            const message = result.replace(/しこしこして/g, "もふもふさせて")
                                   .replace(/しこしこ|しゅっしゅ/g, "もふもふ")
+                                  .replace(/ぴゅっぴゅって/g, "もふもふって")
+                                  .replace(/ぴゅっぴゅ|お?ちんちん/g, "おふとん")
                                   .replace(/手の平に/g, "朝まで");
             await this.reply(status.id_str, `@${status.user.screen_name} ${message}`);
         } catch (e) {
