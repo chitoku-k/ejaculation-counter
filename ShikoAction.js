@@ -53,8 +53,28 @@ class HorneUpdateShikoAction extends UpdateShikoAction {
 }
 
 class ShindanmakerShikoAction extends ShikoAction {
+    async shindan(status) {
+        // 名前の一部を取り出す
+        const name = status.user.name.replace(/(@.+|[\(（].*[\)）])$/g, "");
+        const body = await request({
+            method: "POST",
+            uri: this.uri,
+            form: {
+                u: name,
+            },
+        });
+        const [ , result ] = body.match(/<textarea(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
+        return result;
+    }
+}
+
+class PyuppyuManagerShindanmakerShikoAction extends ShindanmakerShikoAction {
     get regex() {
-        return /ぴゅっぴゅしても?いい[\?|？]/;
+        return /ぴゅっぴゅしても?[いよ良]い[?？]/;
+    }
+
+    get uri() {
+        return "https://shindanmaker.com/a/503598";
     }
 
     async invoke(status) {
@@ -62,21 +82,34 @@ class ShindanmakerShikoAction extends ShikoAction {
             return;
         }
 
-        // 名前の一部を取り出す
-        const name = status.user.name.replace(/(@.+|[\(（].*[\)）])$/g, "");
         try {
-            const body = await request({
-                method: "POST",
-                uri: "https://shindanmaker.com/a/503598",
-                form: {
-                    u: name,
-                },
-            });
-            const [ , result ] = body.match(/<textarea(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
+            const result = await this.shindan(status);
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
-        } catch (err) {
-            console.error(err);
+        } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} おちんちんぴゅっぴゅ管理官が不在のためぴゅっぴゅしちゃダメです`);
+        }
+    }
+}
+
+class BattleChimpoShindanmakerShikoAction extends ShindanmakerShikoAction {
+    get regex() {
+        return /ちん(ちん|ぽ|こ)に勝[たちつてと]/;
+    }
+
+    get uri() {
+        return "https://shindanmaker.com/584238";
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const result = await this.shindan(status);
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} おちんぽは現在勝負を受け付けていません`);
         }
     }
 }
@@ -122,7 +155,8 @@ exports.CreateShikoActions = function (service) {
     return [
         new SqlShikoAction(service),
         new PyuUpdateShikoAction(service),
-        new ShindanmakerShikoAction(service),
+        new PyuppyuManagerShindanmakerShikoAction(service),
+        new BattleChimpoShindanmakerShikoAction(service),
         new NijieUpdateShikoAction(service),
         new HorneUpdateShikoAction(service),
     ];
