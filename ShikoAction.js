@@ -107,6 +107,8 @@ class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShi
                                   .replace(/しこしこ|しゅっしゅ/g, "もふもふ")
                                   .replace(/ぴゅっぴゅって/g, "もふもふって")
                                   .replace(/ぴゅっぴゅ|お?ちんちん/g, "おふとん")
+                                  .replace(/出せる/g, "もふもふできる")
+                                  .replace(/出し/g, "もふもふし")
                                   .replace(/手の平に/g, "朝まで");
             await this.reply(status.id_str, `@${status.user.screen_name} ${message}`);
         } catch (e) {
