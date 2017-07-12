@@ -49,7 +49,7 @@ exports.ShikoService = class ShikoService {
     }
 
     async getProfile() {
-        const profile = await this.client.get("users/show/:id", { id: this.ID });
+        const { data: profile } = await this.client.get("users/show/:id", { id: this.ID });
         console.log(`name: ${profile.name}`);
         return this.parseProfile(profile);
     }
@@ -65,7 +65,7 @@ exports.ShikoService = class ShikoService {
 
     async updateProfile(profile) {
         const name = `${profile.name}（昨日: ${profile.yesterday} / 今日: ${profile.today}）`;
-        const update = await this.client.post("account/update_profile", { name });
+        const { data: update } = await this.client.post("account/update_profile", { name });
         console.log(`name: ${update.name}`);
         return this.parseProfile(update);
     }
@@ -83,7 +83,7 @@ exports.ShikoService = class ShikoService {
             message += "ぴゅっぴゅしませんでした…";
         }
 
-        const status = await this.client.post("statuses/update", { status: message });
+        const { data: status } = await this.client.post("statuses/update", { status: message });
         console.log(status.text);
         profile.yesterday = profile.today;
         profile.today = 0;
