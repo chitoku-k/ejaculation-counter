@@ -30,7 +30,7 @@ exports.ShikoDatabase = class ShikoDatabase {
 
         return {
             date,
-            count
+            count,
         };
     }
 };

@@ -1,4 +1,4 @@
-const TwitterPromise = require("twitter-promise");
+const Twit = require("twit");
 const { ShikoDatabase } = require("./ShikoDatabase.js");
 const { CronJob } = require("cron");
 const { CreateShikoActions } = require("./ShikoAction.js");
@@ -6,10 +6,10 @@ const { CreateShikoActions } = require("./ShikoAction.js");
 class ShikoService {
     constructor() {
         this.ID = process.env.TWITTER_ID;
-        this.client = new TwitterPromise({
+        this.client = new Twit({
             consumer_key: process.env.TWITTER_CONSUMER_KEY,
             consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-            access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+            access_token: process.env.TWITTER_ACCESS_TOKEN,
             access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
         });
         this.db = new ShikoDatabase();
@@ -23,18 +23,15 @@ class ShikoService {
     start(actions) {
         this.actions = actions;
         this.job.start();
-        this.client.stream("user", {}, stream => {
-            stream.on("data", data => {
-                if (data.text) {
-                    data.text = data.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-                    this.actions.filter(x => x.regex.test(data.text)).forEach(x => x.invoke(data));
-                }
-            });
 
-            stream.on("error", err => {
-                console.error(err);
-                process.exit(1);
-            });
+        const stream = this.client.stream("user");
+        stream.on("tweet", data => {
+            data.text = data.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+            this.actions.filter(x => x.regex.test(data.text)).forEach(x => x.invoke(data));
+        });
+        stream.on("error", err => {
+            console.error(err);
+            process.exit(1);
         });
     }
 
@@ -52,7 +49,7 @@ class ShikoService {
     }
 
     async getProfile() {
-        const profile = await this.client.get("users/show", { id: this.ID });
+        const profile = await this.client.get("users/show/:id", { id: this.ID });
         console.log(`name: ${profile.name}`);
         return this.parseProfile(profile);
     }

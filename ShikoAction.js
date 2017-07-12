@@ -25,7 +25,7 @@ class UpdateShikoAction extends ShikoAction {
         try {
             const [ profile, db ] = await Promise.all([
                 this.service.updateProfile(current),
-                this.service.db.update(new Date, current.today),
+                this.service.db.update(new Date(), current.today),
             ]);
             console.log(profile, db);
         } catch (err) {
