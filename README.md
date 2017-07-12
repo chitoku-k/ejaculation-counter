@@ -76,7 +76,7 @@ Twitter のプロフィールの更新を利用する場合は名前を変更し
 環境変数を `.env` として保存して次のコマンドを実行します。
 
 ```bash
-$ env $(cat .env | xargs) node ./ShikoService.js
+$ npm start
 ```
 
 [dependencies-link]:    https://gemnasium.com/github.com/chitoku-k/ejaculation-counter

@@ -1,9 +1,9 @@
 const Twit = require("twit");
-const { ShikoDatabase } = require("./ShikoDatabase.js");
+const { ShikoDatabase } = require("./ShikoDatabase");
 const { CronJob } = require("cron");
-const { CreateShikoActions } = require("./ShikoAction.js");
+const { CreateShikoActions } = require("./ShikoAction");
 
-class ShikoService {
+exports.ShikoService = class ShikoService {
     constructor() {
         this.ID = process.env.TWITTER_ID;
         this.client = new Twit({
@@ -91,5 +91,3 @@ class ShikoService {
         return { date, profile };
     }
 }
-
-new ShikoService();

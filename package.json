@@ -5,6 +5,7 @@
   "main": "ShikoService.js",
   "dependencies": {
     "cron": "^1.2.1",
+    "dotenv": "^4.0.0",
     "mysql": "^2.13.0",
     "request-promise": "^4.2.1",
     "twit": "^2.2.9"
