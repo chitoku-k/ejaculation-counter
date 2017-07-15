@@ -1,9 +1,10 @@
-const { createConnection } = require("mysql");
+const { createPool } = require("mysql");
 
 exports.ShikoDatabase = class ShikoDatabase {
     constructor() {
         this.user = 1;
-        this.connection = createConnection({
+        this.pool = createPool({
+            connectionLimit: 4,
             host: process.env.MYSQL_HOST,
             user: process.env.MYSQL_USER,
             password: process.env.MYSQL_PASSWORD,
@@ -12,7 +13,11 @@ exports.ShikoDatabase = class ShikoDatabase {
     }
 
     query(...args) {
-        return new Promise((resolve, reject) => this.connection.query(...args).on("error", err => reject(err)).on("result", rows => resolve(rows)));
+        return new Promise((resolve, reject) =>
+            this.pool.query(...args)
+                     .on("error", err => reject(err))
+                     .on("result", rows => resolve(rows))
+        );
     }
 
     async update(date, count) {
