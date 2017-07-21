@@ -63,7 +63,7 @@ class ShindanmakerShikoAction extends ShikoAction {
                 u: name,
             },
         });
-        const [ , result ] = body.match(/<textarea(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
+        const [ , result ] = body.match(/<textarea id="copy_text_140"(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
         return result;
     }
 }
