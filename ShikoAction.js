@@ -53,9 +53,13 @@ class HorneUpdateShikoAction extends UpdateShikoAction {
 }
 
 class ShindanmakerShikoAction extends ShikoAction {
+    getName(user) {
+        return user.name.replace(/(@.+|[\(（].*[\)）])$/g, "");
+    }
+
     async shindan(status) {
         // 名前の一部を取り出す
-        const name = status.user.name.replace(/(@.+|[\(（].*[\)）])$/g, "");
+        const name = this.getName(status.user);
         const body = await request({
             method: "POST",
             uri: this.uri,
@@ -94,6 +98,10 @@ class PyuppyuManagerShindanmakerShikoAction extends ShindanmakerShikoAction {
 class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShikoAction {
     get regex() {
         return /ふとん(し|(入|はい|い|行|潜|もぐ)っ)ても?[いよ良]い[?？]/;
+    }
+
+    getName(user) {
+        return super.getName(user) + "ぶとん";
     }
 
     async invoke(status) {
