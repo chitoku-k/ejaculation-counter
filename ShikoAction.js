@@ -150,7 +150,7 @@ class BattleChimpoShindanmakerShikoAction extends ShindanmakerShikoAction {
 
 class ChimpoChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
     get regex() {
-        return /(^|[^#＃])ちん(ちん|ぽ|こ)[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
+        return /ちん(ちん|ぽ|こ)[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
     }
 
     get uri() {
@@ -158,7 +158,7 @@ class ChimpoChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 
     async invoke(status) {
-        if (status.retweeted_status) {
+        if (status.retweeted_status || status.text.includes("#ちんぽチャレンジ")) {
             return;
         }
 
@@ -173,7 +173,7 @@ class ChimpoChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
 
 class ChimpoInsertionChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
     get regex() {
-        return /(^|[^#＃])お?ちん(ちん|ぽ|こ)挿入[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
+        return /ちん(ちん|ぽ|こ)挿入[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
     }
 
     get uri() {
@@ -181,7 +181,7 @@ class ChimpoInsertionChallengeShindanmakerShikoAction extends ShindanmakerShikoA
     }
 
     async invoke(status) {
-        if (status.retweeted_status) {
+        if (status.retweeted_status || status.text.includes("#おちんぽ挿入チャレンジ")) {
             return;
         }
 
