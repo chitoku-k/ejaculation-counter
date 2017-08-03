@@ -171,6 +171,29 @@ class ChimpoChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 }
 
+class ChimpoInsertionChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
+    get regex() {
+        return /(^|[^#＃])お?ちん(ちん|ぽ|こ)挿入[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
+    }
+
+    get uri() {
+        return "https://shindanmaker.com/670773";
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const result = await this.shindan(status);
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} チャレンジできませんでした……。`);
+        }
+    }
+}
+
 class SqlShikoAction extends ShikoAction {
     get regex() {
         return /^SQL:\s?(.+)/;
@@ -215,6 +238,7 @@ exports.CreateShikoActions = service => [
     new OfutonManagerShindanmakerShikoAction(service),
     new BattleChimpoShindanmakerShikoAction(service),
     new ChimpoChallengeShindanmakerShikoAction(service),
+    new ChimpoInsertionChallengeShindanmakerShikoAction(service),
     new NijieUpdateShikoAction(service),
     new HorneUpdateShikoAction(service),
 ];
