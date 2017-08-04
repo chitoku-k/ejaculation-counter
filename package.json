@@ -2,7 +2,7 @@
   "name": "ejaculation-counter",
   "version": "2.0.0",
   "description": "ぴゅっぴゅ数をカウントします",
-  "main": "ShikoService.js",
+  "main": "server.js",
   "dependencies": {
     "cron": "^1.2.1",
     "dotenv": "^4.0.0",

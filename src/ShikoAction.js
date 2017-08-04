@@ -194,6 +194,26 @@ class ChimpoInsertionChallengeShindanmakerShikoAction extends ShindanmakerShikoA
     }
 }
 
+class OfutonChallengeShikoAction extends ShikoAction {
+    get regex() {
+        return /ふとん[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status || status.text.includes("#おふとんチャレンジ")) {
+            return;
+        }
+
+        try {
+            const target = "おふとん".split("");
+            const result = Array.from({ length: target.length }, () => target[Math.random() * target.length | 0]).join("");
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}\n#おふとんチャレンジ`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} チャレンジできませんでした……。`);
+        }
+    }
+}
+
 class SqlShikoAction extends ShikoAction {
     get regex() {
         return /^SQL:\s?(.+)/;
@@ -233,6 +253,7 @@ class SqlShikoAction extends ShikoAction {
 
 exports.CreateShikoActions = service => [
     new SqlShikoAction(service),
+    new OfutonChallengeShikoAction(service),
     new PyuUpdateShikoAction(service),
     new PyuppyuManagerShindanmakerShikoAction(service),
     new OfutonManagerShindanmakerShikoAction(service),
