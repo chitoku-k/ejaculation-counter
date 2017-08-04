@@ -205,8 +205,8 @@ class OfutonChallengeShikoAction extends ShikoAction {
         }
 
         try {
-            const target = "おふとん".split("");
-            const result = Array.from({ length: target.length }, () => target[Math.random() * target.length | 0]).join("");
+            const target = [..."おふとん"];
+            const result = target.map(() => target[Math.random() * target.length | 0]).join("");
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}\n#おふとんチャレンジ`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} チャレンジできませんでした……。`);
