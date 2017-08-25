@@ -219,6 +219,15 @@ class SqlShikoAction extends ShikoAction {
         return /^SQL:\s?(.+)/;
     }
 
+    async query(sql) {
+        const [ result ] = await this.service.db.query(sql);
+        const lines = [];
+        for (const [ key, value ] of Object.entries(result)) {
+            lines.push(`${key}: ${value}`);
+        }
+        return lines.join("\n");
+    }
+
     async invoke(status) {
         if (status.retweeted_status || status.user.id_str !== this.service.ID) {
             return;
@@ -229,20 +238,7 @@ class SqlShikoAction extends ShikoAction {
             return;
         }
 
-        let response;
-        try {
-            const result = await this.service.db.query(sql);
-            const lines = [];
-            for (const [ key, value ] of Object.entries(result)) {
-                lines.push(`${key}: ${value}`);
-            }
-            response = lines.join("\n");
-        } catch (err) {
-            console.error(err);
-            response = "エラーが発生しました";
-        }
-
-        response = response.slice(0, 140);
+        const response = await this.query(sql).catch(err => err.message).then(x => x.slice(0, 120));
         try {
             await this.reply(status.id_str, `@${status.user.screen_name}\n${response}`);
         } catch (err) {
