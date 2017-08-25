@@ -114,7 +114,7 @@ class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShi
             const message = result.replace(/しこしこして/g, "もふもふさせて")
                                   .replace(/しこしこ|しゅっしゅ/g, "もふもふ")
                                   .replace(/ぴゅっぴゅって/g, "もふもふって")
-                                  .replace(/ぴゅっぴゅ|お?ちんちん/g, "おふとん")
+                                  .replace(/ぴゅっぴゅ|いじるの|お?ちんちん/g, "おふとん")
                                   .replace(/出せる/g, "もふもふできる")
                                   .replace(/出し/g, "もふもふし")
                                   .replace(/手の平に/g, "朝まで");
