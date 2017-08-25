@@ -20,7 +20,7 @@ exports.ShikoDatabase = class ShikoDatabase {
                     return;
                 }
                 resolve(results);
-            })
+            });
         });
     }
 
