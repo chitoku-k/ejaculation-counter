@@ -194,6 +194,29 @@ class ChimpoInsertionChallengeShindanmakerShikoAction extends ShindanmakerShikoA
     }
 }
 
+class SushiShindanmakerShikoAction extends ShindanmakerShikoAction {
+    get regex() {
+        return /(🍣|寿司|すし|ちん(ちん|ぽ|こ))(握|にぎ)/;
+    }
+
+    get uri() {
+        return "https://shindanmaker.com/a/577901";
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const result = await this.shindan(status);
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} 寿司職人がおやすみです……。`);
+        }
+    }
+}
+
 class OfutonChallengeShikoAction extends ShikoAction {
     get regex() {
         return /ふとん[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
@@ -256,6 +279,7 @@ exports.CreateShikoActions = service => [
     new BattleChimpoShindanmakerShikoAction(service),
     new ChimpoChallengeShindanmakerShikoAction(service),
     new ChimpoInsertionChallengeShindanmakerShikoAction(service),
+    new SushiShindanmakerShikoAction(service),
     new NijieUpdateShikoAction(service),
     new HorneUpdateShikoAction(service),
 ];
