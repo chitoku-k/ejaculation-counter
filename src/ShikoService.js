@@ -25,9 +25,16 @@ exports.ShikoService = class ShikoService {
         this.job.start();
 
         const stream = this.client.stream("user");
-        stream.on("tweet", data => {
+        stream.on("tweet", async data => {
             data.text = data.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-            this.actions.filter(x => x.regex.test(data.text)).forEach(x => x.invoke(data));
+
+            const target = this.actions.map(action => ({ match: action.regex.exec(data.text), action }))
+                                       .filter(x => x.match)
+                                       .sort((x, y) => x.match.index - y.match.index);
+
+            for (const { action } of target) {
+                await action.invoke(data);
+            }
         });
         stream.on("error", err => {
             console.error(err);
