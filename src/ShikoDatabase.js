@@ -19,7 +19,15 @@ exports.ShikoDatabase = class ShikoDatabase {
                     reject(error);
                     return;
                 }
-                resolve(results);
+                if (!Array.isArray(results)) {
+                    resolve([
+                        {
+                            "message": results.message,
+                        },
+                    ]);
+                    return;
+                }
+                return resolve(results);
             });
         });
     }
