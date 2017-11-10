@@ -45,6 +45,9 @@ CREATE TABLE `users` (
 環境変数に値の設定を行います。
 
 ```bash
+# ぴゅっぴゅユーザー ID（数値）
+SHIKO_USER=
+
 # Twitter ユーザー ID（数値）
 TWITTER_ID=
 

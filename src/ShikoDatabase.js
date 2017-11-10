@@ -2,7 +2,7 @@ const { createPool } = require("mysql");
 
 exports.ShikoDatabase = class ShikoDatabase {
     constructor() {
-        this.user = 1;
+        this.user = process.env.SHIKO_USER;
         this.pool = createPool({
             connectionLimit: 4,
             host: process.env.MYSQL_HOST,
@@ -20,11 +20,7 @@ exports.ShikoDatabase = class ShikoDatabase {
                     return;
                 }
                 if (!Array.isArray(results)) {
-                    resolve([
-                        {
-                            "message": results.message,
-                        },
-                    ]);
+                    resolve([ { message: results.message } ]);
                     return;
                 }
                 return resolve(results);
