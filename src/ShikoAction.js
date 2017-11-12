@@ -237,6 +237,38 @@ class OfutonChallengeShikoAction extends ShikoAction {
     }
 }
 
+class ThroughAction extends ShikoAction {
+    get regex() {
+        return /今日の\s*through|through\s*(が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
+    }
+
+    get api() {
+        return "http://api.chitoku.jp/through/";
+    }
+
+    get uri() {
+        return "http://user.keio.ac.jp/~rhotta/hellog/2009-06-20-1.html";
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const through = await request({
+                method: "GET",
+                uri: this.api,
+                json: true,
+            });
+            const result = through[Math.random() * through.length | 0];
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}\n${this.uri}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} 何かがおかしいよ`);
+        }
+    }
+}
+
 class SqlShikoAction extends ShikoAction {
     get regex() {
         return /^SQL:\s?(.+)/;
@@ -280,6 +312,7 @@ exports.CreateShikoActions = service => [
     new ChimpoChallengeShindanmakerShikoAction(service),
     new ChimpoInsertionChallengeShindanmakerShikoAction(service),
     new SushiShindanmakerShikoAction(service),
+    new ThroughAction(service),
     new NijieUpdateShikoAction(service),
     new HorneUpdateShikoAction(service),
 ];
