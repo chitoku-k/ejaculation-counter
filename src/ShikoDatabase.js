@@ -31,7 +31,7 @@ exports.ShikoDatabase = class ShikoDatabase {
     async update(date, count) {
         const check = "SELECT COUNT(*) AS `total` FROM `counts` WHERE `user` = ? AND `date` = DATE_FORMAT(?, '%Y-%m-%d')";
         const insert = "INSERT INTO `counts` (`user`, `count`, `date`) VALUES (?, ?, ?)";
-        const update = "UPDATE `counts` SET `count` = ? WHERE `date` = ?";
+        const update = "UPDATE `counts` SET `count` = ? WHERE `date` = DATE_FORMAT(?, '%Y-%m-%d')";
 
         const [{ total }] = await this.query(check, [this.user, date]);
         if (total === 1) {
