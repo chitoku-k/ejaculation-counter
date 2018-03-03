@@ -68,6 +68,9 @@ class ShindanmakerShikoAction extends ShikoAction {
             },
         });
         const [ , result ] = body.match(/<textarea id="copy_text_140"(?:[^>]+)>([\s\S]*)<\/textarea>/) || [];
+        if (!result) {
+            throw new Error("No shindan result found.");
+        }
         return result;
     }
 }
