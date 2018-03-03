@@ -269,6 +269,38 @@ class ThroughShikoAction extends ShikoAction {
     }
 }
 
+class MpywShikoAction extends ShikoAction {
+    get regex() {
+        return /(mpyw|まっぴー|実務経験)(が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
+    }
+
+    get api() {
+        return "http://mpyw.kb10uy.org";
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const mpyw = await request({
+                method: "HEAD",
+                uri: this.api,
+                simple: false,
+                followRedirect: false,
+                resolveWithFullResponse: true,
+            });
+            if (!mpyw.headers.location) {
+                throw new Error("No location header is found.");
+            }
+            await this.reply(status.id_str, `@${status.user.screen_name} ${mpyw.headers.location}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} エラーが発生しました。実務経験がないのでしょうか。。。`);
+        }
+    }
+}
+
 class SqlShikoAction extends ShikoAction {
     get regex() {
         return /^SQL:\s?(.+)/;
@@ -313,6 +345,7 @@ exports.CreateShikoActions = service => [
     new ChimpoInsertionChallengeShindanmakerShikoAction(service),
     new SushiShindanmakerShikoAction(service),
     new ThroughShikoAction(service),
+    new MpywShikoAction(service),
     new NijieUpdateShikoAction(service),
     new HorneUpdateShikoAction(service),
 ];
