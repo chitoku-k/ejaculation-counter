@@ -78,7 +78,7 @@ exports.ShikoService = class ShikoService {
     }
 
     async updateStatus(profile) {
-        const date = new Date;
+        const date = new Date();
         date.setDate(date.getDate() - 1);
 
         let message = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} `;

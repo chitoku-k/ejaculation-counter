@@ -237,7 +237,7 @@ class OfutonChallengeShikoAction extends ShikoAction {
     }
 }
 
-class ThroughAction extends ShikoAction {
+class ThroughShikoAction extends ShikoAction {
     get regex() {
         return /駿河茶|今日の\s*through|through\s*(が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
     }
@@ -312,7 +312,7 @@ exports.CreateShikoActions = service => [
     new ChimpoChallengeShindanmakerShikoAction(service),
     new ChimpoInsertionChallengeShindanmakerShikoAction(service),
     new SushiShindanmakerShikoAction(service),
-    new ThroughAction(service),
+    new ThroughShikoAction(service),
     new NijieUpdateShikoAction(service),
     new HorneUpdateShikoAction(service),
 ];
