@@ -54,7 +54,7 @@ class HorneUpdateShikoAction extends UpdateShikoAction {
 
 class ShindanmakerShikoAction extends ShikoAction {
     getName(user) {
-        return user.name.replace(/(@.+|[\(（].*[\)）])$/g, "");
+        return user.name.replace(/(@.+|[\(（].+[\)）])$/g, "");
     }
 
     async shindan(status) {
