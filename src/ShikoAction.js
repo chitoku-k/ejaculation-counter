@@ -242,7 +242,7 @@ class OfutonChallengeShikoAction extends ShikoAction {
 
 class ThroughShikoAction extends ShikoAction {
     get regex() {
-        return /(?:\s*(\d+)\s*連)駿河茶|今日の\s*through|through\s*(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
+        return /(?:\s*(\d+)\s*連)?駿河茶|今日の\s*through|through\s*(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
     }
 
     get api() {
