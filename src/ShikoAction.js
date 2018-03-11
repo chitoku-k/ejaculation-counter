@@ -242,7 +242,7 @@ class OfutonChallengeShikoAction extends ShikoAction {
 
 class ThroughShikoAction extends ShikoAction {
     get regex() {
-        return /駿河茶|今日の\s*through|through\s*(が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
+        return /(?:\s*(\d+)\s*連)駿河茶|今日の\s*through|through\s*(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
     }
 
     get api() {
@@ -259,13 +259,14 @@ class ThroughShikoAction extends ShikoAction {
         }
 
         try {
+            const length = this.regex.exec(status.text)[1] || 1;
             const through = await request({
                 method: "GET",
                 uri: this.api,
                 json: true,
             });
-            const result = through[Math.random() * through.length | 0];
-            await this.reply(status.id_str, `@${status.user.screen_name} ${result}\n${this.uri}`);
+            const result = Array.from({ length }, () => through[Math.random() * through.length | 0]);
+            await this.reply(status.id_str, `@${status.user.screen_name}\n${result.join("\n")}\n${this.uri}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} 何かがおかしいよ`);
         }
@@ -286,9 +287,8 @@ class MpywShikoAction extends ShikoAction {
             return;
         }
 
-        const count = this.regex.exec(status.text)[1] || 1;
-
         try {
+            const count = this.regex.exec(status.text)[1] || 1;
             const mpyw = await request({
                 method: "GET",
                 uri: this.api,
