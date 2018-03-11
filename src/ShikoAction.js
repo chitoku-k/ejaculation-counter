@@ -274,7 +274,7 @@ class ThroughShikoAction extends ShikoAction {
 
 class MpywShikoAction extends ShikoAction {
     get regex() {
-        return /(mpyw|まっぴー|実務経験)((\d+)連)?(が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
+        return /(?:mpyw|まっぴー|実務経験)(?:(\d+)連)?(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
     }
 
     get api() {
@@ -286,15 +286,13 @@ class MpywShikoAction extends ShikoAction {
             return;
         }
 
-        const count = parseInt(this.regex.exec(status.text)[3] || 1);
+        const count = this.regex.exec(status.text)[1] || 1;
 
         try {
             const mpyw = await request({
                 method: "HEAD",
                 uri: this.api,
-                qs: {
-                    count: count,
-                },
+                qs: { count },
                 simple: false,
                 followRedirect: false,
                 resolveWithFullResponse: true,
