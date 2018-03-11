@@ -274,11 +274,11 @@ class ThroughShikoAction extends ShikoAction {
 
 class MpywShikoAction extends ShikoAction {
     get regex() {
-        return /(?:mpyw|まっぴー|実務経験)(?:(\d+)連)?(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
+        return /(?:mpyw|まっぴー|実務経験)(?:\s*(\d+)\s*連)?(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]/;
     }
 
     get api() {
-        return "http://mpyw.kb10uy.org";
+        return "http://api.mpyw.kb10uy.org";
     }
 
     async invoke(status) {
@@ -290,17 +290,12 @@ class MpywShikoAction extends ShikoAction {
 
         try {
             const mpyw = await request({
-                method: "HEAD",
+                method: "GET",
                 uri: this.api,
                 qs: { count },
-                simple: false,
-                followRedirect: false,
-                resolveWithFullResponse: true,
+                json: true,
             });
-            if (!mpyw.headers.location) {
-                throw new Error("No location header is found.");
-            }
-            await this.reply(status.id_str, `@${status.user.screen_name} ${mpyw.headers.location}`);
+            await this.reply(status.id_str, `@${status.user.screen_name}\n${mpyw.result.join("\n")}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} エラーが発生しました。実務経験がないのでしょうか。。。`);
         }
