@@ -333,7 +333,7 @@ class SqlShikoAction extends ShikoAction {
         const response = await this.query(sql).catch(err => err.message).then(x => x.slice(0, 120));
         try {
             await this.reply(status.id_str, `@${status.user.screen_name}\n${response}`);
-        } catch (err) {
+        } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name}\nエラーが発生しました`);
             throw e;
         }
