@@ -22,15 +22,11 @@ class UpdateShikoAction extends ShikoAction {
         const current = this.service.parseProfile(status.user);
         current.today++;
 
-        try {
-            const [ profile, db ] = await Promise.all([
-                this.service.updateProfile(current),
-                this.service.db.update(new Date(), current.today),
-            ]);
-            console.log(profile, db);
-        } catch (err) {
-            console.error(err);
-        }
+        const [ profile, db ] = await Promise.all([
+            this.service.updateProfile(current),
+            this.service.db.update(new Date(), current.today),
+        ]);
+        console.log(profile, db);
     }
 }
 
@@ -94,6 +90,7 @@ class PyuppyuManagerShindanmakerShikoAction extends ShindanmakerShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} おちんちんぴゅっぴゅ管理官が不在のためぴゅっぴゅしちゃダメです`);
+            throw e;
         }
     }
 }
@@ -124,6 +121,7 @@ class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShi
             await this.reply(status.id_str, `@${status.user.screen_name} ${message}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} ふとんがふっとんだｗ`);
+            throw e;
         }
     }
 }
@@ -147,6 +145,7 @@ class BattleChimpoShindanmakerShikoAction extends ShindanmakerShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} おちんぽは現在勝負を受け付けていません`);
+            throw e;
         }
     }
 }
@@ -170,6 +169,7 @@ class ChimpoChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} チャレンジできませんでした……。`);
+            throw e;
         }
     }
 }
@@ -216,6 +216,7 @@ class SushiShindanmakerShikoAction extends ShindanmakerShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} 寿司職人がおやすみです……。`);
+            throw e;
         }
     }
 }
@@ -236,6 +237,7 @@ class OfutonChallengeShikoAction extends ShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}\n#おふとんチャレンジ`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} チャレンジできませんでした……。`);
+            throw e;
         }
     }
 }
@@ -269,6 +271,7 @@ class ThroughShikoAction extends ShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name}\n${result.join("\n")}\n${this.uri}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} 何かがおかしいよ`);
+            throw e;
         }
     }
 }
@@ -298,6 +301,7 @@ class MpywShikoAction extends ShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name}\n${mpyw.result.join("\n")}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} エラーが発生しました。実務経験がないのでしょうか。。。`);
+            throw e;
         }
     }
 }
@@ -330,7 +334,8 @@ class SqlShikoAction extends ShikoAction {
         try {
             await this.reply(status.id_str, `@${status.user.screen_name}\n${response}`);
         } catch (err) {
-            console.error(err);
+            await this.reply(status.id_str, `@${status.user.screen_name}\nエラーが発生しました`);
+            throw e;
         }
     }
 }

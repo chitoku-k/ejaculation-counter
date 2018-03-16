@@ -33,7 +33,11 @@ exports.ShikoService = class ShikoService {
                                        .sort((x, y) => x.match.index - y.match.index);
 
             for (const { action } of target) {
-                await action.invoke(data);
+                try {
+                    await action.invoke(data);
+                } catch (e) {
+                    console.error(e);
+                }
             }
         });
         stream.on("error", err => {
