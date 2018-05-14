@@ -221,7 +221,7 @@ class SushiShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 }
 
-class AVShikoAction extends ShindanmakerShikoAction {
+class AVShindanmakerShikoAction extends ShindanmakerShikoAction {
     get regex() {
         return /^(.+?)\s*(くん|ちゃん)?の\s*AV/;
     }
@@ -379,7 +379,7 @@ exports.CreateShikoActions = service => [
     new ChimpoChallengeShindanmakerShikoAction(service),
     new ChimpoInsertionChallengeShindanmakerShikoAction(service),
     new SushiShindanmakerShikoAction(service),
-    new AVShikoAction(service),
+    new AVShindanmakerShikoAction(service),
     new ThroughShikoAction(service),
     new MpywShikoAction(service),
     new NijieUpdateShikoAction(service),
