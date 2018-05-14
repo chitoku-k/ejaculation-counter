@@ -49,13 +49,13 @@ class HorneUpdateShikoAction extends UpdateShikoAction {
 }
 
 class ShindanmakerShikoAction extends ShikoAction {
-    getName(user) {
-        return user.name.replace(/(@.+|[\(（].+[\)）])$/g, "");
+    getName(status) {
+        return status.user.name.replace(/(@.+|[\(（].+[\)）])$/g, "");
     }
 
     async shindan(status) {
         // 名前の一部を取り出す
-        const name = this.getName(status.user);
+        const name = this.getName(status);
         const body = await request({
             method: "POST",
             uri: this.uri,
@@ -100,8 +100,8 @@ class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShi
         return /ふとん(し|(入|はい|い|行|潜|もぐ)っ)ても?[いよ良]い[?？]/;
     }
 
-    getName(user) {
-        return super.getName(user) + "ぶとん";
+    getName(status) {
+        return super.getName(status.user) + "ぶとん";
     }
 
     async invoke(status) {
@@ -216,6 +216,35 @@ class SushiShindanmakerShikoAction extends ShindanmakerShikoAction {
             await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
         } catch (e) {
             await this.reply(status.id_str, `@${status.user.screen_name} 寿司職人がおやすみです……。`);
+            throw e;
+        }
+    }
+}
+
+class AVShikoAction extends ShindanmakerShikoAction {
+    get regex() {
+        return /^(.*?)\s*(くん|ちゃん)?の\s*AV/;
+    }
+
+    getName(status) {
+        const [ , name ] = status.text.match(this.regex);
+        return name;
+    }
+
+    get uri() {
+        return "https://shindanmaker.com/a/794363";
+    }
+
+    async invoke(status) {
+        if (status.retweeted_status) {
+            return;
+        }
+
+        try {
+            const result = await this.shindan(status);
+            await this.reply(status.id_str, `@${status.user.screen_name} ${result}`);
+        } catch (e) {
+            await this.reply(status.id_str, `@${status.user.screen_name} AV に出演できませんでした……。`);
             throw e;
         }
     }
@@ -350,6 +379,7 @@ exports.CreateShikoActions = service => [
     new ChimpoChallengeShindanmakerShikoAction(service),
     new ChimpoInsertionChallengeShindanmakerShikoAction(service),
     new SushiShindanmakerShikoAction(service),
+    new AVShikoAction(service),
     new ThroughShikoAction(service),
     new MpywShikoAction(service),
     new NijieUpdateShikoAction(service),
