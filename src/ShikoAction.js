@@ -223,7 +223,7 @@ class SushiShindanmakerShikoAction extends ShindanmakerShikoAction {
 
 class AVShikoAction extends ShindanmakerShikoAction {
     get regex() {
-        return /^(.*?)\s*(くん|ちゃん)?の\s*AV/;
+        return /^(.+?)\s*(くん|ちゃん)?の\s*AV/;
     }
 
     getName(status) {
