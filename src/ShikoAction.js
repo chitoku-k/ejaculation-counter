@@ -101,7 +101,7 @@ class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShi
     }
 
     getName(status) {
-        return super.getName(status.user) + "ぶとん";
+        return super.getName(status) + "ぶとん";
     }
 
     async invoke(status) {
