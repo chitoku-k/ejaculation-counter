@@ -1,8 +1,6 @@
 ぴゅっぴゅカウンター
 ====================
 
-[![][dependencies-badge]][dependencies-link]
-
 [ぴゅっぴゅカウンター](https://xn--y2wx43a.chitoku.jp) はぴゅっぴゅ回数をカウントして毎日真夜中にツイートします。
 
 ## 機能
@@ -89,6 +87,3 @@ Twitter のプロフィールの更新を利用する場合は名前を変更し
 ```bash
 $ npm start
 ```
-
-[dependencies-link]:    https://gemnasium.com/github.com/chitoku-k/ejaculation-counter
-[dependencies-badge]:   https://img.shields.io/gemnasium/chitoku-k/ejaculation-counter.svg?style=flat-square
