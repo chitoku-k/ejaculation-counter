@@ -311,7 +311,7 @@ class MpywShikoAction extends ShikoAction {
     }
 
     get api() {
-        return "http://api.mpyw.kb10uy.org";
+        return "https://mpyw.kb10uy.org/api";
     }
 
     async invoke(status) {
