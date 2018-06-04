@@ -67,7 +67,7 @@ class ShindanmakerShikoAction extends ShikoAction {
         if (!result) {
             throw new Error("No shindan result found.");
         }
-        return result;
+        return this.service.decodeHtml(result);
     }
 }
 

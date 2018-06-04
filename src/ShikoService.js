@@ -20,14 +20,17 @@ exports.ShikoService = class ShikoService {
         this.start(CreateShikoActions(this));
     }
 
+    decodeHtml(text) {
+        return text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    }
+
     start(actions) {
         this.actions = actions;
         this.job.start();
 
         const stream = this.client.stream("user");
         stream.on("tweet", async data => {
-            data.text = data.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-
+            data.text = this.decodeHtml(data.text);
             const target = this.actions.map(action => ({ match: action.regex.exec(data.text), action }))
                                        .filter(x => x.match)
                                        .sort((x, y) => x.match.index - y.match.index);
