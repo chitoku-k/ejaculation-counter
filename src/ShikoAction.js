@@ -67,7 +67,11 @@ class ShindanmakerShikoAction extends ShikoAction {
         if (!result) {
             throw new Error("No shindan result found.");
         }
-        return this.service.decodeHtml(result);
+
+        // 二重エスケープ回避
+        return this.service.decodeHtml(
+            this.service.decodeHtml(result)
+        );
     }
 }
 
