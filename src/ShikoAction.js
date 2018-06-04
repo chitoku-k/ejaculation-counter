@@ -236,7 +236,7 @@ class AVShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 
     async invoke(status) {
-        if (status.retweeted_status) {
+        if (status.retweeted_status || status.text.includes("#同人AVタイトルジェネレーター")) {
             return;
         }
 
