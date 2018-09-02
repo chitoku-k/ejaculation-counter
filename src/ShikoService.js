@@ -1,12 +1,13 @@
 const Masto = require("mastodon");
 const WebSocket = require("ws");
 const xpath = require("xpath");
+const PQueue = require("p-queue");
 const { DOMParser } = require("xmldom");
 const { ShikoDatabase } = require("./ShikoDatabase");
 const { CronJob } = require("cron");
 const { CreateShikoActions } = require("./ShikoAction");
 const { fromEvent, from } = require("rxjs");
-const { filter, flatMap, map, mergeMap, toArray } = require("rxjs/operators");
+const { filter, map, mergeMap, toArray } = require("rxjs/operators");
 
 exports.ShikoService = class ShikoService {
     constructor() {
@@ -49,21 +50,33 @@ exports.ShikoService = class ShikoService {
         this.actions = actions;
         this.job.start();
 
-        const stream = new WebSocket(`${process.env.MASTODON_WSS_URL}streaming?access_token=${process.env.MASTODON_ACCESS_TOKEN}&stream=user`);
-        fromEvent(stream, "message")
-            .pipe(map(x => JSON.parse(x.data)))
-            .pipe(filter(x => x.event === "update"))
-            .pipe(map(x => JSON.parse(x.payload)))
-            .pipe(map(x => this.decodeToot(x)))
-            .pipe(mergeMap(toot => from(this.actions)
-                .pipe(map(action => ({ match: action.regex.exec(toot.content), action, toot })))
-                .pipe(filter(({ match }) => match))
-                .pipe(toArray())
-                .pipe(map(x => x.sort((a, b) => a.match.index - b.match.index)))
-            ))
-            .pipe(flatMap(x => x))
-            .pipe(map(({ action, toot }) => action.invoke(toot)))
-            .subscribe(x => console.log(x));
+        const queue = new PQueue({
+            concurrency: 1,
+        });
+
+        const stream = new WebSocket(
+            `${process.env.MASTODON_WSS_URL}streaming?access_token=${process.env.MASTODON_ACCESS_TOKEN}&stream=user`,
+        );
+
+        fromEvent(stream, "message").pipe(
+            map(x => JSON.parse(x.data)),
+            filter(x => x.event === "update"),
+            map(x => JSON.parse(x.payload)),
+            map(x => this.decodeToot(x)),
+            mergeMap(toot => from(this.actions).pipe(
+                map(action => ({ match: action.regex.exec(toot.content), action, toot })),
+                filter(({ match }) => match),
+                toArray(),
+                map(x => x.sort((a, b) => a.match.index - b.match.index)),
+            )),
+            mergeMap(x => x, (outer, inner) => inner),
+        ).subscribe(
+            ({ action, toot }) => queue.add(() => action.invoke(toot)),
+        );
+
+        fromEvent(stream, "error").subscribe(
+            error => console.error(error),
+        );
     }
 
     async onTick() {
