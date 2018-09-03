@@ -1,27 +1,31 @@
 const Masto = require("mastodon");
-const WebSocket = require("ws");
-const xpath = require("xpath");
-const PQueue = require("p-queue");
-const { DOMParser } = require("xmldom");
 const { ShikoDatabase } = require("./ShikoDatabase");
+const { ShikoStream } = require("./ShikoStream");
 const { CronJob } = require("cron");
 const { CreateShikoActions } = require("./ShikoAction");
-const { fromEvent, from } = require("rxjs");
-const { filter, map, mergeMap, toArray } = require("rxjs/operators");
 
 exports.ShikoService = class ShikoService {
     constructor() {
+        // REST API
         this.ID = process.env.MASTODON_ID;
         this.client = new Masto({
             access_token: process.env.MASTODON_ACCESS_TOKEN,
             api_url: process.env.MASTODON_API_URL,
         });
+
+        // Streaming
+        this.stream = new ShikoStream(this, CreateShikoActions(this));
+        this.stream.create();
+
+        // Database
         this.db = new ShikoDatabase();
+
+        // Cron
         this.job = new CronJob({
             cronTime: "00 00 * * *",
             onTick: () => this.onTick(),
         });
-        this.start(CreateShikoActions(this));
+        this.job.start();
     }
 
     decodeHtml(text) {
@@ -44,39 +48,6 @@ exports.ShikoService = class ShikoService {
             },
             content: this.decodeParagraph(toot.content),
         };
-    }
-
-    start(actions) {
-        this.actions = actions;
-        this.job.start();
-
-        const queue = new PQueue({
-            concurrency: 1,
-        });
-
-        const stream = new WebSocket(
-            `${process.env.MASTODON_WSS_URL}streaming?access_token=${process.env.MASTODON_ACCESS_TOKEN}&stream=user`,
-        );
-
-        fromEvent(stream, "message").pipe(
-            map(x => JSON.parse(x.data)),
-            filter(x => x.event === "update"),
-            map(x => JSON.parse(x.payload)),
-            map(x => this.decodeToot(x)),
-            mergeMap(toot => from(this.actions).pipe(
-                map(action => ({ match: action.regex.exec(toot.content), action, toot })),
-                filter(({ match }) => match),
-                toArray(),
-                map(x => x.sort((a, b) => a.match.index - b.match.index)),
-            )),
-            mergeMap(x => x, (outer, inner) => inner),
-        ).subscribe(
-            ({ action, toot }) => queue.add(() => action.invoke(toot)),
-        );
-
-        fromEvent(stream, "error").subscribe(
-            error => console.error(error),
-        );
     }
 
     async onTick() {
