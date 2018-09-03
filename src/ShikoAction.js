@@ -137,7 +137,7 @@ class BattleChimpoShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 
     get uri() {
-        return "https://shindanmaker.com/584238";
+        return "https://shindanmaker.com/a/584238";
     }
 
     async invoke(status) {
@@ -161,7 +161,7 @@ class ChimpoChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 
     get uri() {
-        return "https://shindanmaker.com/656461";
+        return "https://shindanmaker.com/a/656461";
     }
 
     async invoke(status) {
@@ -185,7 +185,7 @@ class ChimpoInsertionChallengeShindanmakerShikoAction extends ShindanmakerShikoA
     }
 
     get uri() {
-        return "https://shindanmaker.com/670773";
+        return "https://shindanmaker.com/a/670773";
     }
 
     async invoke(status) {
