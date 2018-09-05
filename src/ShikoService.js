@@ -36,7 +36,7 @@ exports.ShikoService = class ShikoService {
         // TODO: xmldom error
         // return this.decodeHtml(xpath.select("string(/)", (new DOMParser()).parseFromString(html)));
         const [ , match ] = html.match(/<p>(.*)<\/p>/) || [];
-        return this.decodeHtml(match);
+        return this.decodeHtml(match || "");
     }
 
     decodeToot(toot) {
