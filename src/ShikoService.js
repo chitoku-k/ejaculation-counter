@@ -29,7 +29,12 @@ exports.ShikoService = class ShikoService {
     }
 
     decodeHtml(text) {
-        return text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+        return text
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&amp;/g, "&")
+            .replace(/&apos;/g, "'")
+            .replace(/&quot;/g, "\"");
     }
 
     decodeParagraph(html) {
