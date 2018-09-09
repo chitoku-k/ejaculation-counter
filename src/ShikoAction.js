@@ -210,6 +210,15 @@ class SushiShindanmakerShikoAction extends ShindanmakerShikoAction {
         return /(🍣|寿司|すし|ちん(ちん|ぽ|こ))(握|にぎ)/;
     }
 
+    get emoji() {
+        return [
+            "ios_big_sushi_1",
+            "ios_big_sushi_2",
+            "ios_big_sushi_3",
+            "ios_big_sushi_4",
+        ];
+    }
+
     get uri() {
         return "https://shindanmaker.com/a/577901";
     }

@@ -25,10 +25,15 @@ exports.ShikoStream = class ShikoStream {
             map(x => JSON.parse(x.payload)),
             map(x => this.service.decodeToot(x)),
             mergeMap(toot => from(this.actions).pipe(
-                map(action => ({ match: action.regex.exec(toot.content), action, toot })),
-                filter(({ match }) => match),
+                map(action => ({
+                    match: action.regex.exec(toot.content),
+                    emoji: action.emoji && action.emoji.findIndex(x => toot.emojis.some(e => x === e.shortcode)),
+                    action,
+                    toot,
+                })),
+                filter(({ match, emoji }) => match || emoji >= 0),
                 toArray(),
-                map(x => x.sort((a, b) => a.match.index - b.match.index)),
+                map(x => x.sort((a, b) => a.emoji || b.emoji ? 1 : a.match.index - b.match.index)),
             )),
             mergeMap(x => x, (outer, inner) => inner),
         ).subscribe(
