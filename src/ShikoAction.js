@@ -253,7 +253,7 @@ class AVShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 
     async invoke(status) {
-        if (status.reblog || status.tags.some(x => x.name === "同人AVタイトルジェネレーター")) {
+        if (status.reblog || status.tags.some(x => x.name === "同人avタイトルジェネレーター")) {
             return;
         }
 
