@@ -59,7 +59,8 @@ class ShindanmakerShikoAction extends ShikoAction {
 
     async shindan(status) {
         // 名前の一部を取り出す
-        const name = this.getName(status);
+        // 診断メーカーは preg_replace にエスケープなしで名前を渡すためエスケープ
+        const name = this.getName(status).replace(/([$\\]{?\d+)/g, "\\$1");
         const body = await request({
             method: "POST",
             uri: this.uri,
