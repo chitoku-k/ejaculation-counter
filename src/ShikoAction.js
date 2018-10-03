@@ -217,6 +217,14 @@ class SushiShindanmakerShikoAction extends ShindanmakerShikoAction {
             "ios_big_sushi_2",
             "ios_big_sushi_3",
             "ios_big_sushi_4",
+            "top_left_sushi",
+            "top_center_sushi",
+            "top_right_sushi",
+            "middle_left_sushi",
+            "middle_right_sushi",
+            "bottom_left_sushi",
+            "bottom_center_sushi",
+            "bottom_right_sushi",
         ];
     }
 
