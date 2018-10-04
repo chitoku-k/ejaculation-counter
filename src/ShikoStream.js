@@ -24,6 +24,7 @@ exports.ShikoStream = class ShikoStream {
             filter(x => x.event === "update"),
             map(x => JSON.parse(x.payload)),
             map(x => this.service.decodeToot(x)),
+            filter(x => !x.application || x.application.name !== process.env.MASTODON_APP),
             mergeMap(toot => from(this.actions).pipe(
                 map(action => ({
                     match: action.regex.exec(toot.content),
