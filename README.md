@@ -46,8 +46,11 @@ CREATE TABLE `users` (
 # ぴゅっぴゅユーザー ID（数値）
 SHIKO_USER=
 
-# Mastodon ユーザー ID（数値）
+# Mastodon ユーザー ID（数値、スペース区切り）
 MASTODON_ID=
+
+# Mastodon アプリケーション名
+MASTODON_APP=
 
 # Mastodon ユーザー トークン
 MASTODON_ACCESS_TOKEN=
