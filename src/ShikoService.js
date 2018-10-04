@@ -9,7 +9,7 @@ const { CreateShikoActions } = require("./ShikoAction");
 exports.ShikoService = class ShikoService {
     constructor() {
         // REST API
-        this.ID = process.env.MASTODON_ID;
+        this.IDs = process.env.MASTODON_ID.split(" ");
         this.client = new Masto({
             access_token: process.env.MASTODON_ACCESS_TOKEN,
             api_url: process.env.MASTODON_API_URL,
@@ -63,7 +63,7 @@ exports.ShikoService = class ShikoService {
     }
 
     async getProfile() {
-        const { data: profile } = await this.client.get(`accounts/${this.ID}`);
+        const { data: profile } = await this.client.get(`accounts/${this.IDs[0]}`);
         console.log(`name: ${profile.display_name}`);
         return this.parseProfile(profile);
     }

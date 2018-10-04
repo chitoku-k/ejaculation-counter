@@ -19,7 +19,7 @@ class ShikoAction {
 
 class UpdateShikoAction extends ShikoAction {
     async invoke(status) {
-        if (status.reblog || status.account.id !== this.service.ID) {
+        if (status.reblog || this.service.IDs.every(x => status.account.id !== x)) {
             return;
         }
 
@@ -376,7 +376,7 @@ class SqlShikoAction extends ShikoAction {
     }
 
     async invoke(status) {
-        if (status.reblog || status.account.id !== this.service.ID) {
+        if (status.reblog || this.service.IDs.every(x => status.account.id !== x)) {
             return;
         }
 
