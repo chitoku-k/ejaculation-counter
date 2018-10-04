@@ -1,7 +1,5 @@
 const PQueue = require("p-queue");
 const WebSocket = require("ws");
-const xpath = require("xpath");
-const { DOMParser } = require("xmldom");
 const { fromEvent, from } = require("rxjs");
 const { filter, map, mergeMap, toArray } = require("rxjs/operators");
 

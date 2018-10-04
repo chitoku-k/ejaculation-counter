@@ -1,3 +1,5 @@
+const decode = require("decode-html");
+const striptags = require("striptags");
 const Masto = require("mastodon");
 const { ShikoDatabase } = require("./ShikoDatabase");
 const { ShikoStream } = require("./ShikoStream");
@@ -29,19 +31,11 @@ exports.ShikoService = class ShikoService {
     }
 
     decodeHtml(text) {
-        return text
-            .replace(/&lt;/g, "<")
-            .replace(/&gt;/g, ">")
-            .replace(/&amp;/g, "&")
-            .replace(/&apos;/g, "'")
-            .replace(/&quot;/g, "\"");
+        return decode(text);
     }
 
     decodeParagraph(html) {
-        // TODO: xmldom error
-        // return this.decodeHtml(xpath.select("string(/)", (new DOMParser()).parseFromString(html)));
-        const [ , match ] = html.match(/<p>(.*)<\/p>/) || [];
-        return this.decodeHtml(match || "");
+        return this.decodeHtml(striptags(html));
     }
 
     decodeToot(toot) {
