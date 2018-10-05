@@ -23,7 +23,7 @@ class UpdateShikoAction extends ShikoAction {
             return;
         }
 
-        const current = this.service.parseProfile(status.account);
+        const current = await this.service.getProfile();
         current.today++;
 
         const [ profile, db ] = await Promise.all([
