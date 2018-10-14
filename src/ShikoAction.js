@@ -7,7 +7,7 @@ class ShikoAction {
     }
 
     reply(status, content) {
-        if (!content.length) {
+        if (!content.replace(/\n/g, "").length) {
             return;
         }
 
