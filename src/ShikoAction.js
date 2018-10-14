@@ -7,6 +7,10 @@ class ShikoAction {
     }
 
     reply(status, content) {
+        if (!content.length) {
+            return;
+        }
+
         const text = `@${status.account.acct} ${content}`.slice(0, this.limit);
 
         return this.service.client.post("statuses", {
