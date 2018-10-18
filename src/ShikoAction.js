@@ -6,6 +6,22 @@ class ShikoAction {
         this.service = service;
     }
 
+    pack(status, target, delimiter, limit) {
+        delimiter = delimiter || "\n";
+        limit = limit || this.limit - `@${status.account.acct} `.length;
+
+        let content = "";
+
+        for (const item of target) {
+            if (content.length + item.length > limit) {
+                break;
+            }
+            content += `${delimiter}${item}`;
+        }
+
+        return content;
+    }
+
     reply(status, content) {
         if (!content.replace(/\n/g, "").length) {
             return;
@@ -326,8 +342,10 @@ class ThroughShikoAction extends ShikoAction {
                 uri: this.api,
                 json: true,
             });
+
             const result = Array.from({ length }, () => through[Math.random() * through.length | 0]);
-            await this.reply(status, `\n${result.join("\n")}\n${this.uri}`);
+            const limit = this.limit - `${status.account.acct} \n${this.uri}`.length;
+            await this.reply(status, this.pack(status, result, "\n", limit) + `\n${this.uri}`);
         } catch (e) {
             await this.reply(status, "何かがおかしいよ");
             throw e;
@@ -357,7 +375,8 @@ class MpywShikoAction extends ShikoAction {
                 qs: { count },
                 json: true,
             });
-            await this.reply(status, `\n${mpyw.result.join("\n")}`);
+
+            await this.reply(status, this.pack(status, mpyw.result));
         } catch (e) {
             await this.reply(status, "エラーが発生しました。実務経験がないのでしょうか。。。");
             throw e;
