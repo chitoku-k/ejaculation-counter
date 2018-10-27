@@ -66,7 +66,7 @@ MYSQL_PASSWORD=
 
 ## 動作環境
 
-- Node.js 7 以上
+- Node.js 8 以上
 - MySQL 互換の RDBMS
 
 ## 実行
