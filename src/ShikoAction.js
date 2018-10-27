@@ -13,7 +13,7 @@ class ShikoAction {
         let content = "";
 
         for (const item of target) {
-            if (content.length + item.length > limit) {
+            if (content.length + delimiter.length + item.length > limit) {
                 break;
             }
             content += `${delimiter}${item}`;
@@ -344,7 +344,7 @@ class ThroughShikoAction extends ShikoAction {
             });
 
             const result = Array.from({ length }, () => through[Math.random() * through.length | 0]);
-            const limit = this.limit - `${status.account.acct} \n${this.uri}`.length;
+            const limit = this.limit - `@${status.account.acct} \n${this.uri}`.length;
             await this.reply(status, this.pack(status, result, "\n", limit) + `\n${this.uri}`);
         } catch (e) {
             await this.reply(status, "何かがおかしいよ");
