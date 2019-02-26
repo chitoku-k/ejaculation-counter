@@ -9,7 +9,7 @@
     "dotenv": "^6.0.0",
     "mastodon": "^1.2.2",
     "mysql": "^2.16.0",
-    "p-queue": "^3.0.0",
+    "p-queue": "^3.1.0",
     "request-promise": "^4.2.2",
     "rxjs": "^6.3.1",
     "striptags": "^3.1.1",
