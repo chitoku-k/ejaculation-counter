@@ -6,7 +6,7 @@
   "dependencies": {
     "cron": "^1.4.1",
     "decode-html": "^2.0.0",
-    "dotenv": "^6.0.0",
+    "dotenv": "^6.2.0",
     "mastodon": "^1.2.2",
     "mysql": "^2.16.0",
     "p-queue": "^3.0.0",
