@@ -296,6 +296,31 @@ class AVShindanmakerShikoAction extends ShindanmakerShikoAction {
     }
 }
 
+class LawChallengeShindanmakerShikoAction extends ShindanmakerShikoAction {
+    get regex() {
+        return /法律((ギ|ｷﾞ)[リﾘ](ギ|ｷﾞ)[リﾘ])?[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
+    }
+
+    get uri() {
+        return "https://shindanmaker.com/a/877845";
+    }
+
+    async invoke(status) {
+        if (status.reblog || status.tags.some(x => x.name === "法律ギリギリチャレンジ")) {
+            return;
+        }
+
+        try {
+            const result = await this.shindan(status);
+            await this.reply(status, result);
+        } catch (e) {
+            await this.reply(status, "法律を破ってしまいました……。");
+            throw e;
+        }
+    }
+}
+
+
 class OfutonChallengeShikoAction extends ShikoAction {
     get regex() {
         return /ふとん[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)/;
@@ -429,6 +454,7 @@ exports.CreateShikoActions = service => [
     new ChimpoInsertionChallengeShindanmakerShikoAction(service),
     new SushiShindanmakerShikoAction(service),
     new AVShindanmakerShikoAction(service),
+    new LawChallengeShindanmakerShikoAction(service),
     new ThroughShikoAction(service),
     new MpywShikoAction(service),
     new NijieUpdateShikoAction(service),
