@@ -8,7 +8,7 @@
     "decode-html": "^2.0.0",
     "dotenv": "^7.0.0",
     "mastodon": "^1.2.2",
-    "mysql": "^2.16.0",
+    "mysql": "^2.17.0",
     "p-queue": "^5.0.0",
     "request-promise": "^4.2.4",
     "rxjs": "^6.4.0",
