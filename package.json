@@ -4,7 +4,7 @@
   "description": "ぴゅっぴゅ数をカウントします",
   "main": "server.js",
   "dependencies": {
-    "cron": "^1.7.0",
+    "cron": "^1.7.1",
     "decode-html": "^2.0.0",
     "dotenv": "^7.0.0",
     "mastodon": "^1.2.2",
