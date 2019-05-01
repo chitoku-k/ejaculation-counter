@@ -63,7 +63,7 @@ exports.ShikoStream = class ShikoStream {
                 })),
                 filter(({ match, emoji }) => match || emoji >= 0),
                 toArray(),
-                map(x => x.sort((a, b) => a.emoji || b.emoji ? 1 : a.match.index - b.match.index)),
+                map(x => x.sort((a, b) => a.emoji >= 0 || b.emoji >= 0 ? 1 : a.match.index - b.match.index)),
             )),
             mergeMap(x => x, (outer, inner) => inner),
         ).subscribe(
