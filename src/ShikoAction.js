@@ -157,7 +157,7 @@ class OfutonManagerShindanmakerShikoAction extends PyuppyuManagerShindanmakerShi
 
 class BattleChimpoShindanmakerShikoAction extends ShindanmakerShikoAction {
     get regex() {
-        return /^お?ちん(ちん|ぽ|こ)(なん[かぞ])?に(勝[たちつてと]|負[かきくけこ])/;
+        return /^お?ちん(ちん|ぽ|こ)(なん[かぞ])?に([勝か][たちつてと]|[負ま][かきくけこ])/;
     }
 
     get uri() {
