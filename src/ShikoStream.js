@@ -1,4 +1,4 @@
-const PQueue = require("p-queue");
+const { default: PQueue } = require("p-queue");
 const WebSocket = require("ws");
 const { fromEvent, from, Observable } = require("rxjs");
 const { filter, map, mergeMap, toArray } = require("rxjs/operators");
