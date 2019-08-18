@@ -3,6 +3,7 @@ const striptags = require("striptags");
 const Masto = require("mastodon");
 const { ShikoDatabase } = require("./ShikoDatabase");
 const { ShikoStream } = require("./ShikoStream");
+const { ShikoView } = require("./ShikoView");
 const { CronJob } = require("cron");
 const { CreateShikoActions } = require("./ShikoAction");
 
@@ -21,6 +22,9 @@ exports.ShikoService = class ShikoService {
 
         // Database
         this.db = new ShikoDatabase();
+
+        // View
+        this.view = new ShikoView();
 
         // Cron
         this.job = new CronJob({

@@ -1,0 +1,24 @@
+html, body {
+    background-color: #2f2f33;
+    margin: 0;
+    padding: 4px 12px;
+}
+
+main {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+h1#title {
+    color: #d8d9da;
+    font-size: 24px;
+    font-weight: normal;
+}
+
+.graph-container > iframe {
+    margin-top: 12px;
+}
+.graph-container > iframe + iframe {
+    margin: 0 12px;
+}
