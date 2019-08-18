@@ -1,0 +1,52 @@
+version: "2.1"
+
+services:
+  app:
+    image: node:12.6
+    working_dir: /usr/src/app
+    command: npm start
+    ports:
+      - "${EJACULATION_PORT-3000}:3000"
+    environment:
+      - SHIKO_USER=1
+      - MYSQL_HOST=database
+      - MYSQL_DATABASE=ejaculation
+      - MYSQL_USER=shiko
+      - MYSQL_PASSWORD=shiko
+      - MASTODON_ID
+      - MASTODON_API_URL
+      - MASTODON_WSS_URL
+      - MASTODON_ACCESS_TOKEN
+      - MASTODON_APP
+    volumes:
+      - .:/usr/src/app
+
+  grafana:
+    image: grafana/grafana:6.3.3
+    environment:
+      GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
+      GF_AUTH_ANONYMOUS_ENABLED: 1
+      GF_SECURITY_ALLOW_EMBEDDING: 1
+      GF_SERVER_SERVE_FROM_SUB_PATH: 1
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
+      GF_SERVER_DOMAIN: grafana
+    volumes:
+      - grafana:/var/lib/grafana
+
+  database:
+    image: mysql:8.0
+    command: [--character-set-server=utf8, --default-authentication-plugin=mysql_native_password]
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+      - database:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ejaculation
+      MYSQL_USER: shiko
+      MYSQL_PASSWORD: shiko
+      MYSQL_ROOT_PASSWORD: shiko
+
+volumes:
+  grafana:
+    driver: local
+  database:
+    driver: local
