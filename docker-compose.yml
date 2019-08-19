@@ -8,6 +8,7 @@ services:
     ports:
       - "${EJACULATION_PORT-3000}:3000"
     environment:
+      - TZ
       - SHIKO_USER=1
       - MYSQL_HOST=database
       - MYSQL_DATABASE=ejaculation
