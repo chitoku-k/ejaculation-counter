@@ -8,23 +8,24 @@ services:
     ports:
       - "${EJACULATION_PORT-3000}:3000"
     environment:
-      - TZ
-      - SHIKO_USER=1
-      - MYSQL_HOST=database
-      - MYSQL_DATABASE=ejaculation
-      - MYSQL_USER=shiko
-      - MYSQL_PASSWORD=shiko
-      - MASTODON_ID
-      - MASTODON_API_URL
-      - MASTODON_WSS_URL
-      - MASTODON_ACCESS_TOKEN
-      - MASTODON_APP
+      TZ:
+      SHIKO_USER: 1
+      MYSQL_HOST: database
+      MYSQL_DATABASE: ejaculation
+      MYSQL_USER: shiko
+      MYSQL_PASSWORD: shiko
+      MASTODON_ID:
+      MASTODON_API_URL:
+      MASTODON_WSS_URL:
+      MASTODON_ACCESS_TOKEN:
+      MASTODON_APP:
     volumes:
       - .:/usr/src/app
 
   grafana:
     image: grafana/grafana:6.3.3
     environment:
+      TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
       GF_AUTH_ANONYMOUS_ENABLED: 1
       GF_SECURITY_ALLOW_EMBEDDING: 1
