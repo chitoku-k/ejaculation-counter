@@ -7,7 +7,7 @@
     "cron": "^1.7.2",
     "decode-html": "^2.0.0",
     "dotenv": "^8.1.0",
-    "koa": "^2.8.1",
+    "koa": "^2.8.2",
     "koa-proxy": "^1.0.0-alpha.3",
     "koa-static": "^5.0.0",
     "mastodon": "^1.2.2",
