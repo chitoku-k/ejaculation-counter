@@ -6,7 +6,7 @@
   "dependencies": {
     "cron": "^1.7.2",
     "decode-html": "^2.0.0",
-    "dotenv": "^8.1.0",
+    "dotenv": "^8.2.0",
     "koa": "^2.10.0",
     "koa-proxy": "^1.0.0-alpha.3",
     "koa-static": "^5.0.0",
