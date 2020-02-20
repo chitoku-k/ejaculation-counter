@@ -57,7 +57,7 @@ exports.ShikoStream = class ShikoStream {
             mergeMap(toot => from(this.actions).pipe(
                 map(action => ({
                     match: action.regex.exec(toot.content),
-                    emoji: action.emoji && action.emoji.findIndex(x => toot.emojis.some(e => x === e.shortcode)),
+                    emoji: action.emoji && action.emoji.findIndex(x => toot.emojis.some(e => x === e.shortcode && toot.content.includes(`:${e.shortcode}:`))),
                     action,
                     toot,
                 })),
