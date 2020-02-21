@@ -12,7 +12,7 @@
     "koa-static": "^5.0.0",
     "mastodon": "^1.2.2",
     "mysql": "^2.18.1",
-    "p-queue": "^6.2.1",
+    "p-queue": "^6.3.0",
     "request-promise": "^4.2.5",
     "rxjs": "^6.5.4",
     "striptags": "^3.1.1",
