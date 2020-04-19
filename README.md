@@ -44,36 +44,55 @@ CREATE TABLE `users` (
 環境変数に値の設定を行います。
 
 ```bash
-# ぴゅっぴゅユーザー ID（数値）
-SHIKO_USER=
+# DB ユーザー ID（数値）
+USER_ID=
 
 # Mastodon ユーザー ID（数値、スペース区切り）
-MASTODON_ID=
-
-# Mastodon アプリケーション名
-MASTODON_APP=
+MASTODON_USER_ID=
 
 # Mastodon ユーザー トークン
 MASTODON_ACCESS_TOKEN=
 
-# データベース 接続先
-MYSQL_HOST=
-MYSQL_DATABASE=
+# Mastodon サーバー URL
+MASTODON_SERVER_URL=
 
 # データベース 接続情報
-MYSQL_USER=
-MYSQL_PASSWORD=
+DB_HOST=
+DB_DATABASE=
+DB_USER=
+DB_PASSWORD=
+
+# メッセージキュー 接続情報
+MQ_HOST=
+MQ_USERNAME=
+MQ_PASSWORD=
 ```
 
-## 動作環境
+## 本番環境
 
-- Node.js 8 以上
-- MySQL 互換の RDBMS
+Docker のインストールが必要です。  
+nginx + RabbitMQ + MySQL + Go App で構成されています。
 
-## 実行
+### ビルド
 
-環境変数を `.env` として保存して次のコマンドを実行します。
+```sh
+$ docker build .
 
-```bash
-$ npm start
+$ pushd reactor/
+$ docker build .
+$ popd
+
+$ pushd supplier/
+$ docker build .
+$ popd
+```
+
+## 開発環境
+
+Docker Compose のインストールが必要です。
+
+### 実行
+
+```sh
+$ docker-compose up -d
 ```

@@ -23,7 +23,7 @@ h1#title {
 
 .graph-container iframe {
     width: 100%;
-    height: 660px;
+    height: 632px;
 }
 
 @media (max-width: 816px) {
