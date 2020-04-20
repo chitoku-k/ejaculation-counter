@@ -1,0 +1,31 @@
+name: CI Workflow
+on:
+  - push
+
+jobs:
+  web-build:
+    name: Web Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build web
+        run: docker build .
+  supplier-build:
+    name: Supplier Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build supplier
+        run: docker build .
+        working-directory: supplier
+  reactor-build:
+    name: Reactor Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build reactor
+        run: docker build .
+        working-directory: reactor

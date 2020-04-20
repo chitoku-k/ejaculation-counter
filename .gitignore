@@ -1,15 +1,25 @@
-# Created by https://www.gitignore.io/api/node
+# Created by https://www.gitignore.io/api/go
+# Edit at https://www.gitignore.io/?templates=go
 
-### Env ###
-.env
+### Go ###
+# Binaries for programs and plugins
+/reactor/reactor
+/supplier/supplier
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-### Node ###
-# Logs
-logs
-*.log
-npm-debug.log*
+# Test binary, built with `go test -c`
+*.test
 
-# Dependency directory
-# https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
-node_modules
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+### Go Patch ###
+/vendor/
+/Godeps/

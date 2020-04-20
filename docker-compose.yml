@@ -1,29 +1,53 @@
-version: "2.1"
+version: '3'
 
 services:
-  app:
-    image: node:12.6
+  supplier:
+    image: golang:1.14-stretch
+    command: bash -c 'go build -o /usr/bin && /usr/bin/supplier'
     working_dir: /usr/src/app
-    command: npm start
-    ports:
-      - "${EJACULATION_PORT-3000}:3000"
     environment:
-      TZ:
-      SHIKO_USER: 1
-      MYSQL_HOST: database
-      MYSQL_DATABASE: ejaculation
-      MYSQL_USER: shiko
-      MYSQL_PASSWORD: shiko
-      MASTODON_ID:
-      MASTODON_API_URL:
-      MASTODON_WSS_URL:
+      TZ: Asia/Tokyo
+      MASTODON_USER_ID:
       MASTODON_ACCESS_TOKEN:
-      MASTODON_APP:
+      MASTODON_SERVER_URL:
+      MQ_HOST: amqp://mq
+      MQ_USERNAME: shiko
+      MQ_PASSWORD: shiko
+      REACTOR_HOST: reactor
+      PORT: 80
     volumes:
-      - .:/usr/src/app
+      - ./supplier:/usr/src/app
+
+  reactor:
+    image: golang:1.14-stretch
+    command: bash -c 'go build -o /usr/bin && /usr/bin/reactor'
+    working_dir: /usr/src/app
+    environment:
+      USER_ID: 1
+      TZ: Asia/Tokyo
+      DB_HOST: database
+      DB_DATABASE: ejaculation
+      DB_USERNAME: shiko
+      DB_PASSWORD: shiko
+      MASTODON_ACCESS_TOKEN:
+      MASTODON_SERVER_URL:
+      MQ_HOST: amqp://mq
+      MQ_USERNAME: shiko
+      MQ_PASSWORD: shiko
+      PORT: 80
+    volumes:
+      - ./reactor:/usr/src/app
+
+  web:
+    image: nginx:1.17
+    ports:
+      - "${COUNTER_PORT-8080}:80"
+    volumes:
+      - ./public:/var/www/html
+      - ./conf:/etc/nginx/conf.d
 
   grafana:
-    image: grafana/grafana:6.3.3
+    image: grafana/grafana:6.7.2
     environment:
       TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
@@ -35,6 +59,14 @@ services:
     volumes:
       - grafana:/var/lib/grafana
 
+  mq:
+    image: rabbitmq:3.8-management
+    environment:
+      RABBITMQ_DEFAULT_USER: shiko
+      RABBITMQ_DEFAULT_PASS: shiko
+    volumes:
+      - mq:/var/lib/rabbitmq
+
   database:
     image: mysql:8.0
     command: [--character-set-server=utf8, --default-authentication-plugin=mysql_native_password]
@@ -42,6 +74,7 @@ services:
       - ./database:/docker-entrypoint-initdb.d
       - database:/var/lib/mysql
     environment:
+      TZ:
       MYSQL_DATABASE: ejaculation
       MYSQL_USER: shiko
       MYSQL_PASSWORD: shiko
@@ -49,6 +82,8 @@ services:
 
 volumes:
   grafana:
+    driver: local
+  mq:
     driver: local
   database:
     driver: local

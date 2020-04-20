@@ -1,0 +1,11 @@
+Dockerfile
+LICENSE
+README.md
+database
+doc
+docker-compose.yml
+grafana.json
+reactor
+supplier
+.git
+.gitignore
