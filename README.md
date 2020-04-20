@@ -113,3 +113,15 @@ Docker Compose のインストールが必要です。
 ```sh
 $ docker-compose up -d
 ```
+
+## メトリクス
+
+以下のコンポーネントは Prometheus のエンドポイントを実装しています。
+
+### Supplier
+
+`GET /metrics`
+
+### Reactor
+
+`GET /metrics`
