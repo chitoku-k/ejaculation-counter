@@ -8,5 +8,6 @@ ENV GIN_MODE release
 ENV PORT 80
 COPY --from=build /usr/src/reactor /reactor
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 EXPOSE 80
 CMD ["/reactor"]
