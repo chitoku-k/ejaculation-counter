@@ -1,6 +1,8 @@
 ぴゅっぴゅカウンター
 ====================
 
+[![][workflow-badge]][workflow-link]
+
 [ぴゅっぴゅカウンター](https://xn--y2wx43a.chitoku.jp) はぴゅっぴゅ回数をカウントして毎日真夜中にトゥートします。
 
 ## 機能
@@ -125,3 +127,6 @@ $ docker-compose up -d
 ### Reactor
 
 `GET /metrics`
+
+[workflow-link]:    https://github.com/chitoku-k/ejaculation-counter/actions?query=branch:master
+[workflow-badge]:   https://img.shields.io/github/workflow/status/chitoku-k/ejaculation-counter/CI%20Workflow/master.svg?style=flat-square
