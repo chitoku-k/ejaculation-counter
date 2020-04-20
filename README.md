@@ -26,6 +26,19 @@
 
 <img src="doc/architecture.png" alt="" width="623" />
 
+### Web
+
+Grafana または REST API へのリクエストの振り分けを行います。
+
+### Supplier
+
+Mastodon から WebSocket でトゥートを取得し、イベントに変換して MQ へ送信します。
+
+### Reactor
+
+MQ からイベントを受信し、Mastodon でのリプライ送信や DB の更新などの処理を行います。  
+また、REST API を実装しています。
+
 ## 設定方法
 
 データベースの作成とテーブルの設定を行います。
