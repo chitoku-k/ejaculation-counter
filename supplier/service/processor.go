@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"log"
 	"sort"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -65,13 +65,13 @@ func (ps *processor) Execute() {
 				EventsTotal.WithLabelValues(event.Name(), "").Inc()
 				err := ps.Queue.Write(event)
 				if err != nil {
-					log.Println("Error in queueing: " + err.Error())
+					logrus.Errorln("Error in queueing: " + err.Error())
 					continue
 				}
 
 			case status := <-stream:
 				if status.Error != nil {
-					log.Println("Error in streaming: " + status.Error.Error())
+					logrus.Errorln("Error in streaming: " + status.Error.Error())
 					continue
 				}
 
@@ -88,7 +88,7 @@ func (ps *processor) Execute() {
 
 					event, index, err := action.Event(status.Message)
 					if err != nil {
-						log.Println("Error in processing " + action.Name() + ": " + err.Error())
+						logrus.Errorln("Error in processing " + action.Name() + ": " + err.Error())
 						EventsErrorTotal.WithLabelValues(action.Name()).Inc()
 						continue
 					}
@@ -104,7 +104,7 @@ func (ps *processor) Execute() {
 				for _, r := range result {
 					err := ps.Queue.Write(r.Event)
 					if err != nil {
-						log.Println("Error in queueing: " + err.Error())
+						logrus.Errorln("Error in queueing: " + err.Error())
 						continue
 					}
 

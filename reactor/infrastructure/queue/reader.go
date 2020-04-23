@@ -3,13 +3,13 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"log"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -108,6 +108,10 @@ func (r *reader) connect() error {
 	return err
 }
 
+func (r *reader) disconnect() error {
+	return errors.Wrap(r.Channel.Close(), "failed to close the MQ channel")
+}
+
 func (r *reader) Consume() (<-chan service.Event, error) {
 	ch := make(chan service.Event)
 
@@ -115,6 +119,7 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 		for {
 			select {
 			case <-r.ctx.Done():
+				r.disconnect()
 				return
 
 			case message := <-r.Delivery:
@@ -125,7 +130,7 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 					var event service.ReplyEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						log.Println("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
 						continue
 					}
 					ch <- &event
@@ -134,7 +139,7 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 					var event service.UpdateEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						log.Println("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
 						continue
 					}
 					ch <- &event
@@ -143,7 +148,7 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 					var event service.IncrementEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						log.Println("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
 						continue
 					}
 					ch <- &event
@@ -152,7 +157,7 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 					var event service.AdministrationEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						log.Println("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
 						continue
 					}
 					ch <- &event

@@ -107,13 +107,7 @@ func (w *writer) connect() error {
 
 func (w *writer) disconnect() error {
 	<-w.Confirmations
-
-	err := w.Channel.Close()
-	if err != nil {
-		return errors.Wrap(err, "failed to close the MQ channel")
-	}
-
-	return nil
+	return errors.Wrap(w.Channel.Close(), "failed to close the MQ channel")
 }
 
 func (w *writer) Publish(event service.Event) error {
