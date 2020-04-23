@@ -89,7 +89,7 @@ func (ps *processor) Execute() {
 					event, index, err := action.Event(status.Message)
 					if err != nil {
 						log.Println("Error in processing " + action.Name() + ": " + err.Error())
-						EventsErrorTotal.WithLabelValues(action.Name())
+						EventsErrorTotal.WithLabelValues(action.Name()).Inc()
 						continue
 					}
 
