@@ -75,7 +75,7 @@ func (r *reader) connect() error {
 
 	q, err := r.Channel.QueueDeclare(
 		r.QueueName,
-		false,
+		true,
 		false,
 		false,
 		false,
