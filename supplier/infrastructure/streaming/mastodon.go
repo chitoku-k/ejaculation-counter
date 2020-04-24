@@ -144,6 +144,8 @@ func (m *mastodon) Run() <-chan service.MessageStatus {
 					ch <- service.MessageStatus{
 						Error: e,
 					}
+					close(stream)
+					break
 				}
 			}
 		}
