@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"html"
-	"log"
 	"math"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -110,7 +110,7 @@ func (m *mastodon) Run() <-chan service.MessageStatus {
 						float64(ReconnectMax),
 					),
 				)
-				log.Printf("Reconnecting in %v...\n", reconnect)
+				logrus.Infof("Reconnecting in %v...\n", reconnect)
 				StreamingRetryTotal.Inc()
 				<-time.Tick(reconnect)
 				continue

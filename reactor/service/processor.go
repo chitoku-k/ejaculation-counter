@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"log"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type processor struct {
@@ -55,33 +55,33 @@ func (ps *processor) Execute() error {
 				case *ReplyEvent:
 					err = ps.Reply.Send(*e)
 					if err != nil {
-						log.Printf("Failed to send reply: " + err.Error())
+						logrus.Errorln("Failed to send reply: " + err.Error())
 						continue
 					}
 
 				case *IncrementEvent:
 					err = ps.Increment.Do(*e)
 					if err != nil {
-						log.Printf("Failed to update increment: " + err.Error())
+						logrus.Errorln("Failed to update increment: " + err.Error())
 						continue
 					}
 
 				case *UpdateEvent:
 					err = ps.Update.Do(*e)
 					if err != nil {
-						log.Println("Failed to update: " + err.Error())
+						logrus.Errorln("Failed to update: " + err.Error())
 						continue
 					}
 
 				case *AdministrationEvent:
 					err = ps.Administration.Do(*e)
 					if err != nil {
-						log.Println("Failed to execute administrative operation: " + err.Error())
+						logrus.Errorln("Failed to execute administrative operation: " + err.Error())
 						continue
 					}
 
 				case *ErrorEvent:
-					log.Println("ErrorEvent: " + e.Raw)
+					logrus.Errorln("ErrorEvent: " + e.Raw)
 				}
 			}
 		}
