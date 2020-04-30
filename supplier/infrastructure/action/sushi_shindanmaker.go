@@ -56,6 +56,10 @@ func (ss *sushiShindanmaker) Target(message service.Message) bool {
 
 func (ss *sushiShindanmaker) Event(message service.Message) (service.Event, int, error) {
 	index := SushiRegex.FindStringIndex(message.Content)
+	if index == nil {
+		index = make([]int, 2)
+	}
+
 	result, err := ss.Client.Do(ss.Client.Name(message.Account), "https://shindanmaker.com/a/577901")
 	if err != nil {
 		return nil, index[0], errors.Wrap(err, "failed to create event")
