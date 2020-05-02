@@ -53,7 +53,12 @@ func NewProcessor(
 
 func (ps *processor) Execute() {
 	go func() {
-		stream := ps.Streaming.Run()
+		stream, err := ps.Streaming.Run()
+		if err != nil {
+			logrus.Errorln("Error in starting streaming: " + err.Error())
+			return
+		}
+
 		scheduler := ps.Scheduler.Start()
 
 		for {
