@@ -40,6 +40,6 @@ jobs:
           k8s-secret: ${{ secrets.K8S_SECRET }}
       - name: Rollout restart
         run: |
-          kubectl rollout restart deployment/ejaculation-counter-web --insecure-skip-tls-verify=true
-          kubectl rollout restart deployment/ejaculation-counter-supplier --insecure-skip-tls-verify=true
-          kubectl rollout restart deployment/ejaculation-counter-reactor --insecure-skip-tls-verify=true
+          kubectl rollout restart deployment/ejaculation-counter-web
+          kubectl rollout restart deployment/ejaculation-counter-supplier
+          kubectl rollout restart deployment/ejaculation-counter-reactor
