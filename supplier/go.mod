@@ -4,7 +4,8 @@ go 1.14
 
 require (
 	github.com/gin-gonic/gin v1.6.2
-	github.com/mattn/go-mastodon v0.0.4
+	github.com/gorilla/websocket v1.4.2
+	github.com/mattn/go-mastodon v0.0.5-0.20200302023913-3e91c76504df
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.6.0

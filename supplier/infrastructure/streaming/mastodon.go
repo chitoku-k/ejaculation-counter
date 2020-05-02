@@ -2,26 +2,32 @@ package streaming
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html"
 	"math"
+	"net/url"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
+	"github.com/gorilla/websocket"
 	mast "github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	StreamingMessageTotal = promauto.NewCounter(prometheus.CounterOpts{
+	StreamingMessageTotal = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "ejaculation_counter",
 		Name:      "streaming_message_total",
 		Help:      "Total number of messages from streaming.",
-	})
+	}, []string{"server"})
 	StreamingRetryTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: "ejaculation_counter",
 		Name:      "streaming_retry_total",
@@ -32,6 +38,7 @@ var (
 const (
 	ReconnectInitial = 5 * time.Second
 	ReconnectMax     = 320 * time.Second
+	ServerHeader     = "X-Served-Server"
 )
 
 type mastodon struct {
@@ -83,10 +90,22 @@ func convertTags(tags []mast.Tag) []service.Tag {
 	return result
 }
 
-func (m *mastodon) Run() <-chan service.MessageStatus {
+func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 	reconnect := ReconnectInitial
 	ch := make(chan service.MessageStatus)
-	wsc := m.Client.NewWSClient()
+
+	params := url.Values{}
+	params.Set("access_token", m.Client.Config.AccessToken)
+	params.Set("stream", "user")
+
+	u, err := url.Parse(m.Client.Config.Server)
+	if err != nil {
+		close(ch)
+		return ch, errors.Wrap(err, "failed to parse server URL")
+	}
+	u.Scheme = strings.ReplaceAll(u.Scheme, "http", "ws")
+	u.Path = path.Join(u.Path, "/api/v1/streaming")
+	u.RawQuery = params.Encode()
 
 	go func() {
 		defer close(ch)
@@ -96,7 +115,7 @@ func (m *mastodon) Run() <-chan service.MessageStatus {
 				return
 			}
 
-			stream, err := wsc.StreamingWSUser(m.ctx)
+			conn, res, err := websocket.DefaultDialer.DialContext(m.ctx, u.String(), nil)
 			if err != nil {
 				ch <- service.MessageStatus{
 					Error: err,
@@ -110,46 +129,69 @@ func (m *mastodon) Run() <-chan service.MessageStatus {
 						float64(ReconnectMax),
 					),
 				)
-				logrus.Infof("Reconnecting in %v...\n", reconnect)
+				logrus.Infof("Reconnecting in %v...", reconnect)
 				StreamingRetryTotal.Inc()
 				<-time.Tick(reconnect)
 				continue
 			}
 
 			reconnect = ReconnectInitial
-			for event := range stream {
-				switch e := event.(type) {
-				case *mast.UpdateEvent:
-					StreamingMessageTotal.Inc()
-					ch <- service.MessageStatus{
-						Message: service.Message{
-							ID: string(e.Status.ID),
-							Account: service.Account{
-								ID:          string(e.Status.Account.ID),
-								Acct:        e.Status.Account.Acct,
-								DisplayName: e.Status.Account.DisplayName,
-								Username:    e.Status.Account.Username,
-							},
-							CreatedAt:   e.Status.CreatedAt,
-							Content:     convertContent(e.Status.Content),
-							Emojis:      convertEmojis(e.Status.Emojis),
-							InReplyToID: fmt.Sprint(e.Status.InReplyToID),
-							IsReblog:    e.Status.Reblog != nil,
-							Tags:        convertTags(e.Status.Tags),
-							Visibility:  e.Status.Visibility,
-						},
-					}
+			server := res.Header.Get(ServerHeader)
+			if server != "" {
+				logrus.Infof("Connected to %s", server)
+			}
 
-				case *mast.ErrorEvent:
+			for {
+				var stream mast.Stream
+				err = conn.ReadJSON(&stream)
+				if err != nil {
 					ch <- service.MessageStatus{
-						Error: e,
+						Error: err,
 					}
-					close(stream)
+					err = conn.Close()
+					if err != nil {
+						ch <- service.MessageStatus{
+							Error: err,
+						}
+					}
 					break
+				}
+
+				if stream.Event != "update" {
+					continue
+				}
+
+				var status mast.Status
+				err = json.Unmarshal([]byte(stream.Payload.(string)), &status)
+				if err != nil {
+					ch <- service.MessageStatus{
+						Error: err,
+					}
+					continue
+				}
+
+				StreamingMessageTotal.WithLabelValues(server).Inc()
+				ch <- service.MessageStatus{
+					Message: service.Message{
+						ID: string(status.ID),
+						Account: service.Account{
+							ID:          string(status.Account.ID),
+							Acct:        status.Account.Acct,
+							DisplayName: status.Account.DisplayName,
+							Username:    status.Account.Username,
+						},
+						CreatedAt:   status.CreatedAt,
+						Content:     convertContent(status.Content),
+						Emojis:      convertEmojis(status.Emojis),
+						InReplyToID: fmt.Sprint(status.InReplyToID),
+						IsReblog:    status.Reblog != nil,
+						Tags:        convertTags(status.Tags),
+						Visibility:  status.Visibility,
+					},
 				}
 			}
 		}
 	}()
 
-	return ch
+	return ch, nil
 }
