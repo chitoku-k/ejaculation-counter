@@ -3,6 +3,8 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"math"
+	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
@@ -11,6 +13,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
+)
+
+const (
+	ReconnectInitial = 5 * time.Second
+	ReconnectMax     = 320 * time.Second
 )
 
 var (
@@ -117,10 +124,15 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 
 	go func() {
 		for {
+			reconnect := ReconnectInitial
+
 			select {
 			case <-r.ctx.Done():
 				r.disconnect()
 				return
+
+			case err := <-r.Channel.NotifyClose(make(chan *amqp.Error)):
+				logrus.Errorf("Channel closed: %v", err.Error())
 
 			case message := <-r.Delivery:
 				DeliveredMessageTotal.WithLabelValues(message.Type).Inc()
@@ -166,6 +178,28 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 					ch <- &service.ErrorEvent{
 						Raw: string(message.Body),
 					}
+				}
+
+				continue
+			}
+
+			for {
+				reconnect = time.Duration(
+					math.Min(
+						math.Max(
+							float64(reconnect*2),
+							float64(ReconnectInitial),
+						),
+						float64(ReconnectMax),
+					),
+				)
+				logrus.Infof("Reconnecting in %v...", reconnect)
+				<-time.Tick(reconnect)
+
+				r.disconnect()
+				err := r.connect()
+				if err == nil {
+					break
 				}
 			}
 		}
