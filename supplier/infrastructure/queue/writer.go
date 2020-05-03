@@ -47,6 +47,11 @@ func NewWriter(
 		Environment: environment,
 	}
 
+	go func() {
+		<-w.ctx.Done()
+		w.disconnect()
+	}()
+
 	return w, w.connect()
 }
 
@@ -88,11 +93,6 @@ func (w *writer) connect() error {
 	}
 
 	go func() {
-		<-w.ctx.Done()
-		w.disconnect()
-	}()
-
-	go func() {
 		for {
 			_, ok := <-w.Confirmations
 			if !ok {
@@ -116,20 +116,34 @@ func (w *writer) Publish(event service.Event) error {
 		return errors.Wrap(err, "failed to marshal event")
 	}
 
-	err = w.Channel.Publish(
+	return w.publish(event.Name(), body, true)
+}
+
+func (w *writer) publish(name string, body []byte, retry bool) error {
+	err := w.Channel.Publish(
 		w.Exchange,
 		w.RoutingKey,
 		false,
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
-			Type:        event.Name(),
+			Type:        name,
 			Body:        body,
 		},
 	)
 	QueuedMessageTotal.Inc()
 
 	if err != nil {
+		var errs []error
+		if retry {
+			w.disconnect()
+			errs = append(errs, w.connect())
+			errs = append(errs, w.publish(name, body, false))
+			if errs == nil {
+				return nil
+			}
+		}
+
 		QueuedMessageErrorTotal.Inc()
 		return errors.Wrap(err, "failed to publish message")
 	}
