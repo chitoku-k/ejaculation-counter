@@ -16,7 +16,7 @@ import (
 var (
 	NameRegex          = regexp.MustCompile(`([$\\]{?\d+)`)
 	ShindanNameRegex   = regexp.MustCompile(`(@.+|[\(（].+[\)）])$`)
-	ShindanResultRegex = regexp.MustCompile(`<textarea id="copy_text_140"(?:[^>]+)>([\s\S]*)<\/textarea>`)
+	ShindanResultRegex = regexp.MustCompile(`<textarea id="copy_text_140"(?:[^>]+)>([\s\S]*?)<\/textarea>`)
 )
 
 type shindanmaker struct {
