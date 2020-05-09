@@ -96,7 +96,7 @@ func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 
 	params := url.Values{}
 	params.Set("access_token", m.Client.Config.AccessToken)
-	params.Set("stream", "user")
+	params.Set("stream", m.Environment.Mastodon.Stream)
 
 	u, err := url.Parse(m.Client.Config.Server)
 	if err != nil {
