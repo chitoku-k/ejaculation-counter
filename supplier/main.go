@@ -63,6 +63,7 @@ func main() {
 		action.NewBattleChimpoShindanmaker(shindan),
 		action.NewChimpoChallengeShindanmaker(shindan),
 		action.NewChimpoInsertionChallengeShindanmaker(shindan),
+		action.NewChimpoMatchingShindanmaker(shindan),
 		action.NewLawChallengeShindanmaker(shindan),
 		action.NewOfutonManagerShindanmaker(shindan),
 		action.NewPyuppyuManagerShindanmaker(shindan),
