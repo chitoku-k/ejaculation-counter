@@ -10,6 +10,7 @@ services:
       MASTODON_USER_ID:
       MASTODON_ACCESS_TOKEN:
       MASTODON_SERVER_URL:
+      MASTODON_STREAM: direct
       MQ_HOST: amqp://mq
       MQ_USERNAME: shiko
       MQ_PASSWORD: shiko

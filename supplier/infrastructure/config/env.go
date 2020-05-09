@@ -19,6 +19,7 @@ type Environment struct {
 type Mastodon struct {
 	UserID      string
 	ServerURL   string
+	Stream      string
 	AccessToken string
 }
 
@@ -39,6 +40,7 @@ func Get() (Environment, error) {
 	for k, v := range map[string]*string{
 		"MASTODON_USER_ID":      &env.Mastodon.UserID,
 		"MASTODON_SERVER_URL":   &env.Mastodon.ServerURL,
+		"MASTODON_STREAM":       &env.Mastodon.Stream,
 		"MASTODON_ACCESS_TOKEN": &env.Mastodon.AccessToken,
 		"MQ_HOST":               &env.Queue.Host,
 		"MQ_USERNAME":           &env.Queue.Username,
