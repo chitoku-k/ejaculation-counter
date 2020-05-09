@@ -76,6 +76,10 @@ MASTODON_ACCESS_TOKEN=
 # Mastodon サーバー URL
 MASTODON_SERVER_URL=
 
+# Mastodon ストリーム
+# 設定値: https://docs.joinmastodon.org/methods/timelines/streaming/#websocket-a-idwebsocketa
+MASTODON_STREAM=user
+
 # データベース 接続情報
 DB_HOST=
 DB_DATABASE=
