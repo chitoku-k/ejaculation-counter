@@ -84,7 +84,6 @@ var _ = Describe("Mastodon", func() {
 
 				It("succeeds and eventually exits", func() {
 					actual, err := mastodon.Run()
-					Expect(actual).NotTo(BeClosed())
 					Expect(err).NotTo(HaveOccurred())
 					Eventually(actual).Should(BeClosed())
 				})
@@ -124,7 +123,6 @@ var _ = Describe("Mastodon", func() {
 
 					It("returns channel and eventually exits", func() {
 						actual, err := mastodon.Run()
-						Expect(actual).NotTo(BeClosed())
 						Expect(err).NotTo(HaveOccurred())
 
 						Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -162,9 +160,7 @@ var _ = Describe("Mastodon", func() {
 
 						It("returns channel and eventually exits", func() {
 							actual, err := mastodon.Run()
-							Expect(actual).NotTo(BeClosed())
 							Expect(err).NotTo(HaveOccurred())
-
 							Eventually(actual).Should(BeClosed())
 						})
 					})
@@ -185,7 +181,6 @@ var _ = Describe("Mastodon", func() {
 
 								It("sends error and eventually exits", func() {
 									actual, err := mastodon.Run()
-									Expect(actual).NotTo(BeClosed())
 									Expect(err).NotTo(HaveOccurred())
 
 									Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -209,7 +204,6 @@ var _ = Describe("Mastodon", func() {
 
 								It("sends error and eventually exits", func() {
 									actual, err := mastodon.Run()
-									Expect(actual).NotTo(BeClosed())
 									Expect(err).NotTo(HaveOccurred())
 
 									Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -243,9 +237,7 @@ var _ = Describe("Mastodon", func() {
 
 								It("eventually exits", func() {
 									actual, err := mastodon.Run()
-									Expect(actual).NotTo(BeClosed())
 									Expect(err).NotTo(HaveOccurred())
-
 									Eventually(actual).Should(BeClosed())
 								})
 							})
@@ -270,7 +262,6 @@ var _ = Describe("Mastodon", func() {
 
 									It("sends status and eventually exits", func() {
 										actual, err := mastodon.Run()
-										Expect(actual).NotTo(BeClosed())
 										Expect(err).NotTo(HaveOccurred())
 
 										Eventually(actual).Should(Receive(WithTransform(func(m service.MessageStatus) error {
@@ -331,7 +322,6 @@ var _ = Describe("Mastodon", func() {
 
 									It("sends status and eventually exits", func() {
 										actual, err := mastodon.Run()
-										Expect(actual).NotTo(BeClosed())
 										Expect(err).NotTo(HaveOccurred())
 
 										Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -417,7 +407,6 @@ var _ = Describe("Mastodon", func() {
 
 						It("returns channel and eventually exits", func() {
 							actual, err := mastodon.Run()
-							Expect(actual).NotTo(BeClosed())
 							Expect(err).NotTo(HaveOccurred())
 
 							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -494,7 +483,6 @@ var _ = Describe("Mastodon", func() {
 
 						It("returns channel and eventually exits", func() {
 							actual, err := mastodon.Run()
-							Expect(actual).NotTo(BeClosed())
 							Expect(err).NotTo(HaveOccurred())
 
 							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -589,7 +577,6 @@ var _ = Describe("Mastodon", func() {
 
 						It("returns channel and eventually exits", func() {
 							actual, err := mastodon.Run()
-							Expect(actual).NotTo(BeClosed())
 							Expect(err).NotTo(HaveOccurred())
 
 							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
