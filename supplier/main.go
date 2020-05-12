@@ -16,7 +16,9 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/queue"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/scheduler"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/streaming"
+	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 )
 
@@ -43,21 +45,26 @@ func main() {
 
 	rand.Seed(time.Now().Unix())
 
-	shindan := client.NewShindanmaker(*http.DefaultClient)
-	through := client.NewThrough(*http.DefaultClient)
-	mpyw := client.NewMpyw(*http.DefaultClient)
+	shindan := client.NewShindanmaker(http.DefaultClient)
+	through := client.NewThrough(http.DefaultClient)
+	mpyw := client.NewMpyw(http.DefaultClient)
 
 	s, err := scheduler.New(env)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to initialize scheduler"))
 	}
 
-	mastodon := streaming.NewMastodon(ctx, env)
+	mastodon := streaming.NewMastodon(
+		ctx,
+		env,
+		wrapper.NewDialer(websocket.DefaultDialer),
+		wrapper.NewTicker(),
+	)
 	qs := service.NewQueue(writer)
 	ps := service.NewProcessor(ctx, s, mastodon, qs, []service.Action{
-		action.NewOfufutonChallenge(),
+		action.NewOfufutonChallenge(rand.New(rand.NewSource(1))),
 		action.NewDB(env),
-		action.NewPyuUpdateShindanmaker(env),
+		action.NewPyuUpdate(env),
 		action.NewMpyw(mpyw),
 		action.NewAVShindanmaker(shindan),
 		action.NewBattleChimpoShindanmaker(shindan),

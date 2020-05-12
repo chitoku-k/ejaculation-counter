@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
+	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/gorilla/websocket"
 	mast "github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
@@ -36,6 +36,7 @@ var (
 )
 
 const (
+	ReconnectNone    = 0 * time.Second
 	ReconnectInitial = 5 * time.Second
 	ReconnectMax     = 320 * time.Second
 	ServerHeader     = "X-Served-Server"
@@ -45,9 +46,16 @@ type mastodon struct {
 	ctx         context.Context
 	Environment config.Environment
 	Client      *mast.Client
+	Dialer      wrapper.Dialer
+	Ticker      wrapper.Ticker
 }
 
-func NewMastodon(ctx context.Context, environment config.Environment) service.Streaming {
+func NewMastodon(
+	ctx context.Context,
+	environment config.Environment,
+	dialer wrapper.Dialer,
+	ticker wrapper.Ticker,
+) service.Streaming {
 	return &mastodon{
 		ctx:         ctx,
 		Environment: environment,
@@ -55,6 +63,8 @@ func NewMastodon(ctx context.Context, environment config.Environment) service.St
 			Server:      environment.Mastodon.ServerURL,
 			AccessToken: environment.Mastodon.AccessToken,
 		}),
+		Dialer: dialer,
+		Ticker: ticker,
 	}
 }
 
@@ -91,7 +101,7 @@ func convertTags(tags []mast.Tag) []service.Tag {
 }
 
 func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
-	reconnect := ReconnectInitial
+	reconnect := ReconnectNone
 	ch := make(chan service.MessageStatus)
 
 	params := url.Values{}
@@ -115,7 +125,7 @@ func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 				return
 			}
 
-			conn, res, err := websocket.DefaultDialer.DialContext(m.ctx, u.String(), nil)
+			conn, res, err := m.Dialer.DialContext(m.ctx, u.String(), nil)
 			if err != nil {
 				ch <- service.MessageStatus{
 					Error: err,
@@ -131,17 +141,27 @@ func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 				)
 				logrus.Infof("Reconnecting in %v...", reconnect)
 				StreamingRetryTotal.Inc()
-				<-time.Tick(reconnect)
+				<-m.Ticker.Tick(reconnect)
 				continue
 			}
 
-			reconnect = ReconnectInitial
+			defer func() {
+				if conn != nil {
+					conn.Close()
+				}
+			}()
+
+			reconnect = ReconnectNone
 			server := res.Header.Get(ServerHeader)
 			if server != "" {
 				logrus.Infof("Connected to %s", server)
 			}
 
 			for {
+				if m.ctx.Err() != nil {
+					return
+				}
+
 				var stream mast.Stream
 				err = conn.ReadJSON(&stream)
 				if err != nil {
@@ -154,6 +174,7 @@ func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 							Error: err,
 						}
 					}
+					conn = nil
 					break
 				}
 

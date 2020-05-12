@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/application/server"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/actions"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/hardcoding"

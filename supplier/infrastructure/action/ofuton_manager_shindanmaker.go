@@ -11,20 +11,25 @@ import (
 
 var (
 	OfutonManagerRegex = regexp.MustCompile(`ふとん(し|(入|はい|い|行|潜|もぐ)っ)ても?[いよ良]い[?？]`)
-	OfutonRules        = map[string]string{
-		"しこしこして":  "もふもふさせて",
-		"しこしこ":    "もふもふ",
-		"しゅっしゅ":   "もふもふ",
-		"ぴゅっぴゅって": "もふもふって",
-		"ぴゅっぴゅ":   "おふとん",
-		"いじるの":    "おふとん",
-		"ちんちん":    "おふとん",
-		"おちんちん":   "おふとん",
-		"出せる":     "もふもふできる",
-		"出し":      "もふもふし",
-		"手の平に":    "朝まで",
+	OfutonRules        = []OfutonRule{
+		{"しこしこして", "もふもふさせて"},
+		{"しこしこ", "もふもふ"},
+		{"しゅっしゅ", "もふもふ"},
+		{"ぴゅっぴゅって", "もふもふって"},
+		{"ぴゅっぴゅ", "おふとん"},
+		{"いじるの", "おふとん"},
+		{"おちんちん", "おふとん"},
+		{"ちんちん", "おふとん"},
+		{"出せる", "もふもふできる"},
+		{"出し", "もふもふし"},
+		{"手の平に", "朝まで"},
 	}
 )
+
+type OfutonRule struct {
+	Before string
+	After  string
+}
 
 type ofutonManagerShindanmaker struct {
 	Client client.Shindanmaker
@@ -51,8 +56,8 @@ func (os *ofutonManagerShindanmaker) Event(message service.Message) (service.Eve
 		return nil, index[0], errors.Wrap(err, "failed to create event")
 	}
 
-	for k, v := range OfutonRules {
-		result = strings.ReplaceAll(result, k, v)
+	for _, rule := range OfutonRules {
+		result = strings.ReplaceAll(result, rule.Before, rule.After)
 	}
 
 	event := service.ReplyEvent{

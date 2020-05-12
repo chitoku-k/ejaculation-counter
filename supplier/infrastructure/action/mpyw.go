@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	MpywRegex = regexp.MustCompile(`(?:mpyw|まっぴー|実務経験)(?:\s*(\d+)\s*連)?(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]`)
+	MpywRegex = regexp.MustCompile(`(?:mpyw\s*|まっぴー|実務経験)(?:\s*(\d+)\s*連)?(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]`)
 )
 
 type mpyw struct {

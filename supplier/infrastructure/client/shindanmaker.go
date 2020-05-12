@@ -1,26 +1,28 @@
+//go:generate mockgen -source=shindanmaker.go -destination=shindanmaker_mock.go -package=client -self_package=github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client
+
 package client
 
 import (
 	"bytes"
 	"html"
 	"io"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 
+	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/pkg/errors"
 )
 
 var (
-	NameRegex          = regexp.MustCompile(`([$\\]{?\d+)`)
-	ShindanNameRegex   = regexp.MustCompile(`(@.+|[\(（].+[\)）])$`)
+	NameRegex          = regexp.MustCompile(`[$\\]{?\d+`)
+	ShindanNameRegex   = regexp.MustCompile(`[@＠].+|[\(（].+[\)）]`)
 	ShindanResultRegex = regexp.MustCompile(`<textarea id="copy_text_140"(?:[^>]+)>([\s\S]*?)<\/textarea>`)
 )
 
 type shindanmaker struct {
-	Client http.Client
+	Client wrapper.HttpClient
 }
 
 type Shindanmaker interface {
@@ -28,7 +30,7 @@ type Shindanmaker interface {
 	Name(account service.Account) string
 }
 
-func NewShindanmaker(client http.Client) Shindanmaker {
+func NewShindanmaker(client wrapper.HttpClient) Shindanmaker {
 	return &shindanmaker{
 		Client: client,
 	}
@@ -43,8 +45,11 @@ func (s *shindanmaker) Name(account service.Account) string {
 }
 
 func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
-	name = NameRegex.ReplaceAllString(name, "\\$1")
-	name = ShindanNameRegex.ReplaceAllString(name, "")
+	name = NameRegex.ReplaceAllString(name, "\\$0")
+
+	if name != strings.Join(ShindanNameRegex.FindStringSubmatch(name), "") {
+		name = ShindanNameRegex.ReplaceAllString(name, "")
+	}
 
 	values := url.Values{}
 	values.Add("u", name)
@@ -66,9 +71,5 @@ func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
 		return "", errors.New("failed to parse shindan result")
 	}
 
-	return html.UnescapeString(
-		html.UnescapeString(
-			string(matches[1]),
-		),
-	), nil
+	return html.UnescapeString(string(matches[1])), nil
 }

@@ -1,16 +1,18 @@
+//go:generate mockgen -source=mpyw.go -destination=mpyw_mock.go -package=client -self_package=github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client
+
 package client
 
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 
+	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/pkg/errors"
 )
 
 type mpyw struct {
-	Client http.Client
+	Client wrapper.HttpClient
 }
 
 type Mpyw interface {
@@ -22,7 +24,7 @@ type MpywChallengeResult struct {
 	Result []string `json:"result"`
 }
 
-func NewMpyw(client http.Client) Mpyw {
+func NewMpyw(client wrapper.HttpClient) Mpyw {
 	return &mpyw{
 		Client: client,
 	}

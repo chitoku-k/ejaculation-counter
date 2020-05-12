@@ -10,7 +10,6 @@ type MessageStatus struct {
 type Message struct {
 	ID          string
 	Account     Account
-	Application Application
 	CreatedAt   time.Time
 	Content     string
 	Emojis      []Emoji
@@ -25,10 +24,6 @@ type Account struct {
 	Acct        string
 	DisplayName string
 	Username    string
-}
-
-type Application struct {
-	ID string
 }
 
 type Emoji struct {
