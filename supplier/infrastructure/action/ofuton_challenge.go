@@ -1,10 +1,10 @@
 package action
 
 import (
-	"math/rand"
 	"regexp"
 	"strings"
 
+	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 )
 
@@ -13,17 +13,19 @@ var (
 	OfutonRegex = regexp.MustCompile(`ふとん[チﾁ][ャｬ][レﾚ][ンﾝ](ジ|ｼﾞ)`)
 )
 
-type ofutonChallenge struct{}
-
-func NewOfufutonChallenge() service.Action {
-	return &ofutonChallenge{}
+type ofutonChallenge struct {
+	Random wrapper.Random
 }
 
-func (*ofutonChallenge) Name() string {
+func NewOfufutonChallenge(r wrapper.Random) service.Action {
+	return &ofutonChallenge{r}
+}
+
+func (oc *ofutonChallenge) Name() string {
 	return "おふとんチャレンジ"
 }
 
-func (*ofutonChallenge) Target(message service.Message) bool {
+func (oc *ofutonChallenge) Target(message service.Message) bool {
 	if message.IsReblog {
 		return false
 	}
@@ -37,12 +39,12 @@ func (*ofutonChallenge) Target(message service.Message) bool {
 	return OfutonRegex.MatchString(message.Content)
 }
 
-func (*ofutonChallenge) Event(message service.Message) (service.Event, int, error) {
+func (oc *ofutonChallenge) Event(message service.Message) (service.Event, int, error) {
 	index := OfutonRegex.FindStringIndex(message.Content)
 	ofuton := make([]string, len(Ofuton))
 
 	for i := 0; i < len(Ofuton); i++ {
-		ofuton = append(ofuton, Ofuton[rand.Intn(len(Ofuton))])
+		ofuton = append(ofuton, Ofuton[oc.Random.Intn(len(Ofuton))])
 	}
 
 	event := service.ReplyEvent{

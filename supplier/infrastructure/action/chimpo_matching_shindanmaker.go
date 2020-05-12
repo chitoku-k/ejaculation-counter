@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ChimpoMatchingRegex = regexp.MustCompile(`お?ちん(ちん|ぽ|こ)(揃|そろ)え((ゲ|ｹﾞ)ー[ムﾑ])?`)
+	ChimpoMatchingRegex = regexp.MustCompile(`ちん(ちん|ぽ|こ)(揃|そろ)え`)
 )
 
 type chimpoMatchingShindanmaker struct {

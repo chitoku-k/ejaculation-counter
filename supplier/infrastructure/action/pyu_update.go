@@ -15,7 +15,7 @@ type pyuUpdate struct {
 	Environment config.Environment
 }
 
-func NewPyuUpdateShindanmaker(environment config.Environment) service.Action {
+func NewPyuUpdate(environment config.Environment) service.Action {
 	return &pyuUpdate{
 		Environment: environment,
 	}

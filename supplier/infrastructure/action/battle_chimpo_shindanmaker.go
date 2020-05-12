@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	BattleChimpoRegex = regexp.MustCompile(`お?ちん(ちん|ぽ|こ)(なん[かぞ])?に([勝か][たちつてと]|[負ま][かきくけこ])`)
+	BattleChimpoRegex = regexp.MustCompile(`ちん(ちん|ぽ|こ)(なん[かぞ])?に([勝か][たちつてと]|[負ま][かきくけこ])`)
 )
 
 type battleChimpoShindanmaker struct {
