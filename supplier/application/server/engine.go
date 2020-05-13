@@ -10,22 +10,20 @@ import (
 )
 
 type engine struct {
-	ctx         context.Context
 	Environment config.Environment
 }
 
 type Engine interface {
-	Start() error
+	Start(ctx context.Context) error
 }
 
-func NewEngine(ctx context.Context, environment config.Environment) Engine {
+func NewEngine(environment config.Environment) Engine {
 	return &engine{
-		ctx:         ctx,
 		Environment: environment,
 	}
 }
 
-func (e *engine) Start() error {
+func (e *engine) Start(ctx context.Context) error {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(gin.LoggerWithConfig(gin.LoggerConfig{
@@ -44,7 +42,7 @@ func (e *engine) Start() error {
 	}
 
 	go func() {
-		<-e.ctx.Done()
+		<-ctx.Done()
 		server.Shutdown(context.Background())
 	}()
 

@@ -55,13 +55,11 @@ func main() {
 	}
 
 	mastodon := streaming.NewMastodon(
-		ctx,
 		env,
 		wrapper.NewDialer(websocket.DefaultDialer),
 		wrapper.NewTicker(),
 	)
-	qs := service.NewQueue(writer)
-	ps := service.NewProcessor(ctx, s, mastodon, qs, []service.Action{
+	ps := service.NewProcessor(s, mastodon, writer, []service.Action{
 		action.NewOfufutonChallenge(rand.New(rand.NewSource(1))),
 		action.NewDB(env),
 		action.NewPyuUpdate(env),
@@ -77,10 +75,10 @@ func main() {
 		action.NewSushiShindanmaker(shindan),
 		action.NewThrough(through, env),
 	})
-	ps.Execute()
+	ps.Execute(ctx)
 
-	engine := server.NewEngine(ctx, env)
-	err = engine.Start()
+	engine := server.NewEngine(env)
+	err = engine.Start(ctx)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to start web server"))
 	}
