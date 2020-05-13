@@ -1,6 +1,7 @@
 package streaming_test
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"time"
@@ -19,7 +20,6 @@ var _ = Describe("Mastodon", func() {
 	var (
 		ctrl *gomock.Controller
 		conn *wrapper.MockConn
-		ctx  *wrapper.MockContext
 		d    *wrapper.MockDialer
 		t    *wrapper.MockTicker
 	)
@@ -27,7 +27,6 @@ var _ = Describe("Mastodon", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		conn = wrapper.NewMockConn(ctrl)
-		ctx = wrapper.NewMockContext(ctrl)
 		d = wrapper.NewMockDialer(ctrl)
 		t = wrapper.NewMockTicker(ctrl)
 	})
@@ -50,11 +49,11 @@ var _ = Describe("Mastodon", func() {
 						AccessToken: "token",
 					},
 				}
-				mastodon = streaming.NewMastodon(ctx, env, d, t)
+				mastodon = streaming.NewMastodon(env, d, t)
 			})
 
 			It("returns an error", func() {
-				actual, err := mastodon.Run()
+				actual, err := mastodon.Run(context.Background())
 				Expect(actual).To(BeClosed())
 				Expect(err).To(MatchError(`failed to parse server URL: parse ":/": missing protocol scheme`))
 			})
@@ -74,16 +73,22 @@ var _ = Describe("Mastodon", func() {
 						AccessToken: "token",
 					},
 				}
-				mastodon = streaming.NewMastodon(ctx, env, d, t)
+				mastodon = streaming.NewMastodon(env, d, t)
 			})
 
 			Context("context is done", func() {
+				var (
+					ctx    context.Context
+					cancel context.CancelFunc
+				)
+
 				BeforeEach(func() {
-					ctx.EXPECT().Err().Return(errors.New("closed"))
+					ctx, cancel = context.WithCancel(context.Background())
+					cancel()
 				})
 
 				It("succeeds and eventually exits", func() {
-					actual, err := mastodon.Run()
+					actual, err := mastodon.Run(ctx)
 					Expect(err).NotTo(HaveOccurred())
 					Eventually(actual).Should(BeClosed())
 				})
@@ -91,18 +96,19 @@ var _ = Describe("Mastodon", func() {
 
 			Context("context is still", func() {
 				var (
-					ch chan time.Time
+					cancel context.CancelFunc
+					ctx    context.Context
+					ch     chan time.Time
 				)
+
+				BeforeEach(func() {
+					ctx, cancel = context.WithCancel(context.Background())
+				})
 
 				Context("websocket connection fails", func() {
 					BeforeEach(func() {
 						ch = make(chan time.Time, 1)
 						ch <- time.Time{}
-
-						gomock.InOrder(
-							ctx.EXPECT().Err().Return(nil),
-							ctx.EXPECT().Err().Return(errors.New("closed")),
-						)
 
 						t.EXPECT().Tick(5 * time.Second).Return(ch)
 
@@ -110,7 +116,9 @@ var _ = Describe("Mastodon", func() {
 							ctx,
 							"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
 							nil,
-						).Return(
+						).Do(func(context.Context, string, http.Header) {
+							cancel()
+						}).Return(
 							nil,
 							&http.Response{},
 							errors.New("dial tcp [::1]:443: connect: connection refused"),
@@ -122,7 +130,7 @@ var _ = Describe("Mastodon", func() {
 					})
 
 					It("returns channel and eventually exits", func() {
-						actual, err := mastodon.Run()
+						actual, err := mastodon.Run(ctx)
 						Expect(err).NotTo(HaveOccurred())
 
 						Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -133,54 +141,62 @@ var _ = Describe("Mastodon", func() {
 				})
 
 				Context("websocket connection succeeds", func() {
-					BeforeEach(func() {
-						d.EXPECT().DialContext(
-							ctx,
-							"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
-							nil,
-						).Return(
-							conn,
-							&http.Response{
-								Header: http.Header{
-									"X-Served-Server": []string{"192.0.2.1:4000"},
-								},
-							},
-							nil,
-						)
-					})
-
 					Context("context is done", func() {
 						BeforeEach(func() {
-							gomock.InOrder(
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(errors.New("closed")),
+							d.EXPECT().DialContext(
+								ctx,
+								"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
+								nil,
+							).Do(func(context.Context, string, http.Header) {
+								cancel()
+							}).Return(
+								conn,
+								&http.Response{
+									Header: http.Header{
+										"X-Served-Server": []string{"192.0.2.1:4000"},
+									},
+								},
+								nil,
 							)
+
 							conn.EXPECT().Close().Return(nil)
 						})
 
 						It("returns channel and eventually exits", func() {
-							actual, err := mastodon.Run()
+							actual, err := mastodon.Run(ctx)
 							Expect(err).NotTo(HaveOccurred())
 							Eventually(actual).Should(BeClosed())
 						})
 					})
 
 					Context("context is still", func() {
+						var (
+							stream mast.Stream
+						)
+
 						Context("event cannot be read", func() {
 							Context("connection cannot be closed", func() {
 								BeforeEach(func() {
-									gomock.InOrder(
-										ctx.EXPECT().Err().Return(nil),
-										ctx.EXPECT().Err().Return(nil),
-										ctx.EXPECT().Err().Return(errors.New("closed")),
+									d.EXPECT().DialContext(
+										ctx,
+										"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
+										nil,
+									).Return(
+										conn,
+										&http.Response{
+											Header: http.Header{
+												"X-Served-Server": []string{"192.0.2.1:4000"},
+											},
+										},
+										nil,
 									)
 
-									conn.EXPECT().ReadJSON(gomock.Any()).Return(errors.New("dial tcp [::1]:443: connect: connection refused"))
-									conn.EXPECT().Close().Return(nil)
+									conn.EXPECT().ReadJSON(&stream).Return(errors.New("dial tcp [::1]:443: connect: connection refused"))
+									conn.EXPECT().Close().Do(cancel).Return(nil)
 								})
 
 								It("sends error and eventually exits", func() {
-									actual, err := mastodon.Run()
+									actual, err := mastodon.Run(ctx)
 									Expect(err).NotTo(HaveOccurred())
 
 									Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -192,18 +208,26 @@ var _ = Describe("Mastodon", func() {
 
 							Context("connection can be closed", func() {
 								BeforeEach(func() {
-									gomock.InOrder(
-										ctx.EXPECT().Err().Return(nil),
-										ctx.EXPECT().Err().Return(nil),
-										ctx.EXPECT().Err().Return(errors.New("closed")),
+									d.EXPECT().DialContext(
+										ctx,
+										"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
+										nil,
+									).Return(
+										conn,
+										&http.Response{
+											Header: http.Header{
+												"X-Served-Server": []string{"192.0.2.1:4000"},
+											},
+										},
+										nil,
 									)
 
-									conn.EXPECT().ReadJSON(gomock.Any()).Return(errors.New("dial tcp [::1]:443: connect: connection refused"))
-									conn.EXPECT().Close().Return(errors.New("connection cannot be closed"))
+									conn.EXPECT().ReadJSON(&stream).Return(errors.New("dial tcp [::1]:443: connect: connection refused"))
+									conn.EXPECT().Close().Do(cancel).Return(errors.New("connection cannot be closed"))
 								})
 
 								It("sends error and eventually exits", func() {
-									actual, err := mastodon.Run()
+									actual, err := mastodon.Run(ctx)
 									Expect(err).NotTo(HaveOccurred())
 
 									Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -220,23 +244,33 @@ var _ = Describe("Mastodon", func() {
 						Context("event is read", func() {
 							Context("event is not update", func() {
 								BeforeEach(func() {
-									gomock.InOrder(
-										ctx.EXPECT().Err().Return(nil),
-										ctx.EXPECT().Err().Return(nil),
-										ctx.EXPECT().Err().Return(errors.New("closed")),
+									d.EXPECT().DialContext(
+										ctx,
+										"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
+										nil,
+									).Return(
+										conn,
+										&http.Response{
+											Header: http.Header{
+												"X-Served-Server": []string{"192.0.2.1:4000"},
+											},
+										},
+										nil,
 									)
 
-									conn.EXPECT().ReadJSON(gomock.Any()).Do(func(s *mast.Stream) {
+									conn.EXPECT().ReadJSON(&stream).Do(func(s *mast.Stream) {
 										*s = mast.Stream{
 											Event:   "notification",
 											Payload: "{}",
 										}
+									}).Do(func(v interface{}) {
+										cancel()
 									}).Return(nil)
 									conn.EXPECT().Close().Return(nil)
 								})
 
 								It("eventually exits", func() {
-									actual, err := mastodon.Run()
+									actual, err := mastodon.Run(ctx)
 									Expect(err).NotTo(HaveOccurred())
 									Eventually(actual).Should(BeClosed())
 								})
@@ -245,41 +279,59 @@ var _ = Describe("Mastodon", func() {
 							Context("event is update", func() {
 								Context("parsing fails", func() {
 									BeforeEach(func() {
-										gomock.InOrder(
-											ctx.EXPECT().Err().Return(nil),
-											ctx.EXPECT().Err().Return(nil),
-											ctx.EXPECT().Err().Return(errors.New("closed")),
+										d.EXPECT().DialContext(
+											ctx,
+											"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
+											nil,
+										).Return(
+											conn,
+											&http.Response{
+												Header: http.Header{
+													"X-Served-Server": []string{"192.0.2.1:4000"},
+												},
+											},
+											nil,
 										)
 
-										conn.EXPECT().ReadJSON(gomock.Any()).Do(func(s *mast.Stream) {
+										conn.EXPECT().ReadJSON(&stream).Do(func(s *mast.Stream) {
 											*s = mast.Stream{
 												Event:   "update",
 												Payload: "{",
 											}
+										}).Do(func(v interface{}) {
+											cancel()
 										}).Return(nil)
 										conn.EXPECT().Close().Return(nil)
 									})
 
 									It("sends status and eventually exits", func() {
-										actual, err := mastodon.Run()
+										actual, err := mastodon.Run(ctx)
 										Expect(err).NotTo(HaveOccurred())
 
 										Eventually(actual).Should(Receive(WithTransform(func(m service.MessageStatus) error {
 											return m.Error
-										}, MatchError("unexpected end of JSON input"))))
+										}, MatchError("unexpected EOF"))))
 										Eventually(actual).Should(BeClosed())
 									})
 								})
 
 								Context("parsing succeeds", func() {
 									BeforeEach(func() {
-										gomock.InOrder(
-											ctx.EXPECT().Err().Return(nil),
-											ctx.EXPECT().Err().Return(nil),
-											ctx.EXPECT().Err().Return(errors.New("closed")),
+										d.EXPECT().DialContext(
+											ctx,
+											"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
+											nil,
+										).Return(
+											conn,
+											&http.Response{
+												Header: http.Header{
+													"X-Served-Server": []string{"192.0.2.1:4000"},
+												},
+											},
+											nil,
 										)
 
-										conn.EXPECT().ReadJSON(gomock.Any()).Do(func(s *mast.Stream) {
+										conn.EXPECT().ReadJSON(&stream).Do(func(s *mast.Stream) {
 											*s = mast.Stream{
 												Event: "update",
 												Payload: `
@@ -316,12 +368,14 @@ var _ = Describe("Mastodon", func() {
 													}
 												`,
 											}
+										}).Do(func(v interface{}) {
+											cancel()
 										}).Return(nil)
 										conn.EXPECT().Close().Return(nil)
 									})
 
 									It("sends status and eventually exits", func() {
-										actual, err := mastodon.Run()
+										actual, err := mastodon.Run(ctx)
 										Expect(err).NotTo(HaveOccurred())
 
 										Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -362,12 +416,6 @@ var _ = Describe("Mastodon", func() {
 							ch = make(chan time.Time, 1)
 							ch <- time.Time{}
 
-							gomock.InOrder(
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(errors.New("closed")),
-							)
-
 							t.EXPECT().Tick(5 * time.Second).Return(ch)
 
 							gomock.InOrder(
@@ -388,7 +436,9 @@ var _ = Describe("Mastodon", func() {
 									ctx,
 									"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
 									nil,
-								).Return(
+								).Do(func(context.Context, string, http.Header) {
+									cancel()
+								}).Return(
 									conn,
 									&http.Response{
 										Header: http.Header{
@@ -406,7 +456,7 @@ var _ = Describe("Mastodon", func() {
 						})
 
 						It("returns channel and eventually exits", func() {
-							actual, err := mastodon.Run()
+							actual, err := mastodon.Run(ctx)
 							Expect(err).NotTo(HaveOccurred())
 
 							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -421,13 +471,6 @@ var _ = Describe("Mastodon", func() {
 							ch = make(chan time.Time, 2)
 							ch <- time.Time{}
 							ch <- time.Time{}
-
-							gomock.InOrder(
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(errors.New("closed")),
-							)
 
 							gomock.InOrder(
 								t.EXPECT().Tick(5*time.Second).Return(ch),
@@ -464,7 +507,9 @@ var _ = Describe("Mastodon", func() {
 									ctx,
 									"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
 									nil,
-								).Return(
+								).Do(func(context.Context, string, http.Header) {
+									cancel()
+								}).Return(
 									conn,
 									&http.Response{
 										Header: http.Header{
@@ -474,7 +519,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								),
 							)
-							conn.EXPECT().Close().Return(nil)
+							conn.EXPECT().Close().Do(cancel).Return(nil)
 						})
 
 						AfterEach(func() {
@@ -482,7 +527,7 @@ var _ = Describe("Mastodon", func() {
 						})
 
 						It("returns channel and eventually exits", func() {
-							actual, err := mastodon.Run()
+							actual, err := mastodon.Run(ctx)
 							Expect(err).NotTo(HaveOccurred())
 
 							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
@@ -501,14 +546,6 @@ var _ = Describe("Mastodon", func() {
 							ch <- time.Time{}
 							ch <- time.Time{}
 							ch <- time.Time{}
-
-							gomock.InOrder(
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(nil),
-								ctx.EXPECT().Err().Return(errors.New("closed")),
-							)
 
 							gomock.InOrder(
 								t.EXPECT().Tick(5*time.Second).Return(ch),
@@ -558,7 +595,9 @@ var _ = Describe("Mastodon", func() {
 									ctx,
 									"wss://mastodon.example.com/api/v1/streaming?access_token=token&stream=user",
 									nil,
-								).Return(
+								).Do(func(context.Context, string, http.Header) {
+									cancel()
+								}).Return(
 									conn,
 									&http.Response{
 										Header: http.Header{
@@ -568,7 +607,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								),
 							)
-							conn.EXPECT().Close().Return(nil)
+							conn.EXPECT().Close().Do(cancel).Return(nil)
 						})
 
 						AfterEach(func() {
@@ -576,7 +615,7 @@ var _ = Describe("Mastodon", func() {
 						})
 
 						It("returns channel and eventually exits", func() {
-							actual, err := mastodon.Run()
+							actual, err := mastodon.Run(ctx)
 							Expect(err).NotTo(HaveOccurred())
 
 							Eventually(actual).Should(Receive(Equal(service.MessageStatus{

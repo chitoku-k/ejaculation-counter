@@ -26,7 +26,6 @@ var (
 )
 
 type writer struct {
-	ctx           context.Context
 	Exchange      string
 	RoutingKey    string
 	Environment   config.Environment
@@ -41,14 +40,13 @@ func NewWriter(
 	environment config.Environment,
 ) (service.QueueWriter, error) {
 	w := &writer{
-		ctx:         ctx,
 		Exchange:    exchange,
 		RoutingKey:  routingKey,
 		Environment: environment,
 	}
 
 	go func() {
-		<-w.ctx.Done()
+		<-ctx.Done()
 		w.disconnect()
 	}()
 

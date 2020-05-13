@@ -1,5 +1,7 @@
 package service
 
+import "context"
+
 type Streaming interface {
-	Run() (<-chan MessageStatus, error)
+	Run(ctx context.Context) (<-chan MessageStatus, error)
 }

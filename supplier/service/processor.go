@@ -24,36 +24,33 @@ var (
 )
 
 type processor struct {
-	ctx       context.Context
 	Scheduler Scheduler
 	Streaming Streaming
-	Queue     Queue
+	Writer    QueueWriter
 	Actions   []Action
 }
 
 type Processor interface {
-	Execute()
+	Execute(ctx context.Context)
 }
 
 func NewProcessor(
-	ctx context.Context,
 	scheduler Scheduler,
 	streaming Streaming,
-	queue Queue,
+	writer QueueWriter,
 	actions []Action,
 ) Processor {
 	return &processor{
-		ctx:       ctx,
 		Scheduler: scheduler,
 		Streaming: streaming,
-		Queue:     queue,
+		Writer:    writer,
 		Actions:   actions,
 	}
 }
 
-func (ps *processor) Execute() {
+func (ps *processor) Execute(ctx context.Context) {
 	go func() {
-		stream, err := ps.Streaming.Run()
+		stream, err := ps.Streaming.Run(ctx)
 		if err != nil {
 			logrus.Errorln("Error in starting streaming: " + err.Error())
 			return
@@ -63,12 +60,12 @@ func (ps *processor) Execute() {
 
 		for {
 			select {
-			case <-ps.ctx.Done():
+			case <-ctx.Done():
 				return
 
 			case event := <-scheduler:
 				EventsTotal.WithLabelValues(event.Name(), "").Inc()
-				err := ps.Queue.Write(event)
+				err := ps.Writer.Publish(event)
 				if err != nil {
 					logrus.Errorln("Error in queueing: " + err.Error())
 					continue
@@ -107,7 +104,7 @@ func (ps *processor) Execute() {
 				})
 
 				for _, r := range result {
-					err := ps.Queue.Write(r.Event)
+					err := ps.Writer.Publish(r.Event)
 					if err != nil {
 						logrus.Errorln("Error in queueing: " + err.Error())
 						continue

@@ -43,7 +43,6 @@ const (
 )
 
 type mastodon struct {
-	ctx         context.Context
 	Environment config.Environment
 	Client      *mast.Client
 	Dialer      wrapper.Dialer
@@ -51,13 +50,11 @@ type mastodon struct {
 }
 
 func NewMastodon(
-	ctx context.Context,
 	environment config.Environment,
 	dialer wrapper.Dialer,
 	ticker wrapper.Ticker,
 ) service.Streaming {
 	return &mastodon{
-		ctx:         ctx,
 		Environment: environment,
 		Client: mast.NewClient(&mast.Config{
 			Server:      environment.Mastodon.ServerURL,
@@ -100,7 +97,7 @@ func convertTags(tags []mast.Tag) []service.Tag {
 	return result
 }
 
-func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
+func (m *mastodon) Run(ctx context.Context) (<-chan service.MessageStatus, error) {
 	reconnect := ReconnectNone
 	ch := make(chan service.MessageStatus)
 
@@ -121,11 +118,11 @@ func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 		defer close(ch)
 
 		for {
-			if m.ctx.Err() != nil {
+			if ctx.Err() != nil {
 				return
 			}
 
-			conn, res, err := m.Dialer.DialContext(m.ctx, u.String(), nil)
+			conn, res, err := m.Dialer.DialContext(ctx, u.String(), nil)
 			if err != nil {
 				ch <- service.MessageStatus{
 					Error: err,
@@ -158,7 +155,7 @@ func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 			}
 
 			for {
-				if m.ctx.Err() != nil {
+				if ctx.Err() != nil {
 					return
 				}
 
@@ -183,7 +180,7 @@ func (m *mastodon) Run() (<-chan service.MessageStatus, error) {
 				}
 
 				var status mast.Status
-				err = json.Unmarshal([]byte(stream.Payload.(string)), &status)
+				err = json.NewDecoder(strings.NewReader(stream.Payload.(string))).Decode(&status)
 				if err != nil {
 					ch <- service.MessageStatus{
 						Error: err,
