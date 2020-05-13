@@ -1,5 +1,7 @@
 package service
 
+import "context"
+
 type Reply interface {
-	Send(event ReplyEvent) error
+	Send(ctx context.Context, event ReplyEvent) error
 }

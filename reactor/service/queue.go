@@ -1,5 +1,7 @@
 package service
 
+import "context"
+
 type QueueReader interface {
-	Consume() (<-chan Event, error)
+	Consume(ctx context.Context) (<-chan Event, error)
 }

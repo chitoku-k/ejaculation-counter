@@ -8,7 +8,6 @@ import (
 )
 
 type processor struct {
-	ctx            context.Context
 	Queue          QueueReader
 	Reply          Reply
 	Increment      Increment
@@ -17,11 +16,10 @@ type processor struct {
 }
 
 type Processor interface {
-	Execute() error
+	Execute(ctx context.Context) error
 }
 
 func NewProcessor(
-	ctx context.Context,
 	queue QueueReader,
 	reply Reply,
 	increment Increment,
@@ -29,7 +27,6 @@ func NewProcessor(
 	administration Administration,
 ) Processor {
 	return &processor{
-		ctx:            ctx,
 		Queue:          queue,
 		Reply:          reply,
 		Increment:      increment,
@@ -38,8 +35,8 @@ func NewProcessor(
 	}
 }
 
-func (ps *processor) Execute() error {
-	ch, err := ps.Queue.Consume()
+func (ps *processor) Execute(ctx context.Context) error {
+	ch, err := ps.Queue.Consume(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to read from queue")
 	}
@@ -47,34 +44,34 @@ func (ps *processor) Execute() error {
 	go func() {
 		for {
 			select {
-			case <-ps.ctx.Done():
+			case <-ctx.Done():
 				return
 
 			case event := <-ch:
 				switch e := event.(type) {
 				case *ReplyEvent:
-					err = ps.Reply.Send(*e)
+					err = ps.Reply.Send(ctx, *e)
 					if err != nil {
 						logrus.Errorln("Failed to send reply: " + err.Error())
 						continue
 					}
 
 				case *IncrementEvent:
-					err = ps.Increment.Do(*e)
+					err = ps.Increment.Do(ctx, *e)
 					if err != nil {
 						logrus.Errorln("Failed to update increment: " + err.Error())
 						continue
 					}
 
 				case *UpdateEvent:
-					err = ps.Update.Do(*e)
+					err = ps.Update.Do(ctx, *e)
 					if err != nil {
 						logrus.Errorln("Failed to update: " + err.Error())
 						continue
 					}
 
 				case *AdministrationEvent:
-					err = ps.Administration.Do(*e)
+					err = ps.Administration.Do(ctx, *e)
 					if err != nil {
 						logrus.Errorln("Failed to execute administrative operation: " + err.Error())
 						continue

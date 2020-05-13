@@ -1,5 +1,7 @@
 package service
 
+import "context"
+
 type Update interface {
-	Do(event UpdateEvent) error
+	Do(ctx context.Context, event UpdateEvent) error
 }

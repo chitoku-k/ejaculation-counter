@@ -28,28 +28,25 @@ var (
 )
 
 type increment struct {
-	ctx         context.Context
 	Environment config.Environment
 	Client      *mastodon.Client
 	DB          client.DB
 }
 
 func NewIncrement(
-	ctx context.Context,
 	environment config.Environment,
 	client *mastodon.Client,
 	db client.DB,
 ) service.Increment {
 	return &increment{
-		ctx:         ctx,
 		Environment: environment,
 		Client:      client,
 		DB:          db,
 	}
 }
 
-func (i *increment) Do(event service.IncrementEvent) error {
-	user, err := i.Client.GetAccountCurrentUser(i.ctx)
+func (i *increment) Do(ctx context.Context, event service.IncrementEvent) error {
+	user, err := i.Client.GetAccountCurrentUser(ctx)
 	if err != nil {
 		IncrementErrorTotal.WithLabelValues("get").Inc()
 		return errors.Wrap(err, "failed to get current user for updating")
@@ -63,7 +60,7 @@ func (i *increment) Do(event service.IncrementEvent) error {
 		summary.Today+1,
 	)
 
-	_, err = i.Client.AccountUpdate(i.ctx, &mastodon.Profile{
+	_, err = i.Client.AccountUpdate(ctx, &mastodon.Profile{
 		DisplayName: &name,
 	})
 	if err != nil {
@@ -71,7 +68,7 @@ func (i *increment) Do(event service.IncrementEvent) error {
 		return errors.Wrap(err, "failed to update current user")
 	}
 
-	err = i.DB.UpdateCount(i.Environment.UserID, time.Now(), summary.Today+1)
+	err = i.DB.UpdateCount(ctx, i.Environment.UserID, time.Now(), summary.Today+1)
 	if err != nil {
 		IncrementErrorTotal.WithLabelValues("db").Inc()
 		return errors.Wrap(err, "failed to update DB")

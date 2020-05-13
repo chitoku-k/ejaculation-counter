@@ -32,33 +32,32 @@ func main() {
 		panic(errors.Wrap(err, "failed to initialize config"))
 	}
 
-	reader, err := queue.NewReader(ctx, "events_topic", "events", "events", env)
+	reader, err := queue.NewReader("events_topic", "events", "events", env)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to initialize reader"))
 	}
 
-	db, err := client.NewDB(ctx, env)
+	db, err := client.NewDB(env)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to initialize DB"))
 	}
 
 	mc := client.NewMastodon(env)
 	ps := service.NewProcessor(
-		ctx,
 		reader,
-		actions.NewReply(ctx, mc),
-		actions.NewIncrement(ctx, env, mc, db),
-		actions.NewUpdate(ctx, env, mc, db),
-		actions.NewAdministration(ctx, mc, db),
+		actions.NewReply(mc),
+		actions.NewIncrement(env, mc, db),
+		actions.NewUpdate(env, mc, db),
+		actions.NewAdministration(mc, db),
 	)
-	err = ps.Execute()
+	err = ps.Execute(ctx)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to execute processor"))
 	}
 
 	through := service.NewThrough(hardcoding.NewThroughRepository())
-	engine := server.NewEngine(ctx, env, through)
-	err = engine.Start()
+	engine := server.NewEngine(env, through)
+	err = engine.Start(ctx)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to start web server"))
 	}

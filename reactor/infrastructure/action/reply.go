@@ -30,13 +30,11 @@ var (
 )
 
 type reply struct {
-	ctx    context.Context
 	Client *mastodon.Client
 }
 
-func NewReply(ctx context.Context, client *mastodon.Client) service.Reply {
+func NewReply(client *mastodon.Client) service.Reply {
 	return &reply{
-		ctx:    ctx,
 		Client: client,
 	}
 }
@@ -54,8 +52,8 @@ func pack(s string) string {
 	return builder.String()
 }
 
-func (r *reply) Send(event service.ReplyEvent) error {
-	_, err := r.Client.PostStatus(r.ctx, &mastodon.Toot{
+func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
+	_, err := r.Client.PostStatus(ctx, &mastodon.Toot{
 		InReplyToID: mastodon.ID(event.InReplyToID),
 		Status:      pack(fmt.Sprintf("@%s %s", event.Acct, event.Body)),
 		Visibility:  event.Visibility,

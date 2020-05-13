@@ -27,36 +27,33 @@ var (
 )
 
 type administration struct {
-	ctx    context.Context
 	Client *mastodon.Client
 	DB     client.DB
 }
 
 func NewAdministration(
-	ctx context.Context,
 	client *mastodon.Client,
 	db client.DB,
 ) service.Administration {
 	return &administration{
-		ctx:    ctx,
 		Client: client,
 		DB:     db,
 	}
 }
 
-func (a *administration) Do(event service.AdministrationEvent) error {
+func (a *administration) Do(ctx context.Context, event service.AdministrationEvent) error {
 	if event.Type != "DB" {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
 		return errors.New("failed to handle event type: " + event.Type)
 	}
 
-	result, err := a.DB.Query(event.Command)
+	result, err := a.DB.Query(ctx, event.Command)
 	if err != nil {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
 		return errors.Wrap(err, "failed to run query")
 	}
 
-	_, err = a.Client.PostStatus(a.ctx, &mastodon.Toot{
+	_, err = a.Client.PostStatus(ctx, &mastodon.Toot{
 		InReplyToID: mastodon.ID(event.InReplyToID),
 		Status:      pack(fmt.Sprintf("@%s %s", event.Acct, strings.Join(result, "\n"))),
 		Visibility:  "private",

@@ -31,7 +31,6 @@ var (
 )
 
 type update struct {
-	ctx         context.Context
 	Environment config.Environment
 	Client      *mastodon.Client
 	DB          client.DB
@@ -44,13 +43,11 @@ type summary struct {
 }
 
 func NewUpdate(
-	ctx context.Context,
 	environment config.Environment,
 	client *mastodon.Client,
 	db client.DB,
 ) service.Update {
 	return &update{
-		ctx:         ctx,
 		Environment: environment,
 		Client:      client,
 		DB:          db,
@@ -91,8 +88,8 @@ func message(date time.Time, summary summary) string {
 	return fmt.Sprintf("%sぴゅっぴゅしませんでした…", status)
 }
 
-func (u *update) Do(event service.UpdateEvent) error {
-	user, err := u.Client.GetAccountCurrentUser(u.ctx)
+func (u *update) Do(ctx context.Context, event service.UpdateEvent) error {
+	user, err := u.Client.GetAccountCurrentUser(ctx)
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("get").Inc()
 		return errors.Wrap(err, "failed to get current user for updating")
@@ -106,7 +103,7 @@ func (u *update) Do(event service.UpdateEvent) error {
 		0,
 	)
 
-	_, err = u.Client.AccountUpdate(u.ctx, &mastodon.Profile{
+	_, err = u.Client.AccountUpdate(ctx, &mastodon.Profile{
 		DisplayName: &name,
 	})
 	if err != nil {
@@ -121,7 +118,7 @@ func (u *update) Do(event service.UpdateEvent) error {
 	}
 
 	yesterday := date.AddDate(0, 0, -1)
-	_, err = u.Client.PostStatus(u.ctx, &mastodon.Toot{
+	_, err = u.Client.PostStatus(ctx, &mastodon.Toot{
 		Status:     message(yesterday, summary),
 		Visibility: "private",
 	})
@@ -130,7 +127,7 @@ func (u *update) Do(event service.UpdateEvent) error {
 		return errors.Wrap(err, "failed to send update")
 	}
 
-	err = u.DB.UpdateCount(u.Environment.UserID, yesterday, summary.Today)
+	err = u.DB.UpdateCount(ctx, u.Environment.UserID, yesterday, summary.Today)
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("db").Inc()
 		return errors.Wrap(err, "failed to update DB")
