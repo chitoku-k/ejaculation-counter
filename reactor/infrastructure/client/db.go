@@ -12,17 +12,16 @@ import (
 )
 
 type db struct {
-	ctx         context.Context
 	Environment config.Environment
 	Connection  *sqlx.DB
 }
 
 type DB interface {
-	Query(q string) ([]string, error)
-	UpdateCount(userID int64, date time.Time, count int) error
+	Query(ctx context.Context, q string) ([]string, error)
+	UpdateCount(ctx context.Context, userID int64, date time.Time, count int) error
 }
 
-func NewDB(ctx context.Context, environment config.Environment) (DB, error) {
+func NewDB(environment config.Environment) (DB, error) {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:3306)/%s",
 		environment.DB.Username,
@@ -36,14 +35,13 @@ func NewDB(ctx context.Context, environment config.Environment) (DB, error) {
 	}
 
 	return &db{
-		ctx:         ctx,
 		Environment: environment,
 		Connection:  conn,
 	}, nil
 }
 
-func (d *db) Query(q string) ([]string, error) {
-	rows, err := d.Connection.QueryContext(d.ctx, q)
+func (d *db) Query(ctx context.Context, q string) ([]string, error) {
+	rows, err := d.Connection.QueryContext(ctx, q)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query")
 	}
@@ -59,10 +57,10 @@ func (d *db) Query(q string) ([]string, error) {
 	return result, nil
 }
 
-func (d *db) UpdateCount(userID int64, date time.Time, count int) error {
+func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, count int) error {
 	var current int
 	err := d.Connection.GetContext(
-		d.ctx,
+		ctx,
 		&current,
 		"SELECT COUNT(*) FROM `counts` WHERE `user` = ? AND `date` = ?",
 		userID,
@@ -74,7 +72,7 @@ func (d *db) UpdateCount(userID int64, date time.Time, count int) error {
 
 	if current > 0 {
 		_, err = d.Connection.ExecContext(
-			d.ctx,
+			ctx,
 			"UPDATE `counts` SET `count` = ? WHERE `user` = ? AND `date` = ?",
 			count,
 			userID,
@@ -82,7 +80,7 @@ func (d *db) UpdateCount(userID int64, date time.Time, count int) error {
 		)
 	} else {
 		_, err = d.Connection.ExecContext(
-			d.ctx,
+			ctx,
 			"INSERT INTO `counts` (`user`, `date`, `count`) VALUES (?, ?, ?)",
 			userID,
 			date.Format("2006-01-02"),

@@ -1,5 +1,7 @@
 package service
 
+import "context"
+
 type Administration interface {
-	Do(event AdministrationEvent) error
+	Do(ctx context.Context, event AdministrationEvent) error
 }

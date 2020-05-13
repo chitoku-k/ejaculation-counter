@@ -34,7 +34,6 @@ var (
 )
 
 type reader struct {
-	ctx         context.Context
 	Exchange    string
 	QueueName   string
 	RoutingKey  string
@@ -44,14 +43,12 @@ type reader struct {
 }
 
 func NewReader(
-	ctx context.Context,
 	exchange string,
 	queueName string,
 	routingKey string,
 	environment config.Environment,
 ) (service.QueueReader, error) {
 	r := &reader{
-		ctx:         ctx,
 		Exchange:    exchange,
 		QueueName:   queueName,
 		RoutingKey:  routingKey,
@@ -119,7 +116,7 @@ func (r *reader) disconnect() error {
 	return errors.Wrap(r.Channel.Close(), "failed to close the MQ channel")
 }
 
-func (r *reader) Consume() (<-chan service.Event, error) {
+func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 	ch := make(chan service.Event)
 
 	go func() {
@@ -127,7 +124,7 @@ func (r *reader) Consume() (<-chan service.Event, error) {
 			reconnect := ReconnectInitial
 
 			select {
-			case <-r.ctx.Done():
+			case <-ctx.Done():
 				r.disconnect()
 				return
 

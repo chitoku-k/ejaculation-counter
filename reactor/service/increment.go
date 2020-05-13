@@ -1,5 +1,7 @@
 package service
 
+import "context"
+
 type Increment interface {
-	Do(event IncrementEvent) error
+	Do(ctx context.Context, event IncrementEvent) error
 }
