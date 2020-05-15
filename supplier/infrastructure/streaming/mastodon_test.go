@@ -133,8 +133,8 @@ var _ = Describe("Mastodon", func() {
 						actual, err := mastodon.Run(ctx)
 						Expect(err).NotTo(HaveOccurred())
 
-						Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-							Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+						Eventually(actual).Should(Receive(Equal(service.Error{
+							Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
 						})))
 						Eventually(actual).Should(BeClosed())
 					})
@@ -199,8 +199,8 @@ var _ = Describe("Mastodon", func() {
 									actual, err := mastodon.Run(ctx)
 									Expect(err).NotTo(HaveOccurred())
 
-									Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-										Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+									Eventually(actual).Should(Receive(Equal(service.Error{
+										Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
 									})))
 									Eventually(actual).Should(BeClosed())
 								})
@@ -230,11 +230,11 @@ var _ = Describe("Mastodon", func() {
 									actual, err := mastodon.Run(ctx)
 									Expect(err).NotTo(HaveOccurred())
 
-									Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-										Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+									Eventually(actual).Should(Receive(Equal(service.Error{
+										Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
 									})))
-									Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-										Error: errors.New("connection cannot be closed"),
+									Eventually(actual).Should(Receive(Equal(service.Error{
+										Err: errors.New("connection cannot be closed"),
 									})))
 									Eventually(actual).Should(BeClosed())
 								})
@@ -308,8 +308,8 @@ var _ = Describe("Mastodon", func() {
 										actual, err := mastodon.Run(ctx)
 										Expect(err).NotTo(HaveOccurred())
 
-										Eventually(actual).Should(Receive(WithTransform(func(m service.MessageStatus) error {
-											return m.Error
+										Eventually(actual).Should(Receive(WithTransform(func(m service.Error) error {
+											return m.Err
 										}, MatchError("unexpected EOF"))))
 										Eventually(actual).Should(BeClosed())
 									})
@@ -378,29 +378,27 @@ var _ = Describe("Mastodon", func() {
 										actual, err := mastodon.Run(ctx)
 										Expect(err).NotTo(HaveOccurred())
 
-										Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-											Message: service.Message{
-												ID: "1",
-												Account: service.Account{
-													ID:          "1",
-													Acct:        "@test",
-													DisplayName: "テスト",
-													Username:    "test",
-												},
-												Content: "テスト",
-												Emojis: []service.Emoji{
-													{Shortcode: "ios_big_sushi_1"},
-													{Shortcode: "ios_big_sushi_2"},
-													{Shortcode: "ios_big_sushi_3"},
-													{Shortcode: "ios_big_sushi_4"},
-												},
-												Tags: []service.Tag{
-													{Name: "同人avタイトルジェネレーター"},
-												},
-												IsReblog:    false,
-												InReplyToID: "<nil>",
-												Visibility:  "private",
+										Eventually(actual).Should(Receive(Equal(service.Message{
+											ID: "1",
+											Account: service.Account{
+												ID:          "1",
+												Acct:        "@test",
+												DisplayName: "テスト",
+												Username:    "test",
 											},
+											Content: "テスト",
+											Emojis: []service.Emoji{
+												{Shortcode: "ios_big_sushi_1"},
+												{Shortcode: "ios_big_sushi_2"},
+												{Shortcode: "ios_big_sushi_3"},
+												{Shortcode: "ios_big_sushi_4"},
+											},
+											Tags: []service.Tag{
+												{Name: "同人avタイトルジェネレーター"},
+											},
+											IsReblog:    false,
+											InReplyToID: "<nil>",
+											Visibility:  "private",
 										})))
 										Eventually(actual).Should(BeClosed())
 									})
@@ -459,8 +457,11 @@ var _ = Describe("Mastodon", func() {
 							actual, err := mastodon.Run(ctx)
 							Expect(err).NotTo(HaveOccurred())
 
-							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-								Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							Eventually(actual).Should(Receive(Equal(service.Error{
+								Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							})))
+							Eventually(actual).Should(Receive(Equal(service.Reconnection{
+								In: 5 * time.Second,
 							})))
 							Eventually(actual).Should(BeClosed())
 						})
@@ -530,11 +531,17 @@ var _ = Describe("Mastodon", func() {
 							actual, err := mastodon.Run(ctx)
 							Expect(err).NotTo(HaveOccurred())
 
-							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-								Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							Eventually(actual).Should(Receive(Equal(service.Error{
+								Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
 							})))
-							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-								Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							Eventually(actual).Should(Receive(Equal(service.Reconnection{
+								In: 5 * time.Second,
+							})))
+							Eventually(actual).Should(Receive(Equal(service.Error{
+								Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							})))
+							Eventually(actual).Should(Receive(Equal(service.Reconnection{
+								In: 10 * time.Second,
 							})))
 							Eventually(actual).Should(BeClosed())
 						})
@@ -618,14 +625,23 @@ var _ = Describe("Mastodon", func() {
 							actual, err := mastodon.Run(ctx)
 							Expect(err).NotTo(HaveOccurred())
 
-							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-								Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							Eventually(actual).Should(Receive(Equal(service.Error{
+								Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
 							})))
-							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-								Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							Eventually(actual).Should(Receive(Equal(service.Reconnection{
+								In: 5 * time.Second,
 							})))
-							Eventually(actual).Should(Receive(Equal(service.MessageStatus{
-								Error: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							Eventually(actual).Should(Receive(Equal(service.Error{
+								Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							})))
+							Eventually(actual).Should(Receive(Equal(service.Reconnection{
+								In: 10 * time.Second,
+							})))
+							Eventually(actual).Should(Receive(Equal(service.Error{
+								Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
+							})))
+							Eventually(actual).Should(Receive(Equal(service.Reconnection{
+								In: 20 * time.Second,
 							})))
 							Eventually(actual).Should(BeClosed())
 						})

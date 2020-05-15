@@ -2,9 +2,8 @@ package service
 
 import "time"
 
-type MessageStatus struct {
-	Message Message
-	Error   error
+type Status interface {
+	status()
 }
 
 type Message struct {
@@ -33,3 +32,17 @@ type Emoji struct {
 type Tag struct {
 	Name string
 }
+
+func (m Message) status() {}
+
+type Reconnection struct {
+	In time.Duration
+}
+
+func (r Reconnection) status() {}
+
+type Error struct {
+	Err error
+}
+
+func (e Error) status() {}

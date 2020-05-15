@@ -97,9 +97,9 @@ func convertTags(tags []mast.Tag) []service.Tag {
 	return result
 }
 
-func (m *mastodon) Run(ctx context.Context) (<-chan service.MessageStatus, error) {
+func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 	reconnect := ReconnectNone
-	ch := make(chan service.MessageStatus)
+	ch := make(chan service.Status)
 
 	params := url.Values{}
 	params.Set("access_token", m.Client.Config.AccessToken)
@@ -124,8 +124,8 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.MessageStatus, error
 
 			conn, res, err := m.Dialer.DialContext(ctx, u.String(), nil)
 			if err != nil {
-				ch <- service.MessageStatus{
-					Error: err,
+				ch <- service.Error{
+					Err: err,
 				}
 				reconnect = time.Duration(
 					math.Min(
@@ -136,7 +136,9 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.MessageStatus, error
 						float64(ReconnectMax),
 					),
 				)
-				logrus.Infof("Reconnecting in %v...", reconnect)
+				ch <- service.Reconnection{
+					In: reconnect,
+				}
 				StreamingRetryTotal.Inc()
 				<-m.Ticker.Tick(reconnect)
 				continue
@@ -162,13 +164,13 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.MessageStatus, error
 				var stream mast.Stream
 				err = conn.ReadJSON(&stream)
 				if err != nil {
-					ch <- service.MessageStatus{
-						Error: err,
+					ch <- service.Error{
+						Err: err,
 					}
 					err = conn.Close()
 					if err != nil {
-						ch <- service.MessageStatus{
-							Error: err,
+						ch <- service.Error{
+							Err: err,
 						}
 					}
 					conn = nil
@@ -182,30 +184,28 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.MessageStatus, error
 				var status mast.Status
 				err = json.NewDecoder(strings.NewReader(stream.Payload.(string))).Decode(&status)
 				if err != nil {
-					ch <- service.MessageStatus{
-						Error: err,
+					ch <- service.Error{
+						Err: err,
 					}
 					continue
 				}
 
 				StreamingMessageTotal.WithLabelValues(server).Inc()
-				ch <- service.MessageStatus{
-					Message: service.Message{
-						ID: string(status.ID),
-						Account: service.Account{
-							ID:          string(status.Account.ID),
-							Acct:        status.Account.Acct,
-							DisplayName: status.Account.DisplayName,
-							Username:    status.Account.Username,
-						},
-						CreatedAt:   status.CreatedAt,
-						Content:     convertContent(status.Content),
-						Emojis:      convertEmojis(status.Emojis),
-						InReplyToID: fmt.Sprint(status.InReplyToID),
-						IsReblog:    status.Reblog != nil,
-						Tags:        convertTags(status.Tags),
-						Visibility:  status.Visibility,
+				ch <- service.Message{
+					ID: string(status.ID),
+					Account: service.Account{
+						ID:          string(status.Account.ID),
+						Acct:        status.Account.Acct,
+						DisplayName: status.Account.DisplayName,
+						Username:    status.Account.Username,
 					},
+					CreatedAt:   status.CreatedAt,
+					Content:     convertContent(status.Content),
+					Emojis:      convertEmojis(status.Emojis),
+					InReplyToID: fmt.Sprint(status.InReplyToID),
+					IsReblog:    status.Reblog != nil,
+					Tags:        convertTags(status.Tags),
+					Visibility:  status.Visibility,
 				}
 			}
 		}

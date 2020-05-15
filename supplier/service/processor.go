@@ -72,45 +72,51 @@ func (ps *processor) Execute(ctx context.Context) {
 				}
 
 			case status := <-stream:
-				if status.Error != nil {
-					logrus.Errorln("Error in streaming: " + status.Error.Error())
+				switch status := status.(type) {
+				case Error:
+					logrus.Errorln("Error in streaming: " + status.Err.Error())
 					continue
-				}
 
-				_, ok := replies[status.Message.InReplyToID]
-				if ok {
+				case Reconnection:
+					logrus.Infoln("Reconnecting in streaming: " + status.In.String())
 					continue
-				}
 
-				var result []actionResult
-				for _, action := range ps.Actions {
-					if !action.Target(status.Message) {
+				case Message:
+					_, ok := replies[status.InReplyToID]
+					if ok {
 						continue
 					}
 
-					event, index, err := action.Event(status.Message)
-					if err != nil {
-						logrus.Errorln("Error in processing " + action.Name() + ": " + err.Error())
-						EventsErrorTotal.WithLabelValues(action.Name()).Inc()
-						continue
+					var result []actionResult
+					for _, action := range ps.Actions {
+						if !action.Target(status) {
+							continue
+						}
+
+						event, index, err := action.Event(status)
+						if err != nil {
+							logrus.Errorln("Error in processing " + action.Name() + ": " + err.Error())
+							EventsErrorTotal.WithLabelValues(action.Name()).Inc()
+							continue
+						}
+
+						result = append(result, actionResult{event, index})
+						EventsTotal.WithLabelValues(event.Name(), action.Name()).Inc()
 					}
 
-					result = append(result, actionResult{event, index})
-					EventsTotal.WithLabelValues(event.Name(), action.Name()).Inc()
-				}
+					sort.Slice(result, func(i, j int) bool {
+						return result[i].Index < result[j].Index
+					})
 
-				sort.Slice(result, func(i, j int) bool {
-					return result[i].Index < result[j].Index
-				})
+					for _, r := range result {
+						err := ps.Writer.Publish(r.Event)
+						if err != nil {
+							logrus.Errorln("Error in queueing: " + err.Error())
+							continue
+						}
 
-				for _, r := range result {
-					err := ps.Writer.Publish(r.Event)
-					if err != nil {
-						logrus.Errorln("Error in queueing: " + err.Error())
-						continue
+						replies[status.ID]++
 					}
-
-					replies[status.Message.ID]++
 				}
 			}
 		}
