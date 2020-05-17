@@ -39,7 +39,7 @@ const (
 	ReconnectNone    = 0 * time.Second
 	ReconnectInitial = 5 * time.Second
 	ReconnectMax     = 320 * time.Second
-	ServerHeader     = "X-Served-Server"
+	ServerHeader     = "X-Served-By"
 )
 
 type mastodon struct {

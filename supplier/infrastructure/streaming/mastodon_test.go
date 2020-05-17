@@ -153,7 +153,7 @@ var _ = Describe("Mastodon", func() {
 								conn,
 								&http.Response{
 									Header: http.Header{
-										"X-Served-Server": []string{"192.0.2.1:4000"},
+										"X-Served-By": []string{"192.0.2.1:4000"},
 									},
 								},
 								nil,
@@ -185,7 +185,7 @@ var _ = Describe("Mastodon", func() {
 										conn,
 										&http.Response{
 											Header: http.Header{
-												"X-Served-Server": []string{"192.0.2.1:4000"},
+												"X-Served-By": []string{"192.0.2.1:4000"},
 											},
 										},
 										nil,
@@ -216,7 +216,7 @@ var _ = Describe("Mastodon", func() {
 										conn,
 										&http.Response{
 											Header: http.Header{
-												"X-Served-Server": []string{"192.0.2.1:4000"},
+												"X-Served-By": []string{"192.0.2.1:4000"},
 											},
 										},
 										nil,
@@ -252,7 +252,7 @@ var _ = Describe("Mastodon", func() {
 										conn,
 										&http.Response{
 											Header: http.Header{
-												"X-Served-Server": []string{"192.0.2.1:4000"},
+												"X-Served-By": []string{"192.0.2.1:4000"},
 											},
 										},
 										nil,
@@ -287,7 +287,7 @@ var _ = Describe("Mastodon", func() {
 											conn,
 											&http.Response{
 												Header: http.Header{
-													"X-Served-Server": []string{"192.0.2.1:4000"},
+													"X-Served-By": []string{"192.0.2.1:4000"},
 												},
 											},
 											nil,
@@ -325,7 +325,7 @@ var _ = Describe("Mastodon", func() {
 											conn,
 											&http.Response{
 												Header: http.Header{
-													"X-Served-Server": []string{"192.0.2.1:4000"},
+													"X-Served-By": []string{"192.0.2.1:4000"},
 												},
 											},
 											nil,
@@ -440,7 +440,7 @@ var _ = Describe("Mastodon", func() {
 									conn,
 									&http.Response{
 										Header: http.Header{
-											"X-Served-Server": []string{"192.0.2.1:4000"},
+											"X-Served-By": []string{"192.0.2.1:4000"},
 										},
 									},
 									nil,
@@ -514,7 +514,7 @@ var _ = Describe("Mastodon", func() {
 									conn,
 									&http.Response{
 										Header: http.Header{
-											"X-Served-Server": []string{"192.0.2.1:4000"},
+											"X-Served-By": []string{"192.0.2.1:4000"},
 										},
 									},
 									nil,
@@ -608,7 +608,7 @@ var _ = Describe("Mastodon", func() {
 									conn,
 									&http.Response{
 										Header: http.Header{
-											"X-Served-Server": []string{"192.0.2.1:4000"},
+											"X-Served-By": []string{"192.0.2.1:4000"},
 										},
 									},
 									nil,
