@@ -60,6 +60,19 @@ var _ = Describe("SushiShindanmaker", func() {
 				})
 			})
 
+			Context("message contains thinking_sushi emoji", func() {
+				It("returns true", func() {
+					actual := sushiShindanmaker.Target(service.Message{
+						IsReblog: false,
+						Emojis: []service.Emoji{
+							{Shortcode: "thinking_sushi"},
+						},
+						Content: "診断して",
+					})
+					Expect(actual).To(BeTrue())
+				})
+			})
+
 			Context("message contains ios_big_sushi_* emoji", func() {
 				It("returns true", func() {
 					actual := sushiShindanmaker.Target(service.Message{
