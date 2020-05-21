@@ -15,6 +15,5 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
-	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
 	golang.org/x/sys v0.0.0-20200509044756-6aff5f38e54f // indirect
 )
