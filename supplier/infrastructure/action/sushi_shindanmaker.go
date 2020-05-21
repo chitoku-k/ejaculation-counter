@@ -11,6 +11,7 @@ import (
 var (
 	SushiRegex  = regexp.MustCompile(`(🍣|寿司|すし|ちん(ちん|ぽ|こ))(握|にぎ)`)
 	SushiEmojis = map[string]bool{
+		"thinking_sushi":      true,
 		"ios_big_sushi_1":     true,
 		"ios_big_sushi_2":     true,
 		"ios_big_sushi_3":     true,
