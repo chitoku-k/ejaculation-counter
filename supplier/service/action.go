@@ -1,3 +1,5 @@
+//go:generate mockgen -source=action.go -destination=action_mock.go -package=service -self_package=github.com/chitoku-k/ejaculation-counter/supplier/service
+
 package service
 
 type actionResult struct {

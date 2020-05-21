@@ -63,7 +63,11 @@ func (ps *processor) Execute(ctx context.Context) {
 			case <-ctx.Done():
 				return
 
-			case event := <-scheduler:
+			case event, ok := <-scheduler:
+				if !ok {
+					continue
+				}
+
 				EventsTotal.WithLabelValues(event.Name(), "").Inc()
 				err := ps.Writer.Publish(event)
 				if err != nil {
@@ -71,7 +75,11 @@ func (ps *processor) Execute(ctx context.Context) {
 					continue
 				}
 
-			case status := <-stream:
+			case status, ok := <-stream:
+				if !ok {
+					continue
+				}
+
 				switch status := status.(type) {
 				case Error:
 					logrus.Errorln("Error in streaming: " + status.Err.Error())
