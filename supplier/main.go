@@ -20,7 +20,13 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 )
+
+func init() {
+	prometheus.DefaultRegisterer.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	prometheus.DefaultRegisterer.Unregister(prometheus.NewGoCollector())
+}
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
