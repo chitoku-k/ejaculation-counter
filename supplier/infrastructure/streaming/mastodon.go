@@ -177,12 +177,20 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 					break
 				}
 
-				if stream.Event != "update" {
+				var status mast.Status
+				switch stream.Event {
+				case "update":
+					err = json.NewDecoder(strings.NewReader(stream.Payload.(string))).Decode(&status)
+
+				case "conversation":
+					var conversation mast.Conversation
+					err = json.NewDecoder(strings.NewReader(stream.Payload.(string))).Decode(&conversation)
+					status = *conversation.LastStatus
+
+				default:
 					continue
 				}
 
-				var status mast.Status
-				err = json.NewDecoder(strings.NewReader(stream.Payload.(string))).Decode(&status)
 				if err != nil {
 					ch <- service.Error{
 						Err: err,
