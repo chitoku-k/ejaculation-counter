@@ -53,6 +53,7 @@ func main() {
 
 	shindan := client.NewShindanmaker(http.DefaultClient)
 	through := client.NewThrough(http.DefaultClient)
+	doublet := client.NewDoublet(http.DefaultClient)
 	mpyw := client.NewMpyw(http.DefaultClient)
 
 	s, err := scheduler.New(env)
@@ -80,6 +81,7 @@ func main() {
 		action.NewPyuppyuManagerShindanmaker(shindan),
 		action.NewSushiShindanmaker(shindan),
 		action.NewThrough(through, env),
+		action.NewDoublet(doublet, env),
 	})
 	ps.Execute(ctx)
 

@@ -62,7 +62,8 @@ func main() {
 	}
 
 	through := service.NewThrough(hardcoding.NewThroughRepository())
-	engine := server.NewEngine(env, through)
+	doublet := service.NewDoublet(hardcoding.NewDoubletRepository())
+	engine := server.NewEngine(env, through, doublet)
 	err = engine.Start(ctx)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to start web server"))

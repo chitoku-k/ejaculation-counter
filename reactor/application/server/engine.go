@@ -13,6 +13,7 @@ import (
 type engine struct {
 	Environment config.Environment
 	Through     service.Through
+	Doublet     service.Doublet
 }
 
 type Engine interface {
@@ -22,10 +23,12 @@ type Engine interface {
 func NewEngine(
 	environment config.Environment,
 	through service.Through,
+	doublet service.Doublet,
 ) Engine {
 	return &engine{
 		Environment: environment,
 		Through:     through,
+		Doublet:     doublet,
 	}
 }
 
@@ -43,6 +46,8 @@ func (e *engine) Start(ctx context.Context) error {
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	router.GET("/through", e.HandleThrough)
+
+	router.GET("/doublet", e.HandleDoublet)
 
 	server := http.Server{
 		Addr:    ":" + e.Environment.Port,
