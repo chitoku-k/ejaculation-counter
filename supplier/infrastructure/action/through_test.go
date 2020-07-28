@@ -145,7 +145,6 @@ var _ = Describe("Through", func() {
 				})
 				Expect(index).To(Equal(0))
 				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://reactor/through": dial tcp [::1]:80: connect: connection refused`))
-
 			})
 		})
 
