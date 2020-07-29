@@ -73,16 +73,6 @@ var _ = Describe("Doublet", func() {
 				})
 			})
 
-			Context("message matches 今日の ダブレット", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "今日の ダブレット",
-					})
-					Expect(actual).To(BeTrue())
-				})
-			})
-
 			Context("message matches 今日の 二重語", func() {
 				It("returns true", func() {
 					actual := doublet.Target(service.Message{
@@ -98,16 +88,6 @@ var _ = Describe("Doublet", func() {
 					actual := doublet.Target(service.Message{
 						IsReblog: false,
 						Content:  "doublet ガチャ",
-					})
-					Expect(actual).To(BeTrue())
-				})
-			})
-
-			Context("message matches ダブレット ガチャ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "ダブレット ガチャ",
 					})
 					Expect(actual).To(BeTrue())
 				})
@@ -133,16 +113,6 @@ var _ = Describe("Doublet", func() {
 				})
 			})
 
-			Context("message matches ダブレットガチャ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "ダブレットガチャ",
-					})
-					Expect(actual).To(BeTrue())
-				})
-			})
-
 			Context("message matches 二重語ガチャ", func() {
 				It("returns true", func() {
 					actual := doublet.Target(service.Message{
@@ -163,16 +133,6 @@ var _ = Describe("Doublet", func() {
 				})
 			})
 
-			Context("message matches ﾀﾞﾌﾞﾚｯﾄｶﾞﾁｬ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "ﾀﾞﾌﾞﾚｯﾄｶﾞﾁｬ",
-					})
-					Expect(actual).To(BeTrue())
-				})
-			})
-
 			Context("message matches 二重語ｶﾞﾁｬ", func() {
 				It("returns true", func() {
 					actual := doublet.Target(service.Message{
@@ -183,11 +143,11 @@ var _ = Describe("Doublet", func() {
 				})
 			})
 
-			Context("message matches 10 連ダブレットガチャ", func() {
+			Context("message matches 10 連 doublet ガチャ", func() {
 				It("returns true", func() {
 					actual := doublet.Target(service.Message{
 						IsReblog: false,
-						Content:  "10 連ダブレットガチャ",
+						Content:  "10 連 doublet ガチャ",
 					})
 					Expect(actual).To(BeTrue())
 				})
@@ -236,7 +196,7 @@ var _ = Describe("Doublet", func() {
 								DisplayName: "テスト",
 								Acct:        "@test",
 							},
-							Content:    "テスト。10 連ダブレットガチャ。",
+							Content:    "テスト。10 連二重語ガチャ。",
 							Visibility: "private",
 						})
 						Expect(event).To(Equal(&service.ReplyEvent{
@@ -259,7 +219,7 @@ var _ = Describe("Doublet", func() {
 								DisplayName: "テスト",
 								Acct:        "@test",
 							},
-							Content:    "10 連ダブレットガチャ",
+							Content:    "10 連二重語ガチャ",
 							Visibility: "private",
 						})
 						Expect(event).To(Equal(&service.ReplyEvent{
@@ -291,7 +251,7 @@ var _ = Describe("Doublet", func() {
 								DisplayName: "テスト",
 								Acct:        "@test",
 							},
-							Content:    "テスト。10 連ダブレットガチャ。",
+							Content:    "テスト。10 連二重語ガチャ。",
 							Visibility: "private",
 						})
 						Expect(event).To(Equal(&service.ReplyEvent{
@@ -314,7 +274,7 @@ var _ = Describe("Doublet", func() {
 								DisplayName: "テスト",
 								Acct:        "@test",
 							},
-							Content:    "ダブレットガチャ",
+							Content:    "二重語ガチャ",
 							Visibility: "private",
 						})
 						Expect(event).To(Equal(&service.ReplyEvent{
