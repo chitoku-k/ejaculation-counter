@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	DoubletRegex = regexp.MustCompile(`今日の\s*(?:doublet|(?:ダ|ﾀﾞ)(?:ブ|ﾌﾞ)[レﾚ][ッｯ][トﾄ]|二重語)|(?:\s*(\d+)\s*連)?(?:doublet|(?:ダ|ﾀﾞ)(?:ブ|ﾌﾞ)[レﾚ][ッｯ][トﾄ]|二重語)\s*(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]`)
+	DoubletRegex = regexp.MustCompile(`今日の\s*(?:doublet|二重語)|(?:\s*(\d+)\s*連\s*)?(?:doublet|二重語)\s*(?:が|ガ|ｶﾞ)[チﾁ][ャｬ]`)
 )
 
 type doublet struct {
