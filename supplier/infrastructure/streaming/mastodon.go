@@ -154,6 +154,7 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 			server := res.Header.Get(ServerHeader)
 			if server != "" {
 				logrus.Infof("Connected to %s", server)
+				StreamingMessageTotal.WithLabelValues(server)
 			}
 
 			for {
