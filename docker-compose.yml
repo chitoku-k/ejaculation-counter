@@ -1,8 +1,8 @@
-version: '3'
+version: '3.8'
 
 services:
   supplier:
-    image: golang:1.14-stretch
+    image: golang:1.15-buster
     command: bash -c 'go build -o /usr/bin && /usr/bin/supplier'
     working_dir: /usr/src/app
     environment:
@@ -20,7 +20,7 @@ services:
       - ./supplier:/usr/src/app
 
   reactor:
-    image: golang:1.14-stretch
+    image: golang:1.15-buster
     command: bash -c 'go build -o /usr/bin && /usr/bin/reactor'
     working_dir: /usr/src/app
     environment:
@@ -40,7 +40,7 @@ services:
       - ./reactor:/usr/src/app
 
   web:
-    image: nginx:1.17
+    image: nginx:1.18
     ports:
       - "${COUNTER_PORT-8080}:80"
     volumes:
@@ -48,7 +48,7 @@ services:
       - ./conf:/etc/nginx/conf.d
 
   grafana:
-    image: grafana/grafana:6.7.2
+    image: grafana/grafana:7.1.5
     environment:
       TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
