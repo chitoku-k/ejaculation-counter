@@ -9,7 +9,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/mattn/go-mastodon"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -49,7 +48,7 @@ func (i *increment) Do(ctx context.Context, event service.IncrementEvent) error 
 	user, err := i.Client.GetAccountCurrentUser(ctx)
 	if err != nil {
 		IncrementErrorTotal.WithLabelValues("get").Inc()
-		return errors.Wrap(err, "failed to get current user for updating")
+		return fmt.Errorf("failed to get current user for updating: %w", err)
 	}
 
 	summary := parse(*user)
@@ -65,13 +64,13 @@ func (i *increment) Do(ctx context.Context, event service.IncrementEvent) error 
 	})
 	if err != nil {
 		IncrementErrorTotal.WithLabelValues("update").Inc()
-		return errors.Wrap(err, "failed to update current user")
+		return fmt.Errorf("failed to update current user: %w", err)
 	}
 
 	err = i.DB.UpdateCount(ctx, i.Environment.UserID, time.Now(), summary.Today+1)
 	if err != nil {
 		IncrementErrorTotal.WithLabelValues("db").Inc()
-		return errors.Wrap(err, "failed to update DB")
+		return fmt.Errorf("failed to update DB: %w", err)
 	}
 
 	IncrementTotal.Inc()

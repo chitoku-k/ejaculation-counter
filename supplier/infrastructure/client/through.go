@@ -4,9 +4,9 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
-	"github.com/pkg/errors"
 )
 
 type through struct {
@@ -28,14 +28,14 @@ func NewThrough(client wrapper.HttpClient) Through {
 func (t *through) Do(targetURL string) (ThroughResult, error) {
 	res, err := t.Client.Get(targetURL)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to fetch challenge result")
+		return nil, fmt.Errorf("failed to fetch challenge result: %w", err)
 	}
 	defer res.Body.Close()
 
 	var result ThroughResult
 	err = json.NewDecoder(res.Body).Decode(&result)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode challenge result")
+		return nil, fmt.Errorf("failed to decode challenge result: %w", err)
 	}
 
 	return result, nil

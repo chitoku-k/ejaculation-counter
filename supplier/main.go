@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"os"
@@ -19,7 +20,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -41,12 +41,12 @@ func main() {
 
 	env, err := config.Get()
 	if err != nil {
-		panic(errors.Wrap(err, "failed to initialize config"))
+		panic(fmt.Errorf("failed to initialize config: %w", err))
 	}
 
 	writer, err := queue.NewWriter(ctx, "events_topic", "events", env)
 	if err != nil {
-		panic(errors.Wrap(err, "failed to initialize writer"))
+		panic(fmt.Errorf("failed to initialize writer: %w", err))
 	}
 
 	rand.Seed(time.Now().Unix())
@@ -58,7 +58,7 @@ func main() {
 
 	s, err := scheduler.New(env)
 	if err != nil {
-		panic(errors.Wrap(err, "failed to initialize scheduler"))
+		panic(fmt.Errorf("failed to initialize scheduler: %w", err))
 	}
 
 	mastodon := streaming.NewMastodon(
@@ -88,6 +88,6 @@ func main() {
 	engine := server.NewEngine(env)
 	err = engine.Start(ctx)
 	if err != nil {
-		panic(errors.Wrap(err, "failed to start web server"))
+		panic(fmt.Errorf("failed to start web server: %w", err))
 	}
 }

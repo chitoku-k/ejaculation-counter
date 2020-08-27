@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
-	"github.com/pkg/errors"
 )
 
 type mpyw struct {
@@ -35,7 +34,7 @@ func (m *mpyw) Do(targetURL string, count int) (MpywChallengeResult, error) {
 
 	u, err := url.Parse(targetURL)
 	if err != nil {
-		return result, errors.Wrap(err, "failed to parse given targetURL")
+		return result, fmt.Errorf("failed to parse given targetURL: %w", err)
 	}
 
 	q := u.Query()
@@ -44,13 +43,13 @@ func (m *mpyw) Do(targetURL string, count int) (MpywChallengeResult, error) {
 
 	res, err := m.Client.Get(u.String())
 	if err != nil {
-		return result, errors.Wrap(err, "failed to fetch challenge result")
+		return result, fmt.Errorf("failed to fetch challenge result: %w", err)
 	}
 	defer res.Body.Close()
 
 	err = json.NewDecoder(res.Body).Decode(&result)
 	if err != nil {
-		return result, errors.Wrap(err, "failed to decode challenge result")
+		return result, fmt.Errorf("failed to decode challenge result: %w", err)
 	}
 
 	return result, nil

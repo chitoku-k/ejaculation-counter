@@ -3,12 +3,12 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -61,7 +61,7 @@ func NewReader(
 func (r *reader) connect() error {
 	uri, err := amqp.ParseURI(r.Environment.Queue.Host)
 	if err != nil {
-		return errors.Wrap(err, "failed to parse MQ URI")
+		return fmt.Errorf("failed to parse MQ URI: %w", err)
 	}
 
 	uri.Username = r.Environment.Queue.Username
@@ -69,12 +69,12 @@ func (r *reader) connect() error {
 
 	conn, err := amqp.Dial(uri.String())
 	if err != nil {
-		return errors.Wrap(err, "failed to connect to MQ broker")
+		return fmt.Errorf("failed to connect to MQ broker: %w", err)
 	}
 
 	r.Channel, err = conn.Channel()
 	if err != nil {
-		return errors.Wrap(err, "failed to open a channel for MQ connection")
+		return fmt.Errorf("failed to open a channel for MQ connection: %w", err)
 	}
 
 	q, err := r.Channel.QueueDeclare(
@@ -86,7 +86,7 @@ func (r *reader) connect() error {
 		nil,
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to declare queue in MQ channel")
+		return fmt.Errorf("failed to declare queue in MQ channel: %w", err)
 	}
 
 	err = r.Channel.QueueBind(
@@ -97,7 +97,7 @@ func (r *reader) connect() error {
 		nil,
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to bind queue for MQ channel")
+		return fmt.Errorf("failed to bind queue for MQ channel: %w", err)
 	}
 
 	r.Delivery, err = r.Channel.Consume(
@@ -113,7 +113,11 @@ func (r *reader) connect() error {
 }
 
 func (r *reader) disconnect() error {
-	return errors.Wrap(r.Channel.Close(), "failed to close the MQ channel")
+	err := r.Channel.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close the MQ channel: %w", err)
+	}
+	return nil
 }
 
 func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {

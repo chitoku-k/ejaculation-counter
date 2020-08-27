@@ -7,7 +7,6 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/mattn/go-mastodon"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -60,7 +59,7 @@ func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
 	})
 	if err != nil {
 		RepliedEventsErrorTotal.Inc()
-		return errors.Wrap(err, "failed to send reply")
+		return fmt.Errorf("failed to send reply: %w", err)
 	}
 
 	RepliedEventsTotal.Inc()

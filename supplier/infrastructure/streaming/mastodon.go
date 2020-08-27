@@ -16,7 +16,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	mast "github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -108,7 +107,7 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 	u, err := url.Parse(m.Client.Config.Server)
 	if err != nil {
 		close(ch)
-		return ch, errors.Wrap(err, "failed to parse server URL")
+		return ch, fmt.Errorf("failed to parse server URL: %w", err)
 	}
 	u.Scheme = strings.ReplaceAll(u.Scheme, "http", "ws")
 	u.Path = path.Join(u.Path, "/api/v1/streaming")

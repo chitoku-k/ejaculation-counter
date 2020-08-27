@@ -1,12 +1,12 @@
 package action
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -53,7 +53,7 @@ func (os *ofutonManagerShindanmaker) Event(message service.Message) (service.Eve
 	index := OfutonManagerRegex.FindStringIndex(message.Content)
 	result, err := os.Client.Do(os.Client.Name(message.Account), "https://shindanmaker.com/a/503598")
 	if err != nil {
-		return nil, index[0], errors.Wrap(err, "failed to create event")
+		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}
 
 	for _, rule := range OfutonRules {

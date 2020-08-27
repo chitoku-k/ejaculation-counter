@@ -8,7 +8,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 )
 
 type db struct {
@@ -31,7 +30,7 @@ func NewDB(environment config.Environment) (DB, error) {
 	)
 	conn, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect to DB")
+		return nil, fmt.Errorf("failed to connect to DB: %w", err)
 	}
 
 	return &db{
@@ -43,7 +42,7 @@ func NewDB(environment config.Environment) (DB, error) {
 func (d *db) Query(ctx context.Context, q string) ([]string, error) {
 	rows, err := d.Connection.QueryContext(ctx, q)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to query")
+		return nil, fmt.Errorf("failed to query: %w", err)
 	}
 	defer rows.Close()
 
@@ -67,7 +66,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 		date.Format("2006-01-02"),
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to get current count")
+		return fmt.Errorf("failed to get current count: %w", err)
 	}
 
 	if current > 0 {
@@ -87,5 +86,9 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 			count,
 		)
 	}
-	return errors.Wrap(err, "failed to update count on DB")
+
+	if err != nil {
+		return fmt.Errorf("failed to update count on DB: %w", err)
+	}
+	return nil
 }

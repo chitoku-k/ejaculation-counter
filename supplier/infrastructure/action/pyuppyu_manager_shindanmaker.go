@@ -1,11 +1,11 @@
 package action
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -34,7 +34,7 @@ func (ps *pyuppyuManagerShindanmaker) Event(message service.Message) (service.Ev
 	index := PyuppyuManagerRegex.FindStringIndex(message.Content)
 	result, err := ps.Client.Do(ps.Client.Name(message.Account), "https://shindanmaker.com/a/503598")
 	if err != nil {
-		return nil, index[0], errors.Wrap(err, "failed to create event")
+		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}
 
 	event := service.ReplyEvent{

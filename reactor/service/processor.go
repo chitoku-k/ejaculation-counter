@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -38,7 +38,7 @@ func NewProcessor(
 func (ps *processor) Execute(ctx context.Context) error {
 	ch, err := ps.Queue.Consume(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to read from queue")
+		return fmt.Errorf("failed to read from queue: %w", err)
 	}
 
 	go func() {

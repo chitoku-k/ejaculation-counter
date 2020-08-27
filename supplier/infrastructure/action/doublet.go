@@ -10,7 +10,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -48,7 +47,7 @@ func (t *doublet) Event(message service.Message) (service.Event, int, error) {
 
 	items, err := t.Client.Do(fmt.Sprintf("http://%s/doublet", t.Environment.Reactor.Host))
 	if err != nil {
-		return nil, index[0], errors.Wrap(err, "failed to create event")
+		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}
 
 	var result []string

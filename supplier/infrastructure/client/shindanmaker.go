@@ -4,6 +4,7 @@ package client
 
 import (
 	"bytes"
+	"fmt"
 	"html"
 	"io"
 	"net/url"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -56,19 +56,19 @@ func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
 
 	res, err := s.Client.Post(targetURL, "application/x-www-form-urlencoded", strings.NewReader(values.Encode()))
 	if err != nil {
-		return "", errors.Wrap(err, "failed to fetch shindan result")
+		return "", fmt.Errorf("failed to fetch shindan result: %w", err)
 	}
 	defer res.Body.Close()
 
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, res.Body)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to read shindan result")
+		return "", fmt.Errorf("failed to read shindan result: %w", err)
 	}
 
 	matches := ShindanResultRegex.FindSubmatch(buf.Bytes())
 	if matches == nil {
-		return "", errors.New("failed to parse shindan result")
+		return "", fmt.Errorf("failed to parse shindan result")
 	}
 
 	return html.UnescapeString(string(matches[1])), nil

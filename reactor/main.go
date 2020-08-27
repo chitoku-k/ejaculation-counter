@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,7 +14,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/hardcoding"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/queue"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -35,17 +35,17 @@ func main() {
 
 	env, err := config.Get()
 	if err != nil {
-		panic(errors.Wrap(err, "failed to initialize config"))
+		panic(fmt.Errorf("failed to initialize config: %w", err))
 	}
 
 	reader, err := queue.NewReader("events_topic", "events", "events", env)
 	if err != nil {
-		panic(errors.Wrap(err, "failed to initialize reader"))
+		panic(fmt.Errorf("failed to initialize reader: %w", err))
 	}
 
 	db, err := client.NewDB(env)
 	if err != nil {
-		panic(errors.Wrap(err, "failed to initialize DB"))
+		panic(fmt.Errorf("failed to initialize DB: %w", err))
 	}
 
 	mc := client.NewMastodon(env)
@@ -58,7 +58,7 @@ func main() {
 	)
 	err = ps.Execute(ctx)
 	if err != nil {
-		panic(errors.Wrap(err, "failed to execute processor"))
+		panic(fmt.Errorf("failed to execute processor: %w", err))
 	}
 
 	through := service.NewThrough(hardcoding.NewThroughRepository())
@@ -66,6 +66,6 @@ func main() {
 	engine := server.NewEngine(env, through, doublet)
 	err = engine.Start(ctx)
 	if err != nil {
-		panic(errors.Wrap(err, "failed to start web server"))
+		panic(fmt.Errorf("failed to start web server: %w", err))
 	}
 }

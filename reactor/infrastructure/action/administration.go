@@ -8,7 +8,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/mattn/go-mastodon"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -44,13 +43,13 @@ func NewAdministration(
 func (a *administration) Do(ctx context.Context, event service.AdministrationEvent) error {
 	if event.Type != "DB" {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
-		return errors.New("failed to handle event type: " + event.Type)
+		return fmt.Errorf("failed to handle event type: %s", event.Type)
 	}
 
 	result, err := a.DB.Query(ctx, event.Command)
 	if err != nil {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
-		return errors.Wrap(err, "failed to run query")
+		return fmt.Errorf("failed to run query: %w", err)
 	}
 
 	_, err = a.Client.PostStatus(ctx, &mastodon.Toot{
@@ -60,7 +59,7 @@ func (a *administration) Do(ctx context.Context, event service.AdministrationEve
 	})
 	if err != nil {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
-		return errors.Wrap(err, "failed to send reply")
+		return fmt.Errorf("failed to send reply: %w", err)
 	}
 
 	ExecutedAdministrationEventsTotal.Inc()

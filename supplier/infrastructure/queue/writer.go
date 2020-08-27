@@ -3,10 +3,10 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/streadway/amqp"
@@ -56,7 +56,7 @@ func NewWriter(
 func (w *writer) connect() error {
 	uri, err := amqp.ParseURI(w.Environment.Queue.Host)
 	if err != nil {
-		return errors.Wrap(err, "failed to parse MQ URI")
+		return fmt.Errorf("failed to parse MQ URI: %w", err)
 	}
 
 	uri.Username = w.Environment.Queue.Username
@@ -64,12 +64,12 @@ func (w *writer) connect() error {
 
 	conn, err := amqp.Dial(uri.String())
 	if err != nil {
-		return errors.Wrap(err, "failed to connect to MQ broker")
+		return fmt.Errorf("failed to connect to MQ broker: %w", err)
 	}
 
 	w.Channel, err = conn.Channel()
 	if err != nil {
-		return errors.Wrap(err, "failed to open a channel for MQ connection")
+		return fmt.Errorf("failed to open a channel for MQ connection: %w", err)
 	}
 
 	err = w.Channel.ExchangeDeclare(
@@ -82,12 +82,12 @@ func (w *writer) connect() error {
 		nil,
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to declare exchange in MQ channel")
+		return fmt.Errorf("failed to declare exchange in MQ channel: %w", err)
 	}
 
 	err = w.Channel.Confirm(false)
 	if err != nil {
-		return errors.Wrap(err, "failed to put channel into confirm mode")
+		return fmt.Errorf("failed to put channel into confirm mode: %w", err)
 	}
 
 	go func() {
@@ -105,13 +105,17 @@ func (w *writer) connect() error {
 
 func (w *writer) disconnect() error {
 	<-w.Confirmations
-	return errors.Wrap(w.Channel.Close(), "failed to close the MQ channel")
+	err := w.Channel.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close the MQ channel: %w", err)
+	}
+	return nil
 }
 
 func (w *writer) Publish(event service.Event) error {
 	body, err := json.Marshal(event)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal event")
+		return fmt.Errorf("failed to marshal event: %w", err)
 	}
 
 	return w.publish(event.Name(), body, true)
@@ -143,7 +147,7 @@ func (w *writer) publish(name string, body []byte, retry bool) error {
 		}
 
 		QueuedMessageErrorTotal.Inc()
-		return errors.Wrap(err, "failed to publish message")
+		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
 	return nil
