@@ -11,7 +11,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/mattn/go-mastodon"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -92,7 +91,7 @@ func (u *update) Do(ctx context.Context, event service.UpdateEvent) error {
 	user, err := u.Client.GetAccountCurrentUser(ctx)
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("get").Inc()
-		return errors.Wrap(err, "failed to get current user for updating")
+		return fmt.Errorf("failed to get current user for updating: %w", err)
 	}
 
 	summary := parse(*user)
@@ -108,13 +107,13 @@ func (u *update) Do(ctx context.Context, event service.UpdateEvent) error {
 	})
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("update").Inc()
-		return errors.Wrap(err, "failed to update current user")
+		return fmt.Errorf("failed to update current user: %w", err)
 	}
 
 	date, err := time.Parse(time.RFC3339, event.Date)
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("parse").Inc()
-		return errors.Wrap(err, "failed to parse update date")
+		return fmt.Errorf("failed to parse update date: %w", err)
 	}
 
 	yesterday := date.AddDate(0, 0, -1)
@@ -124,13 +123,13 @@ func (u *update) Do(ctx context.Context, event service.UpdateEvent) error {
 	})
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("toot").Inc()
-		return errors.Wrap(err, "failed to send update")
+		return fmt.Errorf("failed to send update: %w", err)
 	}
 
 	err = u.DB.UpdateCount(ctx, u.Environment.UserID, yesterday, summary.Today)
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("db").Inc()
-		return errors.Wrap(err, "failed to update DB")
+		return fmt.Errorf("failed to update DB: %w", err)
 	}
 
 	UpdatesTotal.Inc()

@@ -1,11 +1,11 @@
 package action
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -34,7 +34,7 @@ func (bs *battleChimpoShindanmaker) Event(message service.Message) (service.Even
 	index := BattleChimpoRegex.FindStringIndex(message.Content)
 	result, err := bs.Client.Do(bs.Client.Name(message.Account), "https://shindanmaker.com/a/584238")
 	if err != nil {
-		return nil, index[0], errors.Wrap(err, "failed to create event")
+		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}
 
 	event := service.ReplyEvent{

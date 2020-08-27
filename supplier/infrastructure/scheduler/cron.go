@@ -1,11 +1,11 @@
 package scheduler
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 )
 
@@ -24,7 +24,7 @@ func New(environment config.Environment) (service.Scheduler, error) {
 
 	_, err := s.cron.AddFunc("00 00 * * *", s.handle)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to register schedule")
+		return nil, fmt.Errorf("failed to register schedule: %w", err)
 	}
 
 	return &s, nil

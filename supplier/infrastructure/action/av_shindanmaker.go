@@ -1,11 +1,11 @@
 package action
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -46,7 +46,7 @@ func (as *avShindanmaker) Event(message service.Message) (service.Event, int, er
 
 	result, err := as.Client.Do(matches[1], "https://shindanmaker.com/a/794363")
 	if err != nil {
-		return nil, index[4], errors.Wrap(err, "failed to create event")
+		return nil, index[4], fmt.Errorf("failed to create event: %w", err)
 	}
 
 	event := service.ReplyEvent{
