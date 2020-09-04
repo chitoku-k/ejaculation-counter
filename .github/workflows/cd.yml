@@ -11,6 +11,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Log into Docker Hub
+        uses: azure/docker-login@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Log into Docker Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: docker.chitoku.jp
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Build web
         run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/web
       - name: Build supplier
@@ -19,12 +30,6 @@ jobs:
       - name: Build reactor
         run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/reactor
         working-directory: reactor
-      - name: Log into Docker Registry
-        uses: azure/docker-login@v1
-        with:
-          login-server: docker.chitoku.jp
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Push to Docker Registry
         run: |
           docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/web
