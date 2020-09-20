@@ -350,8 +350,17 @@ var _ = Describe("Processor", func() {
 										gomock.InOrder(
 											a2.EXPECT().Event(message).Return(nil, 0, errors.New("failed to create event")),
 											a2.EXPECT().Name().Return("a2"),
+											a2.EXPECT().Name().Return("a2"),
 											a2.EXPECT().Name().Do(cancel).Return("a2"),
 										)
+
+										qw.EXPECT().Publish(&service.ReplyErrorEvent{
+											InReplyToID: "1",
+											Acct:        "@test",
+											ActionName:  "a2",
+										}).Do(func(service.Event) {
+											cancel()
+										}).Return(nil)
 									})
 
 									It("does nothing and eventually exits", func() {
@@ -437,13 +446,29 @@ var _ = Describe("Processor", func() {
 											a2.EXPECT().Event(message).Return(nil, 0, errors.New("failed to create event")),
 											a2.EXPECT().Name().Return("a2"),
 											a2.EXPECT().Name().Return("a2"),
+											a2.EXPECT().Name().Return("a2"),
 										)
 
 										gomock.InOrder(
 											a3.EXPECT().Event(message).Return(nil, 0, errors.New("failed to create event")),
 											a3.EXPECT().Name().Return("a3"),
+											a3.EXPECT().Name().Return("a3"),
 											a3.EXPECT().Name().Do(cancel).Return("a3"),
 										)
+
+										qw.EXPECT().Publish(&service.ReplyErrorEvent{
+											InReplyToID: "1",
+											Acct:        "@test",
+											ActionName:  "a2",
+										}).Return(nil)
+
+										qw.EXPECT().Publish(&service.ReplyErrorEvent{
+											InReplyToID: "1",
+											Acct:        "@test",
+											ActionName:  "a3",
+										}).Do(func(service.Event) {
+											cancel()
+										}).Return(nil)
 									})
 
 									It("does nothing and eventually exits", func() {

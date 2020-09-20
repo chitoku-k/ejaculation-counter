@@ -15,6 +15,17 @@ func (*ReplyEvent) Name() string {
 	return "events.reply"
 }
 
+type ReplyErrorEvent struct {
+	InReplyToID string `json:"in_reply_to_id"`
+	Acct        string `json:"acct"`
+	Visibility  string `json:"visibility"`
+	ActionName  string `json:"action_name"`
+}
+
+func (*ReplyErrorEvent) Name() string {
+	return "events.reply_error"
+}
+
 type UpdateEvent struct {
 	UserID string `json:"user_id"`
 	Date   string `json:"date"`

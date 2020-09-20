@@ -40,6 +40,7 @@ type reader struct {
 	Environment config.Environment
 	Channel     *amqp.Channel
 	Delivery    <-chan amqp.Delivery
+	Closes      chan *amqp.Error
 }
 
 func NewReader(
@@ -77,6 +78,8 @@ func (r *reader) connect() error {
 		return fmt.Errorf("failed to open a channel for MQ connection: %w", err)
 	}
 
+	r.Closes = conn.NotifyClose(make(chan *amqp.Error, 1))
+
 	q, err := r.Channel.QueueDeclare(
 		r.QueueName,
 		true,
@@ -109,7 +112,12 @@ func (r *reader) connect() error {
 		false,
 		nil,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to consume from MQ: %w", err)
+	}
+
+	logrus.Infof("Connected to MQ: %v", r.Environment.Queue.Host)
+	return nil
 }
 
 func (r *reader) disconnect() error {
@@ -120,20 +128,53 @@ func (r *reader) disconnect() error {
 	return nil
 }
 
+func (r *reader) reconnect(ctx context.Context) {
+	reconnect := ReconnectInitial
+
+	for {
+		reconnect = time.Duration(
+			math.Min(
+				math.Max(
+					float64(reconnect*2),
+					float64(ReconnectInitial),
+				),
+				float64(ReconnectMax),
+			),
+		)
+
+		logrus.Infof("Reconnecting in %v...", reconnect)
+		ticker := time.NewTicker(reconnect)
+
+		select {
+		case <-ctx.Done():
+			ticker.Stop()
+			return
+
+		case <-ticker.C:
+			ticker.Stop()
+			r.disconnect()
+			err := r.connect()
+			if err == nil {
+				return
+			}
+		}
+	}
+}
+
 func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 	ch := make(chan service.Event)
 
 	go func() {
 		for {
-			reconnect := ReconnectInitial
-
 			select {
 			case <-ctx.Done():
 				r.disconnect()
 				return
 
-			case err := <-r.Channel.NotifyClose(make(chan *amqp.Error)):
-				logrus.Errorf("Channel closed: %v", err.Error())
+			case err := <-r.Closes:
+				logrus.Errorf("Disconnected from MQ: %v", err.Error())
+				r.reconnect(ctx)
+				continue
 
 			case message := <-r.Delivery:
 				DeliveredMessageTotal.WithLabelValues(message.Type).Inc()
@@ -141,6 +182,15 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 				switch message.Type {
 				case "events.reply":
 					var event service.ReplyEvent
+					err := json.Unmarshal(message.Body, &event)
+					if err != nil {
+						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
+						continue
+					}
+					ch <- &event
+
+				case "events.reply_error":
+					var event service.ReplyErrorEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
 						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
@@ -179,28 +229,6 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 					ch <- &service.ErrorEvent{
 						Raw: string(message.Body),
 					}
-				}
-
-				continue
-			}
-
-			for {
-				reconnect = time.Duration(
-					math.Min(
-						math.Max(
-							float64(reconnect*2),
-							float64(ReconnectInitial),
-						),
-						float64(ReconnectMax),
-					),
-				)
-				logrus.Infof("Reconnecting in %v...", reconnect)
-				<-time.Tick(reconnect)
-
-				r.disconnect()
-				err := r.connect()
-				if err == nil {
-					break
 				}
 			}
 		}

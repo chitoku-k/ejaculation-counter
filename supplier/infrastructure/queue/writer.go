@@ -16,6 +16,7 @@ import (
 )
 
 const (
+	QueueSize        = 1024
 	ReconnectInitial = 5 * time.Second
 	ReconnectMax     = 320 * time.Second
 )
@@ -39,6 +40,8 @@ type writer struct {
 	Environment   config.Environment
 	Channel       *amqp.Channel
 	Confirmations chan amqp.Confirmation
+	Closes        chan *amqp.Error
+	Queue         chan service.Event
 }
 
 func NewWriter(
@@ -51,17 +54,13 @@ func NewWriter(
 		Exchange:    exchange,
 		RoutingKey:  routingKey,
 		Environment: environment,
+		Queue:       make(chan service.Event, QueueSize),
 	}
 
-	go func() {
-		<-ctx.Done()
-		w.disconnect()
-	}()
-
-	return w, w.connect()
+	return w, w.connect(ctx)
 }
 
-func (w *writer) connect() error {
+func (w *writer) connect(ctx context.Context) error {
 	uri, err := amqp.ParseURI(w.Environment.Queue.Host)
 	if err != nil {
 		return fmt.Errorf("failed to parse MQ URI: %w", err)
@@ -79,6 +78,9 @@ func (w *writer) connect() error {
 	if err != nil {
 		return fmt.Errorf("failed to open a channel for MQ connection: %w", err)
 	}
+
+	w.Closes = conn.NotifyClose(make(chan *amqp.Error, 1))
+	w.Confirmations = w.Channel.NotifyPublish(make(chan amqp.Confirmation, 1))
 
 	err = w.Channel.ExchangeDeclare(
 		w.Exchange,
@@ -99,29 +101,21 @@ func (w *writer) connect() error {
 	}
 
 	go func() {
-		reconnect := ReconnectInitial
-
 		for {
 			select {
-			case <-w.Channel.NotifyClose(make(chan *amqp.Error)):
-				for {
-					reconnect = time.Duration(
-						math.Min(
-							math.Max(
-								float64(reconnect*2),
-								float64(ReconnectInitial),
-							),
-							float64(ReconnectMax),
-						),
-					)
-					logrus.Infof("Reconnecting in %v...", reconnect)
-					<-time.Tick(reconnect)
+			case <-ctx.Done():
+				w.disconnect()
+				return
 
-					w.disconnect()
-					err := w.connect()
-					if err == nil {
-						break
-					}
+			case err := <-w.Closes:
+				logrus.Errorf("Disconnected from MQ: %v", err.Error())
+				w.reconnect(ctx)
+				return
+
+			case event := <-w.Queue:
+				err := w.Publish(event)
+				if err != nil {
+					logrus.Errorf("Error in publishing from queue: %v", err.Error())
 				}
 
 			case _, ok := <-w.Confirmations:
@@ -132,7 +126,7 @@ func (w *writer) connect() error {
 		}
 	}()
 
-	w.Confirmations = w.Channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+	logrus.Infof("Connected to MQ: %v", w.Environment.Queue.Host)
 	return nil
 }
 
@@ -145,42 +139,67 @@ func (w *writer) disconnect() error {
 	return nil
 }
 
+func (w *writer) reconnect(ctx context.Context) {
+	reconnect := ReconnectInitial
+
+	for {
+		reconnect = time.Duration(
+			math.Min(
+				math.Max(
+					float64(reconnect*2),
+					float64(ReconnectInitial),
+				),
+				float64(ReconnectMax),
+			),
+		)
+
+		logrus.Infof("Reconnecting in %v...", reconnect)
+		ticker := time.NewTicker(reconnect)
+
+		select {
+		case <-ctx.Done():
+			ticker.Stop()
+			return
+
+		case <-ticker.C:
+			ticker.Stop()
+			w.disconnect()
+			err := w.connect(ctx)
+			if err == nil {
+				return
+			}
+		}
+	}
+}
+
 func (w *writer) Publish(event service.Event) error {
 	body, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
 
-	return w.publish(event.Name(), body, true)
-}
-
-func (w *writer) publish(name string, body []byte, retry bool) error {
-	err := w.Channel.Publish(
+	err = w.Channel.Publish(
 		w.Exchange,
 		w.RoutingKey,
 		false,
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
-			Type:        name,
+			Type:        event.Name(),
 			Body:        body,
 		},
 	)
 	QueuedMessageTotal.Inc()
 
 	if err != nil {
-		var errs []error
-		if retry {
-			w.disconnect()
-			errs = append(errs, w.connect())
-			errs = append(errs, w.publish(name, body, false))
-			if errs == nil {
-				return nil
-			}
-		}
-
 		QueuedMessageErrorTotal.Inc()
-		return fmt.Errorf("failed to publish message: %w", err)
+		select {
+		case w.Queue <- event:
+			return fmt.Errorf("failed to publish message (requeued): %w", err)
+
+		default:
+			return fmt.Errorf("failed to publish message (queue is full): %w", err)
+		}
 	}
 
 	return nil

@@ -65,3 +65,18 @@ func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
 	RepliedEventsTotal.Inc()
 	return nil
 }
+
+func (r *reply) SendError(ctx context.Context, event service.ReplyErrorEvent) error {
+	_, err := r.Client.PostStatus(ctx, &mastodon.Toot{
+		InReplyToID: mastodon.ID(event.InReplyToID),
+		Status:      pack(fmt.Sprintf("@%s 何かがおかしいよ（%s）", event.Acct, event.ActionName)),
+		Visibility:  event.Visibility,
+	})
+	if err != nil {
+		RepliedEventsErrorTotal.Inc()
+		return fmt.Errorf("failed to send reply (error): %w", err)
+	}
+
+	RepliedEventsTotal.Inc()
+	return nil
+}
