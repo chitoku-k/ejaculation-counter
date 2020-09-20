@@ -4,12 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
+	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
+)
+
+const (
+	ReconnectInitial = 5 * time.Second
+	ReconnectMax     = 320 * time.Second
 )
 
 var (
@@ -91,10 +99,35 @@ func (w *writer) connect() error {
 	}
 
 	go func() {
+		reconnect := ReconnectInitial
+
 		for {
-			_, ok := <-w.Confirmations
-			if !ok {
-				return
+			select {
+			case <-w.Channel.NotifyClose(make(chan *amqp.Error)):
+				for {
+					reconnect = time.Duration(
+						math.Min(
+							math.Max(
+								float64(reconnect*2),
+								float64(ReconnectInitial),
+							),
+							float64(ReconnectMax),
+						),
+					)
+					logrus.Infof("Reconnecting in %v...", reconnect)
+					<-time.Tick(reconnect)
+
+					w.disconnect()
+					err := w.connect()
+					if err == nil {
+						break
+					}
+				}
+
+			case _, ok := <-w.Confirmations:
+				if !ok {
+					return
+				}
 			}
 		}
 	}()
