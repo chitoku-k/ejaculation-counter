@@ -120,7 +120,7 @@ var _ = Describe("Mastodon", func() {
 							cancel()
 						}).Return(
 							nil,
-							&http.Response{},
+							nil,
 							errors.New("dial tcp [::1]:443: connect: connection refused"),
 						)
 					})
@@ -424,9 +424,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								).Return(
 									nil,
-									&http.Response{
-										Header: http.Header{},
-									},
+									nil,
 									errors.New("dial tcp [::1]:443: connect: connection refused"),
 								),
 								// (2)
@@ -486,9 +484,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								).Return(
 									nil,
-									&http.Response{
-										Header: http.Header{},
-									},
+									nil,
 									errors.New("dial tcp [::1]:443: connect: connection refused"),
 								),
 								// (2)
@@ -498,9 +494,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								).Return(
 									nil,
-									&http.Response{
-										Header: http.Header{},
-									},
+									nil,
 									errors.New("dial tcp [::1]:443: connect: connection refused"),
 								),
 								// (3)
@@ -568,9 +562,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								).Return(
 									nil,
-									&http.Response{
-										Header: http.Header{},
-									},
+									nil,
 									errors.New("dial tcp [::1]:443: connect: connection refused"),
 								),
 								// (2)
@@ -580,9 +572,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								).Return(
 									nil,
-									&http.Response{
-										Header: http.Header{},
-									},
+									nil,
 									errors.New("dial tcp [::1]:443: connect: connection refused"),
 								),
 								// (3)
@@ -592,9 +582,7 @@ var _ = Describe("Mastodon", func() {
 									nil,
 								).Return(
 									nil,
-									&http.Response{
-										Header: http.Header{},
-									},
+									nil,
 									errors.New("dial tcp [::1]:443: connect: connection refused"),
 								),
 								// (4)

@@ -56,6 +56,13 @@ func (ps *processor) Execute(ctx context.Context) error {
 						continue
 					}
 
+				case *ReplyErrorEvent:
+					err = ps.Reply.SendError(ctx, *e)
+					if err != nil {
+						logrus.Errorln("Failed to send reply (error): " + err.Error())
+						continue
+					}
+
 				case *IncrementEvent:
 					err = ps.Increment.Do(ctx, *e)
 					if err != nil {

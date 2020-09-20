@@ -123,8 +123,14 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 
 			conn, res, err := m.Dialer.DialContext(ctx, u.String(), nil)
 			if err != nil {
-				ch <- service.Error{
-					Err: err,
+				if res != nil {
+					ch <- service.Error{
+						Err: fmt.Errorf("failed to connect: %v: %w", res.Status, err),
+					}
+				} else {
+					ch <- service.Error{
+						Err: err,
+					}
 				}
 				reconnect = time.Duration(
 					math.Min(
@@ -139,6 +145,7 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 					In: reconnect,
 				}
 				StreamingRetryTotal.Inc()
+				// TODO: The usage of time.Tick simply leaks
 				<-m.Ticker.Tick(reconnect)
 				continue
 			}
@@ -152,7 +159,7 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 			reconnect = ReconnectNone
 			server := res.Header.Get(ServerHeader)
 			if server != "" {
-				logrus.Infof("Connected to %s", server)
+				logrus.Infof("Connected to Mastodon: %v", server)
 				StreamingMessageTotal.WithLabelValues(server)
 			}
 

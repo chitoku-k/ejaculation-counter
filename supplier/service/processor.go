@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 
+	"github.com/onsi/ginkgo"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -50,6 +51,8 @@ func NewProcessor(
 
 func (ps *processor) Execute(ctx context.Context) {
 	go func() {
+		defer ginkgo.GinkgoRecover()
+
 		stream, err := ps.Streaming.Run(ctx)
 		if err != nil {
 			logrus.Errorln("Error in starting streaming: " + err.Error())
@@ -105,6 +108,14 @@ func (ps *processor) Execute(ctx context.Context) {
 						if err != nil {
 							logrus.Errorln("Error in processing " + action.Name() + ": " + err.Error())
 							EventsErrorTotal.WithLabelValues(action.Name()).Inc()
+							result = append(result, actionResult{
+								Event: &ReplyErrorEvent{
+									InReplyToID: status.ID,
+									Acct:        status.Account.Acct,
+									Visibility:  status.Visibility,
+									ActionName:  action.Name(),
+								},
+							})
 							continue
 						}
 
@@ -119,7 +130,7 @@ func (ps *processor) Execute(ctx context.Context) {
 					for _, r := range result {
 						err := ps.Writer.Publish(r.Event)
 						if err != nil {
-							logrus.Errorln("Error in queueing: " + err.Error())
+							logrus.Errorln("Error in publishing: " + err.Error())
 							continue
 						}
 
