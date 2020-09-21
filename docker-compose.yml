@@ -36,6 +36,9 @@ services:
       MQ_USERNAME: shiko
       MQ_PASSWORD: shiko
       PORT: 80
+    deploy:
+      mode: replicated
+      replicas: 2
     volumes:
       - ./reactor:/usr/src/app
 
