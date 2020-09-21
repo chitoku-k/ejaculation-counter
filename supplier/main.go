@@ -64,7 +64,7 @@ func main() {
 	mastodon := streaming.NewMastodon(
 		env,
 		wrapper.NewDialer(websocket.DefaultDialer),
-		wrapper.NewTicker(),
+		wrapper.NewTimer(),
 	)
 	ps := service.NewProcessor(s, mastodon, writer, []service.Action{
 		action.NewOfufutonChallenge(rand.New(rand.NewSource(1))),

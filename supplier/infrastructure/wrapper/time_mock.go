@@ -10,39 +10,39 @@ import (
 	time "time"
 )
 
-// MockTicker is a mock of Ticker interface
-type MockTicker struct {
+// MockTimer is a mock of Timer interface
+type MockTimer struct {
 	ctrl     *gomock.Controller
-	recorder *MockTickerMockRecorder
+	recorder *MockTimerMockRecorder
 }
 
-// MockTickerMockRecorder is the mock recorder for MockTicker
-type MockTickerMockRecorder struct {
-	mock *MockTicker
+// MockTimerMockRecorder is the mock recorder for MockTimer
+type MockTimerMockRecorder struct {
+	mock *MockTimer
 }
 
-// NewMockTicker creates a new mock instance
-func NewMockTicker(ctrl *gomock.Controller) *MockTicker {
-	mock := &MockTicker{ctrl: ctrl}
-	mock.recorder = &MockTickerMockRecorder{mock}
+// NewMockTimer creates a new mock instance
+func NewMockTimer(ctrl *gomock.Controller) *MockTimer {
+	mock := &MockTimer{ctrl: ctrl}
+	mock.recorder = &MockTimerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTicker) EXPECT() *MockTickerMockRecorder {
+func (m *MockTimer) EXPECT() *MockTimerMockRecorder {
 	return m.recorder
 }
 
-// Tick mocks base method
-func (m *MockTicker) Tick(d time.Duration) <-chan time.Time {
+// After mocks base method
+func (m *MockTimer) After(d time.Duration) <-chan time.Time {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Tick", d)
+	ret := m.ctrl.Call(m, "After", d)
 	ret0, _ := ret[0].(<-chan time.Time)
 	return ret0
 }
 
-// Tick indicates an expected call of Tick
-func (mr *MockTickerMockRecorder) Tick(d interface{}) *gomock.Call {
+// After indicates an expected call of After
+func (mr *MockTimerMockRecorder) After(d interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tick", reflect.TypeOf((*MockTicker)(nil).Tick), d)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "After", reflect.TypeOf((*MockTimer)(nil).After), d)
 }

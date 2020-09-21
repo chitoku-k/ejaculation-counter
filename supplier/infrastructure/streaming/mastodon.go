@@ -45,13 +45,13 @@ type mastodon struct {
 	Environment config.Environment
 	Client      *mast.Client
 	Dialer      wrapper.Dialer
-	Ticker      wrapper.Ticker
+	Timer       wrapper.Timer
 }
 
 func NewMastodon(
 	environment config.Environment,
 	dialer wrapper.Dialer,
-	ticker wrapper.Ticker,
+	timer wrapper.Timer,
 ) service.Streaming {
 	return &mastodon{
 		Environment: environment,
@@ -60,7 +60,7 @@ func NewMastodon(
 			AccessToken: environment.Mastodon.AccessToken,
 		}),
 		Dialer: dialer,
-		Ticker: ticker,
+		Timer:  timer,
 	}
 }
 
@@ -145,9 +145,14 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 					In: reconnect,
 				}
 				StreamingRetryTotal.Inc()
-				// TODO: The usage of time.Tick simply leaks
-				<-m.Ticker.Tick(reconnect)
-				continue
+
+				select {
+				case <-ctx.Done():
+					return
+
+				case <-m.Timer.After(reconnect):
+					continue
+				}
 			}
 
 			defer func() {
