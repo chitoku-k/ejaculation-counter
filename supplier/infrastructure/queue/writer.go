@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"net"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
@@ -16,9 +17,10 @@ import (
 )
 
 const (
-	QueueSize        = 1024
-	ReconnectInitial = 5 * time.Second
-	ReconnectMax     = 320 * time.Second
+	QueueSize         = 1024
+	ConnectionTimeout = 30 * time.Second
+	ReconnectInitial  = 5 * time.Second
+	ReconnectMax      = 320 * time.Second
 )
 
 var (
@@ -60,6 +62,18 @@ func NewWriter(
 	return w, w.connect(ctx)
 }
 
+func (w *writer) dial(url string) (*amqp.Connection, net.Conn, error) {
+	var nc net.Conn
+	conn, err := amqp.DialConfig(url, amqp.Config{
+		Dial: func(network, addr string) (net.Conn, error) {
+			var err error
+			nc, err = amqp.DefaultDial(ConnectionTimeout)(network, addr)
+			return nc, err
+		},
+	})
+	return conn, nc, err
+}
+
 func (w *writer) connect(ctx context.Context) error {
 	uri, err := amqp.ParseURI(w.Environment.Queue.Host)
 	if err != nil {
@@ -69,7 +83,7 @@ func (w *writer) connect(ctx context.Context) error {
 	uri.Username = w.Environment.Queue.Username
 	uri.Password = w.Environment.Queue.Password
 
-	conn, err := amqp.Dial(uri.String())
+	conn, nc, err := w.dial(uri.String())
 	if err != nil {
 		return fmt.Errorf("failed to connect to MQ broker: %w", err)
 	}
@@ -126,7 +140,7 @@ func (w *writer) connect(ctx context.Context) error {
 		}
 	}()
 
-	logrus.Infof("Connected to MQ: %v", w.Environment.Queue.Host)
+	logrus.Infof("Connected to MQ: %v", nc.RemoteAddr())
 	return nil
 }
 
