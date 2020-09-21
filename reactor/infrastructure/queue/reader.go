@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"net"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
@@ -16,8 +17,9 @@ import (
 )
 
 const (
-	ReconnectInitial = 5 * time.Second
-	ReconnectMax     = 320 * time.Second
+	ConnectionTimeout = 30 * time.Second
+	ReconnectInitial  = 5 * time.Second
+	ReconnectMax      = 320 * time.Second
 )
 
 var (
@@ -59,6 +61,18 @@ func NewReader(
 	return r, r.connect()
 }
 
+func (r *reader) dial(url string) (*amqp.Connection, net.Conn, error) {
+	var nc net.Conn
+	conn, err := amqp.DialConfig(url, amqp.Config{
+		Dial: func(network, addr string) (net.Conn, error) {
+			var err error
+			nc, err = amqp.DefaultDial(ConnectionTimeout)(network, addr)
+			return nc, err
+		},
+	})
+	return conn, nc, err
+}
+
 func (r *reader) connect() error {
 	uri, err := amqp.ParseURI(r.Environment.Queue.Host)
 	if err != nil {
@@ -68,7 +82,7 @@ func (r *reader) connect() error {
 	uri.Username = r.Environment.Queue.Username
 	uri.Password = r.Environment.Queue.Password
 
-	conn, err := amqp.Dial(uri.String())
+	conn, nc, err := r.dial(uri.String())
 	if err != nil {
 		return fmt.Errorf("failed to connect to MQ broker: %w", err)
 	}
@@ -116,7 +130,7 @@ func (r *reader) connect() error {
 		return fmt.Errorf("failed to consume from MQ: %w", err)
 	}
 
-	logrus.Infof("Connected to MQ: %v", r.Environment.Queue.Host)
+	logrus.Infof("Connected to MQ: %v", nc.RemoteAddr())
 	return nil
 }
 
