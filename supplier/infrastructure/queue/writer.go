@@ -154,15 +154,12 @@ func (w *writer) reconnect(ctx context.Context) {
 		)
 
 		logrus.Infof("Reconnecting in %v...", reconnect)
-		ticker := time.NewTicker(reconnect)
 
 		select {
 		case <-ctx.Done():
-			ticker.Stop()
 			return
 
-		case <-ticker.C:
-			ticker.Stop()
+		case <-time.After(reconnect):
 			w.disconnect()
 			err := w.connect(ctx)
 			if err == nil {

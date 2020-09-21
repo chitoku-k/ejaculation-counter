@@ -4,16 +4,16 @@ package wrapper
 
 import "time"
 
-type Ticker interface {
-	Tick(d time.Duration) <-chan time.Time
+type Timer interface {
+	After(d time.Duration) <-chan time.Time
 }
 
-type ticker struct{}
+type timer struct{}
 
-func NewTicker() Ticker {
-	return &ticker{}
+func NewTimer() Timer {
+	return &timer{}
 }
 
-func (t *ticker) Tick(d time.Duration) <-chan time.Time {
-	return time.Tick(d)
+func (t *timer) After(d time.Duration) <-chan time.Time {
+	return time.After(d)
 }

@@ -21,14 +21,14 @@ var _ = Describe("Mastodon", func() {
 		ctrl *gomock.Controller
 		conn *wrapper.MockConn
 		d    *wrapper.MockDialer
-		t    *wrapper.MockTicker
+		t    *wrapper.MockTimer
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		conn = wrapper.NewMockConn(ctrl)
 		d = wrapper.NewMockDialer(ctrl)
-		t = wrapper.NewMockTicker(ctrl)
+		t = wrapper.NewMockTimer(ctrl)
 	})
 
 	AfterEach(func() {
@@ -110,7 +110,7 @@ var _ = Describe("Mastodon", func() {
 						ch = make(chan time.Time, 1)
 						ch <- time.Time{}
 
-						t.EXPECT().Tick(5 * time.Second).Return(ch)
+						t.EXPECT().After(5 * time.Second).Return(ch)
 
 						d.EXPECT().DialContext(
 							ctx,
@@ -414,7 +414,7 @@ var _ = Describe("Mastodon", func() {
 							ch = make(chan time.Time, 1)
 							ch <- time.Time{}
 
-							t.EXPECT().Tick(5 * time.Second).Return(ch)
+							t.EXPECT().After(5 * time.Second).Return(ch)
 
 							gomock.InOrder(
 								// (1)
@@ -472,8 +472,8 @@ var _ = Describe("Mastodon", func() {
 							ch <- time.Time{}
 
 							gomock.InOrder(
-								t.EXPECT().Tick(5*time.Second).Return(ch),
-								t.EXPECT().Tick(10*time.Second).Return(ch),
+								t.EXPECT().After(5*time.Second).Return(ch),
+								t.EXPECT().After(10*time.Second).Return(ch),
 							)
 
 							gomock.InOrder(
@@ -549,9 +549,9 @@ var _ = Describe("Mastodon", func() {
 							ch <- time.Time{}
 
 							gomock.InOrder(
-								t.EXPECT().Tick(5*time.Second).Return(ch),
-								t.EXPECT().Tick(10*time.Second).Return(ch),
-								t.EXPECT().Tick(20*time.Second).Return(ch),
+								t.EXPECT().After(5*time.Second).Return(ch),
+								t.EXPECT().After(10*time.Second).Return(ch),
+								t.EXPECT().After(20*time.Second).Return(ch),
 							)
 
 							gomock.InOrder(
