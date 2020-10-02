@@ -8,6 +8,6 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/mattn/go-mastodon v0.0.4
 	github.com/prometheus/client_golang v1.7.1
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
 )
