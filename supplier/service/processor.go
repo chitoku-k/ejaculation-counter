@@ -4,7 +4,6 @@ import (
 	"context"
 	"sort"
 
-	"github.com/onsi/ginkgo"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -51,8 +50,6 @@ func NewProcessor(
 
 func (ps *processor) Execute(ctx context.Context) {
 	go func() {
-		defer ginkgo.GinkgoRecover()
-
 		stream, err := ps.Streaming.Run(ctx)
 		if err != nil {
 			logrus.Errorf("Error in starting streaming: %v", err)
@@ -66,39 +63,26 @@ func (ps *processor) Execute(ctx context.Context) {
 			case <-ctx.Done():
 				return
 
-			case event, ok := <-scheduler:
-				if !ok {
-					continue
-				}
-
+			case event := <-scheduler:
 				EventsTotal.WithLabelValues(event.Name(), "").Inc()
 				err := ps.Writer.Publish(event)
 				if err != nil {
 					logrus.Errorf("Error in queueing: %v", err)
-					continue
 				}
 
-			case status, ok := <-stream:
-				if !ok {
-					continue
-				}
-
+			case status := <-stream:
 				switch status := status.(type) {
 				case Error:
 					logrus.Errorf("Error in streaming: %v", status.Err)
-					continue
 
 				case Connection:
 					logrus.Infof("Connected to streaming: %v", status.Server)
-					continue
 
 				case Disconnection:
 					logrus.Infof("Disconnected from streaming: %v", status.Err)
-					continue
 
 				case Reconnection:
 					logrus.Infof("Reconnecting to streaming in %v...", status.In)
-					continue
 
 				case Message:
 					_, ok := replies[status.InReplyToID]
