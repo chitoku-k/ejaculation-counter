@@ -85,7 +85,7 @@ func main() {
 	})
 	ps.Execute(ctx)
 
-	engine := server.NewEngine(env)
+	engine := server.NewEngine(env.Port)
 	err = engine.Start(ctx)
 	if err != nil {
 		logrus.Fatalf("Failed to start web server: %v", err)
