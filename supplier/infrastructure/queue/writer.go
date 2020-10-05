@@ -122,14 +122,14 @@ func (w *writer) connect(ctx context.Context) error {
 				return
 
 			case err := <-w.Closes:
-				logrus.Errorf("Disconnected from MQ: %v", err.Error())
+				logrus.Errorf("Disconnected from MQ: %v", err)
 				w.reconnect(ctx)
 				return
 
 			case event := <-w.Queue:
 				err := w.Publish(event)
 				if err != nil {
-					logrus.Errorf("Error in publishing from queue: %v", err.Error())
+					logrus.Errorf("Error in publishing from queue: %v", err)
 				}
 
 			case <-w.Confirmations:

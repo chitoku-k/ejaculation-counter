@@ -55,7 +55,7 @@ func (ps *processor) Execute(ctx context.Context) {
 
 		stream, err := ps.Streaming.Run(ctx)
 		if err != nil {
-			logrus.Errorln("Error in starting streaming: " + err.Error())
+			logrus.Errorf("Error in starting streaming: %v", err)
 			return
 		}
 
@@ -74,7 +74,7 @@ func (ps *processor) Execute(ctx context.Context) {
 				EventsTotal.WithLabelValues(event.Name(), "").Inc()
 				err := ps.Writer.Publish(event)
 				if err != nil {
-					logrus.Errorln("Error in queueing: " + err.Error())
+					logrus.Errorf("Error in queueing: %v", err)
 					continue
 				}
 
@@ -85,7 +85,7 @@ func (ps *processor) Execute(ctx context.Context) {
 
 				switch status := status.(type) {
 				case Error:
-					logrus.Errorln("Error in streaming: " + status.Err.Error())
+					logrus.Errorf("Error in streaming: %v", status.Err)
 					continue
 
 				case Reconnection:
@@ -106,7 +106,7 @@ func (ps *processor) Execute(ctx context.Context) {
 
 						event, index, err := action.Event(status)
 						if err != nil {
-							logrus.Errorln("Error in processing " + action.Name() + ": " + err.Error())
+							logrus.Errorf("Error in processing %v: %v", action.Name(), err)
 							EventsErrorTotal.WithLabelValues(action.Name()).Inc()
 							result = append(result, actionResult{
 								Event: &ReplyErrorEvent{
@@ -130,7 +130,7 @@ func (ps *processor) Execute(ctx context.Context) {
 					for _, r := range result {
 						err := ps.Writer.Publish(r.Event)
 						if err != nil {
-							logrus.Errorln("Error in publishing: " + err.Error())
+							logrus.Errorf("Error in publishing: %v", err)
 							continue
 						}
 
