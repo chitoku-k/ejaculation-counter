@@ -185,7 +185,7 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 				return
 
 			case amqperr := <-r.Closes:
-				logrus.Errorf("Disconnected from MQ: %v", amqperr)
+				logrus.Infof("Disconnected from MQ: %v", amqperr)
 				err := r.reconnect(ctx)
 				if err != nil {
 					return

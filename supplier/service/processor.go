@@ -88,6 +88,14 @@ func (ps *processor) Execute(ctx context.Context) {
 					logrus.Errorf("Error in streaming: %v", status.Err)
 					continue
 
+				case Connection:
+					logrus.Infof("Connected to streaming: %v", status.Server)
+					continue
+
+				case Disconnection:
+					logrus.Infof("Disconnected from streaming: %v", status.Err)
+					continue
+
 				case Reconnection:
 					logrus.Infof("Reconnecting to streaming in %v...", status.In)
 					continue

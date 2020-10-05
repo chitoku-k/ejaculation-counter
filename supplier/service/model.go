@@ -35,6 +35,18 @@ type Tag struct {
 
 func (m Message) status() {}
 
+type Connection struct {
+	Server string
+}
+
+func (c Connection) status() {}
+
+type Disconnection struct {
+	Err error
+}
+
+func (d Disconnection) status() {}
+
 type Reconnection struct {
 	In time.Duration
 }

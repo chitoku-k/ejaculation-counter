@@ -122,7 +122,7 @@ func (w *writer) connect(ctx context.Context) error {
 				return
 
 			case err := <-w.Closes:
-				logrus.Errorf("Disconnected from MQ: %v", err)
+				logrus.Infof("Disconnected from MQ: %v", err)
 				w.reconnect(ctx)
 				return
 
