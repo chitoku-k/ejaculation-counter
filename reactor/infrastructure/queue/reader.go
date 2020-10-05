@@ -142,7 +142,7 @@ func (r *reader) disconnect() error {
 	return nil
 }
 
-func (r *reader) reconnect(ctx context.Context) {
+func (r *reader) reconnect(ctx context.Context) error {
 	reconnect := ReconnectInitial
 
 	for {
@@ -160,14 +160,16 @@ func (r *reader) reconnect(ctx context.Context) {
 
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 
 		case <-time.After(reconnect):
 			r.disconnect()
 			err := r.connect()
-			if err == nil {
-				return
+			if err != nil {
+				logrus.Errorf("Error from MQ: %v", err.Error())
+				continue
 			}
+			return nil
 		}
 	}
 }
@@ -182,10 +184,12 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 				r.disconnect()
 				return
 
-			case err := <-r.Closes:
-				logrus.Errorf("Disconnected from MQ: %v", err.Error())
-				r.reconnect(ctx)
-				continue
+			case amqperr := <-r.Closes:
+				logrus.Errorf("Disconnected from MQ: %v", amqperr.Error())
+				err := r.reconnect(ctx)
+				if err != nil {
+					return
+				}
 
 			case message := <-r.Delivery:
 				DeliveredMessageTotal.WithLabelValues(message.Type).Inc()

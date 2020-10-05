@@ -89,7 +89,7 @@ func (ps *processor) Execute(ctx context.Context) {
 					continue
 
 				case Reconnection:
-					logrus.Infoln("Reconnecting in streaming: " + status.In.String())
+					logrus.Infof("Reconnecting to streaming in %v...", status.In)
 					continue
 
 				case Message:

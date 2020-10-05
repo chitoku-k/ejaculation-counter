@@ -132,10 +132,8 @@ func (w *writer) connect(ctx context.Context) error {
 					logrus.Errorf("Error in publishing from queue: %v", err.Error())
 				}
 
-			case _, ok := <-w.Confirmations:
-				if !ok {
-					return
-				}
+			case <-w.Confirmations:
+				return
 			}
 		}
 	}()
@@ -176,9 +174,10 @@ func (w *writer) reconnect(ctx context.Context) {
 		case <-time.After(reconnect):
 			w.disconnect()
 			err := w.connect(ctx)
-			if err == nil {
-				return
+			if err != nil {
+				continue
 			}
+			return
 		}
 	}
 }
