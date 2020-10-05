@@ -195,11 +195,11 @@ var _ = Describe("Mastodon", func() {
 									conn.EXPECT().Close().Do(cancel).Return(nil)
 								})
 
-								It("sends error and eventually exits", func() {
+								It("sends disconnection and eventually exits", func() {
 									actual, err := mastodon.Run(ctx)
 									Expect(err).NotTo(HaveOccurred())
 
-									Eventually(actual).Should(Receive(Equal(service.Error{
+									Eventually(actual).Should(Receive(Equal(service.Disconnection{
 										Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
 									})))
 									Eventually(actual).Should(BeClosed())
@@ -226,11 +226,11 @@ var _ = Describe("Mastodon", func() {
 									conn.EXPECT().Close().Do(cancel).Return(errors.New("connection cannot be closed"))
 								})
 
-								It("sends error and eventually exits", func() {
+								It("sends disconnection and eventually exits", func() {
 									actual, err := mastodon.Run(ctx)
 									Expect(err).NotTo(HaveOccurred())
 
-									Eventually(actual).Should(Receive(Equal(service.Error{
+									Eventually(actual).Should(Receive(Equal(service.Disconnection{
 										Err: errors.New("dial tcp [::1]:443: connect: connection refused"),
 									})))
 									Eventually(actual).Should(Receive(Equal(service.Error{

@@ -52,40 +52,40 @@ func (ps *processor) Execute(ctx context.Context) error {
 				case *ReplyEvent:
 					err = ps.Reply.Send(ctx, *e)
 					if err != nil {
-						logrus.Errorln("Failed to send reply: " + err.Error())
+						logrus.Errorf("Failed to send reply: %v", err)
 						continue
 					}
 
 				case *ReplyErrorEvent:
 					err = ps.Reply.SendError(ctx, *e)
 					if err != nil {
-						logrus.Errorln("Failed to send reply (error): " + err.Error())
+						logrus.Errorf("Failed to send reply (error): %v", err)
 						continue
 					}
 
 				case *IncrementEvent:
 					err = ps.Increment.Do(ctx, *e)
 					if err != nil {
-						logrus.Errorln("Failed to update increment: " + err.Error())
+						logrus.Errorf("Failed to update increment: %v", err)
 						continue
 					}
 
 				case *UpdateEvent:
 					err = ps.Update.Do(ctx, *e)
 					if err != nil {
-						logrus.Errorln("Failed to update: " + err.Error())
+						logrus.Errorf("Failed to update: %v", err)
 						continue
 					}
 
 				case *AdministrationEvent:
 					err = ps.Administration.Do(ctx, *e)
 					if err != nil {
-						logrus.Errorln("Failed to execute administrative operation: " + err.Error())
+						logrus.Errorf("Failed to execute administrative operation: %v", err)
 						continue
 					}
 
 				case *ErrorEvent:
-					logrus.Errorln("ErrorEvent: " + e.Raw)
+					logrus.Errorf("ErrorEvent: %v", e.Raw)
 				}
 			}
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"net/http"
 	"os"
@@ -21,6 +20,7 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -41,12 +41,12 @@ func main() {
 
 	env, err := config.Get()
 	if err != nil {
-		panic(fmt.Errorf("failed to initialize config: %w", err))
+		logrus.Fatalf("Failed to initialize config: %v", err)
 	}
 
 	writer, err := queue.NewWriter(ctx, "events_topic", "events", env)
 	if err != nil {
-		panic(fmt.Errorf("failed to initialize writer: %w", err))
+		logrus.Fatalf("Failed to initialize writer: %v", err)
 	}
 
 	rand.Seed(time.Now().Unix())
@@ -58,7 +58,7 @@ func main() {
 
 	s, err := scheduler.New(env)
 	if err != nil {
-		panic(fmt.Errorf("failed to initialize scheduler: %w", err))
+		logrus.Fatalf("Failed to initialize scheduler: %v", err)
 	}
 
 	mastodon := streaming.NewMastodon(
@@ -85,9 +85,9 @@ func main() {
 	})
 	ps.Execute(ctx)
 
-	engine := server.NewEngine(env)
+	engine := server.NewEngine(env.Port)
 	err = engine.Start(ctx)
 	if err != nil {
-		panic(fmt.Errorf("failed to start web server: %w", err))
+		logrus.Fatalf("Failed to start web server: %v", err)
 	}
 }

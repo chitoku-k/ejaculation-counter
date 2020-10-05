@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,6 +14,7 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/queue"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -35,17 +35,17 @@ func main() {
 
 	env, err := config.Get()
 	if err != nil {
-		panic(fmt.Errorf("failed to initialize config: %w", err))
+		logrus.Fatalf("Failed to initialize config: %v", err)
 	}
 
 	reader, err := queue.NewReader("events_topic", "events", "events", env)
 	if err != nil {
-		panic(fmt.Errorf("failed to initialize reader: %w", err))
+		logrus.Fatalf("Failed to initialize reader: %v", err)
 	}
 
 	db, err := client.NewDB(env)
 	if err != nil {
-		panic(fmt.Errorf("failed to initialize DB: %w", err))
+		logrus.Fatalf("Failed to initialize DB: %v", err)
 	}
 
 	mc := client.NewMastodon(env)
@@ -58,14 +58,14 @@ func main() {
 	)
 	err = ps.Execute(ctx)
 	if err != nil {
-		panic(fmt.Errorf("failed to execute processor: %w", err))
+		logrus.Fatalf("Failed to execute processor: %v", err)
 	}
 
 	through := service.NewThrough(hardcoding.NewThroughRepository())
 	doublet := service.NewDoublet(hardcoding.NewDoubletRepository())
-	engine := server.NewEngine(env, through, doublet)
+	engine := server.NewEngine(env.Port, through, doublet)
 	err = engine.Start(ctx)
 	if err != nil {
-		panic(fmt.Errorf("failed to start web server: %w", err))
+		logrus.Fatalf("Failed to start web server: %v", err)
 	}
 }

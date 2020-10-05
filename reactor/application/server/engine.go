@@ -2,18 +2,19 @@ package server
 
 import (
 	"context"
+	"net"
 	"net/http"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"golang.org/x/sync/errgroup"
 )
 
 type engine struct {
-	Environment config.Environment
-	Through     service.Through
-	Doublet     service.Doublet
+	Port    string
+	Through service.Through
+	Doublet service.Doublet
 }
 
 type Engine interface {
@@ -21,14 +22,14 @@ type Engine interface {
 }
 
 func NewEngine(
-	environment config.Environment,
+	port string,
 	through service.Through,
 	doublet service.Doublet,
 ) Engine {
 	return &engine{
-		Environment: environment,
-		Through:     through,
-		Doublet:     doublet,
+		Port:    port,
+		Through: through,
+		Doublet: doublet,
 	}
 }
 
@@ -44,24 +45,23 @@ func (e *engine) Start(ctx context.Context) error {
 	})
 
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
 	router.GET("/through", e.HandleThrough)
-
 	router.GET("/doublet", e.HandleDoublet)
 
 	server := http.Server{
-		Addr:    ":" + e.Environment.Port,
+		Addr:    net.JoinHostPort("", e.Port),
 		Handler: router,
 	}
 
-	go func() {
+	var eg errgroup.Group
+	eg.Go(func() error {
 		<-ctx.Done()
-		server.Shutdown(context.Background())
-	}()
+		return server.Shutdown(context.Background())
+	})
 
 	err := server.ListenAndServe()
 	if err == http.ErrServerClosed {
-		return nil
+		return eg.Wait()
 	}
 
 	return err

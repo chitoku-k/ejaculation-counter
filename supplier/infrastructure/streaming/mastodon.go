@@ -18,7 +18,6 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -164,8 +163,10 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 			reconnect = ReconnectNone
 			server := res.Header.Get(ServerHeader)
 			if server != "" {
-				logrus.Infof("Connected to Mastodon: %v", server)
 				StreamingMessageTotal.WithLabelValues(server)
+				ch <- service.Connection{
+					Server: server,
+				}
 			}
 
 			for {
@@ -176,7 +177,7 @@ func (m *mastodon) Run(ctx context.Context) (<-chan service.Status, error) {
 				var stream mast.Stream
 				err = conn.ReadJSON(&stream)
 				if err != nil {
-					ch <- service.Error{
+					ch <- service.Disconnection{
 						Err: err,
 					}
 					err = conn.Close()

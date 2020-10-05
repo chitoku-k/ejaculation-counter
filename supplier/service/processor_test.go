@@ -163,11 +163,14 @@ var _ = Describe("Processor", func() {
 						BeforeEach(func() {
 							ctx, cancel = context.WithCancel(context.Background())
 							events = make(chan service.Event)
-							stream = make(chan service.Status, 1)
+							stream = make(chan service.Status)
 
-							stream <- service.Error{
-								Err: errors.New("websocket: bad handshake"),
-							}
+							go func() {
+								stream <- service.Error{
+									Err: errors.New("websocket: bad handshake"),
+								}
+								cancel()
+							}()
 
 							st.EXPECT().Run(ctx).Return(stream, nil)
 							sc.EXPECT().Start().Return(events)
@@ -181,10 +184,6 @@ var _ = Describe("Processor", func() {
 						It("sends an error and eventually exits", func() {
 							processor.Execute(ctx)
 
-							// HACK
-							time.Sleep(500 * time.Millisecond)
-							cancel()
-
 							Eventually(ctx.Done()).Should(BeClosed())
 						})
 					})
@@ -193,11 +192,14 @@ var _ = Describe("Processor", func() {
 						BeforeEach(func() {
 							ctx, cancel = context.WithCancel(context.Background())
 							events = make(chan service.Event)
-							stream = make(chan service.Status, 1)
+							stream = make(chan service.Status)
 
-							stream <- service.Reconnection{
-								In: 5 * time.Second,
-							}
+							go func() {
+								stream <- service.Reconnection{
+									In: 5 * time.Second,
+								}
+								cancel()
+							}()
 
 							st.EXPECT().Run(ctx).Return(stream, nil)
 							sc.EXPECT().Start().Return(events)
@@ -210,10 +212,6 @@ var _ = Describe("Processor", func() {
 
 						It("sends a reconnection and eventually exits", func() {
 							processor.Execute(ctx)
-
-							// HACK
-							time.Sleep(500 * time.Millisecond)
-							cancel()
 
 							Eventually(ctx.Done()).Should(BeClosed())
 						})

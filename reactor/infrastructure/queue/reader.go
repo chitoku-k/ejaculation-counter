@@ -166,7 +166,7 @@ func (r *reader) reconnect(ctx context.Context) error {
 			r.disconnect()
 			err := r.connect()
 			if err != nil {
-				logrus.Errorf("Error from MQ: %v", err.Error())
+				logrus.Errorf("Error from MQ: %v", err)
 				continue
 			}
 			return nil
@@ -185,7 +185,7 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 				return
 
 			case amqperr := <-r.Closes:
-				logrus.Errorf("Disconnected from MQ: %v", amqperr.Error())
+				logrus.Infof("Disconnected from MQ: %v", amqperr)
 				err := r.reconnect(ctx)
 				if err != nil {
 					return
@@ -199,7 +199,7 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 					var event service.ReplyEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
 						continue
 					}
 					ch <- &event
@@ -208,7 +208,7 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 					var event service.ReplyErrorEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
 						continue
 					}
 					ch <- &event
@@ -217,7 +217,7 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 					var event service.UpdateEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
 						continue
 					}
 					ch <- &event
@@ -226,7 +226,7 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 					var event service.IncrementEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
 						continue
 					}
 					ch <- &event
@@ -235,7 +235,7 @@ func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
 					var event service.AdministrationEvent
 					err := json.Unmarshal(message.Body, &event)
 					if err != nil {
-						logrus.Errorln("Failed to decode message (" + message.Type + "): " + err.Error())
+						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
 						continue
 					}
 					ch <- &event
