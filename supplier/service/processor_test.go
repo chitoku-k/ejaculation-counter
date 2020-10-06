@@ -107,11 +107,6 @@ var _ = Describe("Processor", func() {
 							)
 						})
 
-						AfterEach(func() {
-							close(events)
-							close(stream)
-						})
-
 						It("sends an event and eventually exits", func() {
 							processor.Execute(ctx)
 
@@ -137,11 +132,6 @@ var _ = Describe("Processor", func() {
 								UserID: "1",
 							}).Return(nil)
 
-						})
-
-						AfterEach(func() {
-							close(events)
-							close(stream)
 						})
 
 						It("sends an event and eventually exits", func() {
@@ -176,11 +166,6 @@ var _ = Describe("Processor", func() {
 							sc.EXPECT().Start().Return(events)
 						})
 
-						AfterEach(func() {
-							close(events)
-							close(stream)
-						})
-
 						It("sends an error and eventually exits", func() {
 							processor.Execute(ctx)
 
@@ -205,11 +190,6 @@ var _ = Describe("Processor", func() {
 							sc.EXPECT().Start().Return(events)
 						})
 
-						AfterEach(func() {
-							close(events)
-							close(stream)
-						})
-
 						It("sends a reconnection and eventually exits", func() {
 							processor.Execute(ctx)
 
@@ -225,11 +205,6 @@ var _ = Describe("Processor", func() {
 
 							st.EXPECT().Run(ctx).Return(stream, nil)
 							sc.EXPECT().Start().Return(events)
-						})
-
-						AfterEach(func() {
-							close(events)
-							close(stream)
 						})
 
 						Context("message has already been replied", func() {
@@ -280,7 +255,7 @@ var _ = Describe("Processor", func() {
 
 								gomock.InOrder(
 									a2.EXPECT().Event(message1).Return(e, 0, nil),
-									a2.EXPECT().Name().Do(cancel).Return("a2"),
+									a2.EXPECT().Name().Return("a2"),
 								)
 
 								qw.EXPECT().Publish(e).Do(func(service.Event) {
@@ -349,7 +324,7 @@ var _ = Describe("Processor", func() {
 											a2.EXPECT().Event(message).Return(nil, 0, errors.New("failed to create event")),
 											a2.EXPECT().Name().Return("a2"),
 											a2.EXPECT().Name().Return("a2"),
-											a2.EXPECT().Name().Do(cancel).Return("a2"),
+											a2.EXPECT().Name().Return("a2"),
 										)
 
 										qw.EXPECT().Publish(&service.ReplyErrorEvent{
@@ -386,10 +361,12 @@ var _ = Describe("Processor", func() {
 
 											gomock.InOrder(
 												a2.EXPECT().Event(message).Return(e1, 0, nil),
-												a2.EXPECT().Name().Do(cancel).Return("a2"),
+												a2.EXPECT().Name().Return("a2"),
 											)
 
-											qw.EXPECT().Publish(e1).Return(errors.New("failed to write message"))
+											qw.EXPECT().Publish(e1).Do(func(service.Event) {
+												cancel()
+											}).Return(errors.New("failed to write message"))
 										})
 
 										It("does nothing and eventually exits", func() {
@@ -416,10 +393,12 @@ var _ = Describe("Processor", func() {
 
 											gomock.InOrder(
 												a2.EXPECT().Event(message).Return(e1, 0, nil),
-												a2.EXPECT().Name().Do(cancel).Return("a2"),
+												a2.EXPECT().Name().Return("a2"),
 											)
 
-											qw.EXPECT().Publish(e1).Return(nil)
+											qw.EXPECT().Publish(e1).Do(func(service.Event) {
+												cancel()
+											}).Return(nil)
 										})
 
 										It("writes to queue and eventually exits", func() {
@@ -451,7 +430,7 @@ var _ = Describe("Processor", func() {
 											a3.EXPECT().Event(message).Return(nil, 0, errors.New("failed to create event")),
 											a3.EXPECT().Name().Return("a3"),
 											a3.EXPECT().Name().Return("a3"),
-											a3.EXPECT().Name().Do(cancel).Return("a3"),
+											a3.EXPECT().Name().Return("a3"),
 										)
 
 										qw.EXPECT().Publish(&service.ReplyErrorEvent{
@@ -513,13 +492,15 @@ var _ = Describe("Processor", func() {
 
 											gomock.InOrder(
 												a3.EXPECT().Event(message).Return(e3, 0, nil),
-												a3.EXPECT().Name().Do(cancel).Return("a3"),
+												a3.EXPECT().Name().Return("a3"),
 											)
 
 											gomock.InOrder(
 												qw.EXPECT().Publish(e3).Return(errors.New("failed to write message")),
 												qw.EXPECT().Publish(e1).Return(errors.New("failed to write message")),
-												qw.EXPECT().Publish(e2).Return(errors.New("failed to write message")),
+												qw.EXPECT().Publish(e2).Do(func(service.Event) {
+													cancel()
+												}).Return(errors.New("failed to write message")),
 											)
 										})
 
@@ -567,13 +548,15 @@ var _ = Describe("Processor", func() {
 
 											gomock.InOrder(
 												a3.EXPECT().Event(message).Return(e3, 0, nil),
-												a3.EXPECT().Name().Do(cancel).Return("a3"),
+												a3.EXPECT().Name().Return("a3"),
 											)
 
 											gomock.InOrder(
 												qw.EXPECT().Publish(e3).Return(nil),
 												qw.EXPECT().Publish(e1).Return(nil),
-												qw.EXPECT().Publish(e2).Return(nil),
+												qw.EXPECT().Publish(e2).Do(func(service.Event) {
+													cancel()
+												}).Return(nil),
 											)
 										})
 
