@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Environment struct {
@@ -19,10 +21,11 @@ type Environment struct {
 }
 
 type DB struct {
-	Host     string
-	Database string
-	Username string
-	Password string
+	Host        string
+	Database    string
+	Username    string
+	Password    string
+	MaxLifetime time.Duration
 }
 
 type Mastodon struct {
@@ -57,6 +60,22 @@ func Get() (Environment, error) {
 		if *v == "" {
 			missing = append(missing, k)
 		}
+	}
+
+	for k, v := range map[string]*time.Duration{
+		"DB_MAX_LIFETIME_SEC": &env.DB.MaxLifetime,
+	} {
+		s := os.Getenv(k)
+		if s == "" {
+			continue
+		}
+
+		t, err := strconv.Atoi(s)
+		if err != nil {
+			return env, fmt.Errorf("%s is invalid: %w", k, err)
+		}
+
+		*v = time.Duration(t) * time.Second
 	}
 
 	for k, v := range map[string]*int64{
