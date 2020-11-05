@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 )
 
 type db struct {
@@ -18,6 +19,10 @@ type db struct {
 type DB interface {
 	Query(ctx context.Context, q string) ([]string, error)
 	UpdateCount(ctx context.Context, userID int64, date time.Time, count int) error
+}
+
+func init() {
+	mysql.SetLogger(logrus.StandardLogger())
 }
 
 func NewDB(environment config.Environment) (DB, error) {
