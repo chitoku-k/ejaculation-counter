@@ -32,6 +32,7 @@ func NewDB(environment config.Environment) (DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to DB: %w", err)
 	}
+	conn.SetConnMaxLifetime(environment.DB.MaxLifetime)
 
 	return &db{
 		Environment: environment,
