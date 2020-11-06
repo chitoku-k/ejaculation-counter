@@ -19,106 +19,6 @@
   "links": [],
   "panels": [
     {
-      "config": {
-        "animationDuration": 0,
-        "cellPadding": 2,
-        "cellRadius": 0,
-        "cellSize": 10,
-        "colLimit": null,
-        "displayLegend": true,
-        "domain": "auto",
-        "domainGutter": 2,
-        "hoverDecimals": 2,
-        "hoverUnitFormat": "short",
-        "itemName": [
-          "short",
-          "short"
-        ],
-        "label": {
-          "position": "bottom",
-          "rotate": "null",
-          "width": 60
-        },
-        "legendColors": {
-          "base": "transparent",
-          "empty": "rgb(41, 41, 41)",
-          "max": "#56A64B",
-          "min": "#666"
-        },
-        "legendStr": "",
-        "legendTitleFormat": {
-          "inner": {},
-          "lower": {},
-          "upper": {}
-        },
-        "rowLimit": null,
-        "subDomain": "auto",
-        "subDomainTitleFormat": {
-          "empty": "{date}",
-          "filled": {}
-        },
-        "verticalOrientation": false
-      },
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 11,
-        "x": 0,
-        "y": 0
-      },
-      "id": 2,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  UNIX_TIMESTAMP(<time_column>) as time_sec,\n  <value column> as value,\n  <series name column> as metric\nFROM <table name>\nWHERE $__timeFilter(time_column)\nORDER BY <time_column> ASC\n",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "count"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "counts",
-          "timeColumn": "date",
-          "timeColumnType": "date",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "int",
-              "name": "",
-              "params": [
-                "user",
-                "=",
-                "1"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Contribution",
-      "type": "neocat-cal-heatmap-panel"
-    },
-    {
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
@@ -145,7 +45,7 @@
       "gridPos": {
         "h": 6,
         "w": 5,
-        "x": 11,
+        "x": 0,
         "y": 0
       },
       "id": 4,
@@ -236,6 +136,106 @@
       "valueName": "total"
     },
     {
+      "config": {
+        "animationDuration": 0,
+        "cellPadding": "2",
+        "cellRadius": 0,
+        "cellSize": 10,
+        "colLimit": null,
+        "displayLegend": true,
+        "domain": "auto",
+        "domainGutter": 2,
+        "hoverDecimals": 0,
+        "hoverUnitFormat": "short",
+        "itemName": [
+          "short",
+          "short"
+        ],
+        "label": {
+          "position": "bottom",
+          "rotate": "null",
+          "width": 60
+        },
+        "legendColors": {
+          "base": "transparent",
+          "empty": "rgb(41, 41, 41)",
+          "max": "#56A64B",
+          "min": "#666"
+        },
+        "legendStr": "",
+        "legendTitleFormat": {
+          "inner": {},
+          "lower": {},
+          "upper": {}
+        },
+        "rowLimit": null,
+        "subDomain": "auto",
+        "subDomainTitleFormat": {
+          "empty": "{date}",
+          "filled": {}
+        },
+        "verticalOrientation": false
+      },
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 11,
+        "x": 5,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  UNIX_TIMESTAMP(<time_column>) as time_sec,\n  <value column> as value,\n  <series name column> as metric\nFROM <table name>\nWHERE $__timeFilter(time_column)\nORDER BY <time_column> ASC\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "counts",
+          "timeColumn": "date",
+          "timeColumnType": "date",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "int",
+              "name": "",
+              "params": [
+                "user",
+                "=",
+                "1"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "timeFrom": "6M",
+      "timeShift": null,
+      "title": "Contribution",
+      "type": "neocat-cal-heatmap-panel"
+    },
+    {
       "datasource": null,
       "fieldConfig": {
         "defaults": {
@@ -288,7 +288,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  SUM(`count`) as `count`,\n  NOW() as `time`\nFROM `counts`\nWHERE `date` >= (NOW() - INTERVAL 1 MONTH) AND `user` = 1\nORDER BY `date`\n",
+          "rawSql": "SELECT\n  SUM(`count`) as `count`,\n  NOW() as `time`\nFROM `counts`\nWHERE $__timeFilter(`date`) AND `user` = 1\nORDER BY `date`\n",
           "refId": "A",
           "select": [
             [
@@ -312,9 +312,9 @@
           "where": []
         }
       ],
-      "timeFrom": null,
+      "timeFrom": "30d",
       "timeShift": null,
-      "title": "Last 30 days",
+      "title": "Monthly Total",
       "type": "gauge"
     },
     {
@@ -560,8 +560,5 @@
   "timezone": "",
   "title": "ぴゅっぴゅカウンター",
   "uid": "vh6PgbpWz",
-  "variables": {
-    "list": []
-  },
   "version": 3
 }
