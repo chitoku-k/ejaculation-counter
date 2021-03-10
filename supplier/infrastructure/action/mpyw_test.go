@@ -131,9 +131,9 @@ var _ = Describe("Mpyw", func() {
 	Describe("Event()", func() {
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("https://mpyw.kb10uy.org/api", 1).Return(
+				c.EXPECT().Do("https://mpyw.hinanawi.net/api", 1).Return(
 					client.MpywChallengeResult{},
-					errors.New(`failed to fetch challenge result: Get "https://mpyw.kb10uy.org/api": dial tcp [::1]:443: connect: connection refused`),
+					errors.New(`failed to fetch challenge result: Get "https://mpyw.hinanawi.net/api": dial tcp [::1]:443: connect: connection refused`),
 				)
 			})
 
@@ -147,7 +147,7 @@ var _ = Describe("Mpyw", func() {
 					Content: "実務経験ガチャ",
 				})
 				Expect(index).To(Equal(0))
-				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "https://mpyw.kb10uy.org/api": dial tcp [::1]:443: connect: connection refused`))
+				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "https://mpyw.hinanawi.net/api": dial tcp [::1]:443: connect: connection refused`))
 
 			})
 		})
@@ -155,7 +155,7 @@ var _ = Describe("Mpyw", func() {
 		Context("fetching succeeds", func() {
 			Context("with count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do("https://mpyw.kb10uy.org/api", 10).Return(
+					c.EXPECT().Do("https://mpyw.hinanawi.net/api", 10).Return(
 						client.MpywChallengeResult{
 							Title:  "診断結果",
 							Result: []string{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
@@ -213,7 +213,7 @@ var _ = Describe("Mpyw", func() {
 
 			Context("without count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do("https://mpyw.kb10uy.org/api", 1).Return(
+					c.EXPECT().Do("https://mpyw.hinanawi.net/api", 1).Return(
 						client.MpywChallengeResult{
 							Title:  "診断結果",
 							Result: []string{"診断結果"},
