@@ -41,7 +41,7 @@ func (m *mpyw) Event(message service.Message) (service.Event, int, error) {
 		count = 1
 	}
 
-	result, err := m.Client.Do("https://mpyw.kb10uy.org/api", count)
+	result, err := m.Client.Do("https://mpyw.hinanawi.net/api", count)
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}
