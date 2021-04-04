@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   supplier:
-    image: golang:1.15-buster
-    command: bash -c 'go build -o /usr/bin && /usr/bin/supplier'
-    working_dir: /usr/src/app
+    build:
+      context: ./supplier
+      target: dev
     environment:
       TZ: Asia/Tokyo
       MASTODON_USER_ID:
@@ -14,15 +14,18 @@ services:
       MQ_HOST: amqp://mq
       MQ_USERNAME: shiko
       MQ_PASSWORD: shiko
-      REACTOR_HOST: reactor
       PORT: 80
+      LOG_LEVEL: debug
+    deploy:
+      mode: replicated
+      replicas: 2
     volumes:
       - ./supplier:/usr/src/app
 
   reactor:
-    image: golang:1.15-buster
-    command: bash -c 'go build -o /usr/bin && /usr/bin/reactor'
-    working_dir: /usr/src/app
+    build:
+      context: ./reactor
+      target: dev
     environment:
       USER_ID: 1
       TZ: Asia/Tokyo
@@ -36,6 +39,7 @@ services:
       MQ_USERNAME: shiko
       MQ_PASSWORD: shiko
       PORT: 80
+      LOG_LEVEL: debug
     deploy:
       mode: replicated
       replicas: 2
@@ -43,7 +47,7 @@ services:
       - ./reactor:/usr/src/app
 
   web:
-    image: nginx:1.18
+    image: nginx:1.19
     ports:
       - "${COUNTER_PORT-8080}:80"
     volumes:
@@ -51,7 +55,7 @@ services:
       - ./conf:/etc/nginx/conf.d
 
   grafana:
-    image: grafana/grafana:7.1.5
+    image: grafana/grafana:7.5.1
     environment:
       TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
@@ -64,7 +68,8 @@ services:
       - grafana:/var/lib/grafana
 
   mq:
-    image: rabbitmq:3.8-management
+    build:
+      context: ./mq
     environment:
       RABBITMQ_DEFAULT_USER: shiko
       RABBITMQ_DEFAULT_PASS: shiko
