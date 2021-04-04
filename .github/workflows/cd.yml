@@ -30,11 +30,15 @@ jobs:
       - name: Build reactor
         run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/reactor
         working-directory: reactor
+      - name: Build MQ
+        run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/mq
+        working-directory: mq
       - name: Push to Docker Registry
         run: |
           docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/web
           docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/supplier
           docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/reactor
+          docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/mq
       - name: Set up kubectl
         uses: azure/setup-kubectl@v1
       - name: Set context
