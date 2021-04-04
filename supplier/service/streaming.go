@@ -5,5 +5,7 @@ package service
 import "context"
 
 type Streaming interface {
-	Run(ctx context.Context) (<-chan Status, error)
+	Run(ctx context.Context) error
+	Statuses() <-chan Status
+	Close(exit bool) error
 }

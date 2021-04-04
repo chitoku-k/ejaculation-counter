@@ -5,42 +5,43 @@
 package service
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockScheduler is a mock of Scheduler interface
+// MockScheduler is a mock of Scheduler interface.
 type MockScheduler struct {
 	ctrl     *gomock.Controller
 	recorder *MockSchedulerMockRecorder
 }
 
-// MockSchedulerMockRecorder is the mock recorder for MockScheduler
+// MockSchedulerMockRecorder is the mock recorder for MockScheduler.
 type MockSchedulerMockRecorder struct {
 	mock *MockScheduler
 }
 
-// NewMockScheduler creates a new mock instance
+// NewMockScheduler creates a new mock instance.
 func NewMockScheduler(ctrl *gomock.Controller) *MockScheduler {
 	mock := &MockScheduler{ctrl: ctrl}
 	mock.recorder = &MockSchedulerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
-func (m *MockScheduler) Start() <-chan Event {
+// Start mocks base method.
+func (m *MockScheduler) Start() <-chan Tick {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start")
-	ret0, _ := ret[0].(<-chan Event)
+	ret0, _ := ret[0].(<-chan Tick)
 	return ret0
 }
 
-// Start indicates an expected call of Start
+// Start indicates an expected call of Start.
 func (mr *MockSchedulerMockRecorder) Start() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockScheduler)(nil).Start))

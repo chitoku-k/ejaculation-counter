@@ -2,16 +2,13 @@ package main
 
 import (
 	"context"
-	"math/rand"
-	"net/http"
+	"errors"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
-	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/application/server"
-	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/action"
-	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/queue"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/scheduler"
@@ -29,6 +26,7 @@ func init() {
 }
 
 func main() {
+	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(context.Background())
 
 	sig := make(chan os.Signal)
@@ -43,22 +41,24 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Failed to initialize config: %v", err)
 	}
-
-	writer, err := queue.NewWriter(ctx, "events_topic", "events", env)
-	if err != nil {
-		logrus.Fatalf("Failed to initialize writer: %v", err)
-	}
-
-	rand.Seed(time.Now().Unix())
-
-	shindan := client.NewShindanmaker(http.DefaultClient)
-	through := client.NewThrough(http.DefaultClient)
-	doublet := client.NewDoublet(http.DefaultClient)
-	mpyw := client.NewMpyw(http.DefaultClient)
+	logrus.SetLevel(env.LogLevel)
 
 	s, err := scheduler.New(env)
 	if err != nil {
 		logrus.Fatalf("Failed to initialize scheduler: %v", err)
+	}
+	tick := s.Start()
+
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		s.Stop()
+		wg.Done()
+	}()
+
+	writer, err := queue.NewWriter(ctx, "events_topic", "events", "events", env)
+	if err != nil {
+		logrus.Fatalf("Failed to initialize writer: %v", err)
 	}
 
 	mastodon := streaming.NewMastodon(
@@ -66,28 +66,44 @@ func main() {
 		wrapper.NewDialer(websocket.DefaultDialer),
 		wrapper.NewTimer(),
 	)
-	ps := service.NewProcessor(s, mastodon, writer, []service.Action{
-		action.NewOfufutonChallenge(rand.New(rand.NewSource(1))),
-		action.NewDB(env),
-		action.NewPyuUpdate(env),
-		action.NewMpyw(mpyw),
-		action.NewAVShindanmaker(shindan),
-		action.NewBattleChimpoShindanmaker(shindan),
-		action.NewChimpoChallengeShindanmaker(shindan),
-		action.NewChimpoInsertionChallengeShindanmaker(shindan),
-		action.NewChimpoMatchingShindanmaker(shindan),
-		action.NewLawChallengeShindanmaker(shindan),
-		action.NewOfutonManagerShindanmaker(shindan),
-		action.NewPyuppyuManagerShindanmaker(shindan),
-		action.NewSushiShindanmaker(shindan),
-		action.NewThrough(through, env),
-		action.NewDoublet(doublet, env),
-	})
-	ps.Execute(ctx)
 
-	engine := server.NewEngine(env.Port)
-	err = engine.Start(ctx)
-	if err != nil {
-		logrus.Fatalf("Failed to start web server: %v", err)
-	}
+	wg.Add(1)
+	go func() {
+		err := mastodon.Run(ctx)
+		if err != nil && !errors.Is(err, context.Canceled) {
+			logrus.Fatalf("Error in starting streaming: %v", err)
+		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		mastodon.Close(true)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		ps := service.NewProcessor(writer)
+		ps.Execute(ctx, tick, mastodon.Statuses())
+
+		err := writer.Close()
+		if err != nil {
+			logrus.Errorf("Failed to close writer: %v", err)
+		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		engine := server.NewEngine(env.Port)
+		err := engine.Start(ctx)
+		if err != nil {
+			logrus.Fatalf("Failed to start web server: %v", err)
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
 }

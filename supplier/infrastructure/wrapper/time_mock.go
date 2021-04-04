@@ -5,35 +5,36 @@
 package wrapper
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockTimer is a mock of Timer interface
+// MockTimer is a mock of Timer interface.
 type MockTimer struct {
 	ctrl     *gomock.Controller
 	recorder *MockTimerMockRecorder
 }
 
-// MockTimerMockRecorder is the mock recorder for MockTimer
+// MockTimerMockRecorder is the mock recorder for MockTimer.
 type MockTimerMockRecorder struct {
 	mock *MockTimer
 }
 
-// NewMockTimer creates a new mock instance
+// NewMockTimer creates a new mock instance.
 func NewMockTimer(ctrl *gomock.Controller) *MockTimer {
 	mock := &MockTimer{ctrl: ctrl}
 	mock.recorder = &MockTimerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTimer) EXPECT() *MockTimerMockRecorder {
 	return m.recorder
 }
 
-// After mocks base method
+// After mocks base method.
 func (m *MockTimer) After(d time.Duration) <-chan time.Time {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "After", d)
@@ -41,7 +42,7 @@ func (m *MockTimer) After(d time.Duration) <-chan time.Time {
 	return ret0
 }
 
-// After indicates an expected call of After
+// After indicates an expected call of After.
 func (mr *MockTimerMockRecorder) After(d interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "After", reflect.TypeOf((*MockTimer)(nil).After), d)

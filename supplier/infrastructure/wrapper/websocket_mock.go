@@ -6,35 +6,36 @@ package wrapper
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	http "net/http"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockDialer is a mock of Dialer interface
+// MockDialer is a mock of Dialer interface.
 type MockDialer struct {
 	ctrl     *gomock.Controller
 	recorder *MockDialerMockRecorder
 }
 
-// MockDialerMockRecorder is the mock recorder for MockDialer
+// MockDialerMockRecorder is the mock recorder for MockDialer.
 type MockDialerMockRecorder struct {
 	mock *MockDialer
 }
 
-// NewMockDialer creates a new mock instance
+// NewMockDialer creates a new mock instance.
 func NewMockDialer(ctrl *gomock.Controller) *MockDialer {
 	mock := &MockDialer{ctrl: ctrl}
 	mock.recorder = &MockDialerMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDialer) EXPECT() *MockDialerMockRecorder {
 	return m.recorder
 }
 
-// DialContext mocks base method
+// DialContext mocks base method.
 func (m *MockDialer) DialContext(ctx context.Context, urlStr string, requestHeader http.Header) (Conn, *http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DialContext", ctx, urlStr, requestHeader)
@@ -44,36 +45,36 @@ func (m *MockDialer) DialContext(ctx context.Context, urlStr string, requestHead
 	return ret0, ret1, ret2
 }
 
-// DialContext indicates an expected call of DialContext
+// DialContext indicates an expected call of DialContext.
 func (mr *MockDialerMockRecorder) DialContext(ctx, urlStr, requestHeader interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialContext", reflect.TypeOf((*MockDialer)(nil).DialContext), ctx, urlStr, requestHeader)
 }
 
-// MockConn is a mock of Conn interface
+// MockConn is a mock of Conn interface.
 type MockConn struct {
 	ctrl     *gomock.Controller
 	recorder *MockConnMockRecorder
 }
 
-// MockConnMockRecorder is the mock recorder for MockConn
+// MockConnMockRecorder is the mock recorder for MockConn.
 type MockConnMockRecorder struct {
 	mock *MockConn
 }
 
-// NewMockConn creates a new mock instance
+// NewMockConn creates a new mock instance.
 func NewMockConn(ctrl *gomock.Controller) *MockConn {
 	mock := &MockConn{ctrl: ctrl}
 	mock.recorder = &MockConnMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockConn) EXPECT() *MockConnMockRecorder {
 	return m.recorder
 }
 
-// Close mocks base method
+// Close mocks base method.
 func (m *MockConn) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
@@ -81,13 +82,13 @@ func (m *MockConn) Close() error {
 	return ret0
 }
 
-// Close indicates an expected call of Close
+// Close indicates an expected call of Close.
 func (mr *MockConnMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockConn)(nil).Close))
 }
 
-// ReadJSON mocks base method
+// ReadJSON mocks base method.
 func (m *MockConn) ReadJSON(v interface{}) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadJSON", v)
@@ -95,8 +96,22 @@ func (m *MockConn) ReadJSON(v interface{}) error {
 	return ret0
 }
 
-// ReadJSON indicates an expected call of ReadJSON
+// ReadJSON indicates an expected call of ReadJSON.
 func (mr *MockConnMockRecorder) ReadJSON(v interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadJSON", reflect.TypeOf((*MockConn)(nil).ReadJSON), v)
+}
+
+// WriteMessage mocks base method.
+func (m *MockConn) WriteMessage(messageType int, data []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteMessage", messageType, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WriteMessage indicates an expected call of WriteMessage.
+func (mr *MockConnMockRecorder) WriteMessage(messageType, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteMessage", reflect.TypeOf((*MockConn)(nil).WriteMessage), messageType, data)
 }
