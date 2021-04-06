@@ -14,7 +14,7 @@ type Tick struct {
 func (t Tick) status() {}
 
 func (t Tick) Name() string {
-	return "events.tick"
+	return "packets.tick"
 }
 
 func (t Tick) HashCode() int64 {
@@ -55,7 +55,7 @@ type Tag struct {
 func (m Message) status() {}
 
 func (m Message) Name() string {
-	return "events.message"
+	return "packets.message"
 }
 
 func (m Message) HashCode() int64 {

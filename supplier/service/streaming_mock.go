@@ -35,17 +35,17 @@ func (m *MockStreaming) EXPECT() *MockStreamingMockRecorder {
 }
 
 // Close mocks base method.
-func (m *MockStreaming) Close() error {
+func (m *MockStreaming) Close(exit bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Close")
+	ret := m.ctrl.Call(m, "Close", exit)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Close indicates an expected call of Close.
-func (mr *MockStreamingMockRecorder) Close() *gomock.Call {
+func (mr *MockStreamingMockRecorder) Close(exit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockStreaming)(nil).Close))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockStreaming)(nil).Close), exit)
 }
 
 // Run mocks base method.

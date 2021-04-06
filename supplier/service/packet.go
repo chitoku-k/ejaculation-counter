@@ -1,6 +1,6 @@
 package service
 
-type Event interface {
+type Packet interface {
 	Name() string
 	HashCode() int64
 }

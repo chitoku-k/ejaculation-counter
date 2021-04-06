@@ -64,7 +64,7 @@ var _ = Describe("Processor", func() {
 							Year:  2006,
 							Month: 1,
 							Day:   2,
-						}).Do(func(context.Context, service.Event) {
+						}).Do(func(context.Context, service.Packet) {
 							cancel()
 						}).Return(
 							errors.New("dial tcp [::1]:5672: connect: connection refused"),
@@ -94,7 +94,7 @@ var _ = Describe("Processor", func() {
 							Year:  2006,
 							Month: 1,
 							Day:   2,
-						}).Do(func(context.Context, service.Event) {
+						}).Do(func(context.Context, service.Packet) {
 							cancel()
 						}).Return(nil)
 					})
@@ -224,7 +224,7 @@ var _ = Describe("Processor", func() {
 								Content: "test",
 							}
 
-							qw.EXPECT().Publish(ctx, message).Do(func(context.Context, service.Event) {
+							qw.EXPECT().Publish(ctx, message).Do(func(context.Context, service.Packet) {
 								cancel()
 							}).Return(
 								errors.New("dial tcp [::1]:5672: connect: connection refused"),
@@ -261,7 +261,7 @@ var _ = Describe("Processor", func() {
 								Content: "test",
 							}
 
-							qw.EXPECT().Publish(ctx, message).Do(func(context.Context, service.Event) {
+							qw.EXPECT().Publish(ctx, message).Do(func(context.Context, service.Packet) {
 								cancel()
 							}).Return(nil)
 						})

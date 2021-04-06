@@ -49,15 +49,15 @@ func (mr *MockQueueWriterMockRecorder) Close() *gomock.Call {
 }
 
 // Publish mocks base method.
-func (m *MockQueueWriter) Publish(ctx context.Context, event Event) error {
+func (m *MockQueueWriter) Publish(ctx context.Context, packet Packet) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Publish", ctx, event)
+	ret := m.ctrl.Call(m, "Publish", ctx, packet)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Publish indicates an expected call of Publish.
-func (mr *MockQueueWriterMockRecorder) Publish(ctx, event interface{}) *gomock.Call {
+func (mr *MockQueueWriterMockRecorder) Publish(ctx, packet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockQueueWriter)(nil).Publish), ctx, event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockQueueWriter)(nil).Publish), ctx, packet)
 }

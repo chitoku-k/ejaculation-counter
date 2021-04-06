@@ -28,7 +28,7 @@ func (ps *processor) Execute(ctx context.Context, scheduler <-chan Tick, stream 
 		case tick, ok := <-scheduler:
 			if !ok {
 				scheduler = nil
-				break
+				continue
 			}
 			err := ps.Writer.Publish(ctx, tick)
 			if err != nil {
@@ -38,7 +38,7 @@ func (ps *processor) Execute(ctx context.Context, scheduler <-chan Tick, stream 
 		case status, ok := <-stream:
 			if !ok {
 				stream = nil
-				break
+				continue
 			}
 			switch status := status.(type) {
 			case Error:

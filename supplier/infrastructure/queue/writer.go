@@ -45,7 +45,7 @@ type writer struct {
 	Channel       *amqp.Channel
 	Confirmations chan amqp.Confirmation
 	Closes        chan *amqp.Error
-	Queue         chan service.Event
+	Queue         chan service.Packet
 }
 
 func NewWriter(
@@ -60,7 +60,7 @@ func NewWriter(
 		QueueName:   queue,
 		RoutingKey:  routingKey,
 		Environment: environment,
-		Queue:       make(chan service.Event, QueueSize),
+		Queue:       make(chan service.Packet, QueueSize),
 	}
 
 	return w, w.connect(ctx)
@@ -163,8 +163,8 @@ func (w *writer) connect(ctx context.Context) error {
 				w.reconnect(ctx)
 				return
 
-			case event := <-w.Queue:
-				err := w.Publish(ctx, event)
+			case packet := <-w.Queue:
+				err := w.Publish(ctx, packet)
 				if err != nil {
 					logrus.Errorf("Error in publishing from queue: %v", err)
 				}
@@ -223,10 +223,10 @@ func (w *writer) Close() error {
 	return w.disconnect()
 }
 
-func (w *writer) Publish(ctx context.Context, event service.Event) error {
-	body, err := json.Marshal(event)
+func (w *writer) Publish(ctx context.Context, packet service.Packet) error {
+	body, err := json.Marshal(packet)
 	if err != nil {
-		return fmt.Errorf("failed to marshal event: %w", err)
+		return fmt.Errorf("failed to marshal packet: %w", err)
 	}
 
 	err = w.Channel.Publish(
@@ -236,9 +236,9 @@ func (w *writer) Publish(ctx context.Context, event service.Event) error {
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
-			Type:        event.Name(),
+			Type:        packet.Name(),
 			Headers: amqp.Table{
-				"x-deduplication-header": fmt.Sprintf("%v-%v", event.Name(), event.HashCode()),
+				"x-deduplication-header": fmt.Sprintf("%v-%v", packet.Name(), packet.HashCode()),
 			},
 			Body: body,
 		},
@@ -252,7 +252,7 @@ func (w *writer) Publish(ctx context.Context, event service.Event) error {
 		case <-ctx.Done():
 			return fmt.Errorf("failed to publish message (%v): %w", ctx.Err(), err)
 
-		case w.Queue <- event:
+		case w.Queue <- packet:
 			return fmt.Errorf("failed to publish message (requeued): %w", err)
 
 		default:

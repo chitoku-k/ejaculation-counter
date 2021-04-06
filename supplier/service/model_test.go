@@ -12,9 +12,9 @@ var _ = Describe("Tick", func() {
 			t service.Tick
 		)
 
-		It("returns event name", func() {
+		It("returns packet name", func() {
 			actual := t.Name()
-			Expect(actual).To(Equal("events.tick"))
+			Expect(actual).To(Equal("packets.tick"))
 		})
 	})
 
@@ -53,9 +53,9 @@ var _ = Describe("Message", func() {
 			m service.Message
 		)
 
-		It("returns event name", func() {
+		It("returns packet name", func() {
 			actual := m.Name()
-			Expect(actual).To(Equal("events.message"))
+			Expect(actual).To(Equal("packets.message"))
 		})
 	})
 
