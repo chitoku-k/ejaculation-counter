@@ -24,7 +24,6 @@ var _ = Describe("Environment", func() {
 
 		Context("all required vars set", func() {
 			BeforeEach(func() {
-				os.Setenv("MASTODON_USER_ID", "user1")
 				os.Setenv("MASTODON_SERVER_URL", "mastodon")
 				os.Setenv("MASTODON_STREAM", "direct")
 				os.Setenv("MASTODON_ACCESS_TOKEN", "token")
@@ -38,7 +37,6 @@ var _ = Describe("Environment", func() {
 				env, err := config.Get()
 				Expect(env).To(Equal(config.Environment{
 					Mastodon: config.Mastodon{
-						UserID:      "user1",
 						ServerURL:   "mastodon",
 						Stream:      "direct",
 						AccessToken: "token",
@@ -58,7 +56,6 @@ var _ = Describe("Environment", func() {
 		Context("all vars set", func() {
 			Context("invalid log level is given", func() {
 				BeforeEach(func() {
-					os.Setenv("MASTODON_USER_ID", "user1")
 					os.Setenv("MASTODON_SERVER_URL", "mastodon")
 					os.Setenv("MASTODON_STREAM", "direct")
 					os.Setenv("MASTODON_ACCESS_TOKEN", "token")
@@ -77,7 +74,6 @@ var _ = Describe("Environment", func() {
 
 			Context("valid log level is given", func() {
 				BeforeEach(func() {
-					os.Setenv("MASTODON_USER_ID", "user1")
 					os.Setenv("MASTODON_SERVER_URL", "mastodon")
 					os.Setenv("MASTODON_STREAM", "direct")
 					os.Setenv("MASTODON_ACCESS_TOKEN", "token")
@@ -92,7 +88,6 @@ var _ = Describe("Environment", func() {
 					env, err := config.Get()
 					Expect(env).To(Equal(config.Environment{
 						Mastodon: config.Mastodon{
-							UserID:      "user1",
 							ServerURL:   "mastodon",
 							Stream:      "direct",
 							AccessToken: "token",
