@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	QueueSize         = 1024
 	ConnectionTimeout = 30 * time.Second
 	ReconnectInitial  = 5 * time.Second
 	ReconnectMax      = 320 * time.Second
@@ -36,10 +37,12 @@ var (
 )
 
 type reader struct {
+	ch          chan service.Packet
 	Exchange    string
 	QueueName   string
 	RoutingKey  string
 	Environment config.Environment
+	Connection  *amqp.Connection
 	Channel     *amqp.Channel
 	Delivery    <-chan amqp.Delivery
 	Closes      chan *amqp.Error
@@ -52,6 +55,7 @@ func NewReader(
 	environment config.Environment,
 ) (service.QueueReader, error) {
 	r := &reader{
+		ch:          make(chan service.Packet, QueueSize),
 		Exchange:    exchange,
 		QueueName:   queueName,
 		RoutingKey:  routingKey,
@@ -74,6 +78,8 @@ func (r *reader) dial(url string) (*amqp.Connection, net.Conn, error) {
 }
 
 func (r *reader) connect() error {
+	logrus.Debugf("Connecting to MQ broker...")
+
 	uri, err := amqp.ParseURI(r.Environment.Queue.Host)
 	if err != nil {
 		return fmt.Errorf("failed to parse MQ URI: %w", err)
@@ -82,17 +88,42 @@ func (r *reader) connect() error {
 	uri.Username = r.Environment.Queue.Username
 	uri.Password = r.Environment.Queue.Password
 
-	conn, nc, err := r.dial(uri.String())
+	var nc net.Conn
+	r.Connection, nc, err = r.dial(uri.String())
 	if err != nil {
 		return fmt.Errorf("failed to connect to MQ broker: %w", err)
 	}
 
-	r.Channel, err = conn.Channel()
+	r.Channel, err = r.Connection.Channel()
 	if err != nil {
 		return fmt.Errorf("failed to open a channel for MQ connection: %w", err)
 	}
 
-	r.Closes = conn.NotifyClose(make(chan *amqp.Error, 1))
+	r.Closes = r.Connection.NotifyClose(make(chan *amqp.Error, 1))
+
+	logrus.Debugf("Declaring exchange in MQ...")
+
+	err = r.Channel.ExchangeDeclare(
+		r.Exchange,
+		"x-message-deduplication",
+		true,
+		false,
+		false,
+		false,
+		amqp.Table{
+			"x-cache-size": QueueSize,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare exchange in MQ channel: %w", err)
+	}
+
+	err = r.Channel.Confirm(false)
+	if err != nil {
+		return fmt.Errorf("failed to put channel into confirm mode: %w", err)
+	}
+
+	logrus.Debugf("Declaring queue in MQ...")
 
 	q, err := r.Channel.QueueDeclare(
 		r.QueueName,
@@ -106,6 +137,8 @@ func (r *reader) connect() error {
 		return fmt.Errorf("failed to declare queue in MQ channel: %w", err)
 	}
 
+	logrus.Debugf("Binding queue in MQ...")
+
 	err = r.Channel.QueueBind(
 		q.Name,
 		r.RoutingKey,
@@ -116,6 +149,8 @@ func (r *reader) connect() error {
 	if err != nil {
 		return fmt.Errorf("failed to bind queue for MQ channel: %w", err)
 	}
+
+	logrus.Debugf("Consuming from MQ...")
 
 	r.Delivery, err = r.Channel.Consume(
 		q.Name,
@@ -138,6 +173,10 @@ func (r *reader) disconnect() error {
 	err := r.Channel.Close()
 	if err != nil {
 		return fmt.Errorf("failed to close the MQ channel: %w", err)
+	}
+	err = r.Connection.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close the MQ connection: %w", err)
 	}
 	return nil
 }
@@ -174,80 +213,54 @@ func (r *reader) reconnect(ctx context.Context) error {
 	}
 }
 
-func (r *reader) Consume(ctx context.Context) (<-chan service.Event, error) {
-	ch := make(chan service.Event)
+func (r *reader) Packets() <-chan service.Packet {
+	return r.ch
+}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				r.disconnect()
-				return
+func (r *reader) Close(exit bool) error {
+	if exit {
+		close(r.ch)
+		r.ch = nil
+	}
+	return r.disconnect()
+}
 
-			case amqperr := <-r.Closes:
-				logrus.Infof("Disconnected from MQ: %v", amqperr)
-				err := r.reconnect(ctx)
+func (r *reader) Consume(ctx context.Context) {
+	for r.Closes != nil && r.Delivery != nil {
+		select {
+		case amqperr, ok := <-r.Closes:
+			if !ok {
+				r.Closes = nil
+				continue
+			}
+			logrus.Infof("Disconnected from MQ: %v", amqperr)
+
+		case packet, ok := <-r.Delivery:
+			if !ok {
+				r.Delivery = nil
+				continue
+			}
+			DeliveredMessageTotal.WithLabelValues(packet.Type).Inc()
+
+			switch packet.Type {
+			case "packets.tick":
+				var tick service.Tick
+				err := json.Unmarshal(packet.Body, &tick)
 				if err != nil {
-					return
+					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
+					continue
 				}
+				r.ch <- &tick
 
-			case message := <-r.Delivery:
-				DeliveredMessageTotal.WithLabelValues(message.Type).Inc()
-
-				switch message.Type {
-				case "events.reply":
-					var event service.ReplyEvent
-					err := json.Unmarshal(message.Body, &event)
-					if err != nil {
-						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
-						continue
-					}
-					ch <- &event
-
-				case "events.reply_error":
-					var event service.ReplyErrorEvent
-					err := json.Unmarshal(message.Body, &event)
-					if err != nil {
-						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
-						continue
-					}
-					ch <- &event
-
-				case "events.update":
-					var event service.UpdateEvent
-					err := json.Unmarshal(message.Body, &event)
-					if err != nil {
-						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
-						continue
-					}
-					ch <- &event
-
-				case "events.increment":
-					var event service.IncrementEvent
-					err := json.Unmarshal(message.Body, &event)
-					if err != nil {
-						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
-						continue
-					}
-					ch <- &event
-
-				case "events.administration":
-					var event service.AdministrationEvent
-					err := json.Unmarshal(message.Body, &event)
-					if err != nil {
-						logrus.Errorf("Failed to decode message (%v): %v", message.Type, err)
-						continue
-					}
-					ch <- &event
-
-				default:
-					ch <- &service.ErrorEvent{
-						Raw: string(message.Body),
-					}
+			case "packets.message":
+				var message service.Message
+				err := json.Unmarshal(packet.Body, &message)
+				if err != nil {
+					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
+					continue
 				}
+				r.ch <- &message
 			}
 		}
-	}()
-
-	return ch, nil
+	}
 }

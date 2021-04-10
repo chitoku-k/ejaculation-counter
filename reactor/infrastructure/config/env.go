@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Environment struct {
@@ -16,8 +18,9 @@ type Environment struct {
 
 	Queue Queue
 
-	Port   string
-	UserID int64
+	LogLevel logrus.Level
+	Port     string
+	UserID   int64
 }
 
 type DB struct {
@@ -25,10 +28,12 @@ type DB struct {
 	Database    string
 	Username    string
 	Password    string
+	SSLMode     string
 	MaxLifetime time.Duration
 }
 
 type Mastodon struct {
+	UserID      string
 	ServerURL   string
 	AccessToken string
 }
@@ -42,12 +47,15 @@ type Queue struct {
 func Get() (Environment, error) {
 	var missing []string
 	var env Environment
+	var logLevel string
 
 	for k, v := range map[string]*string{
 		"DB_HOST":               &env.DB.Host,
 		"DB_DATABASE":           &env.DB.Database,
 		"DB_USERNAME":           &env.DB.Username,
 		"DB_PASSWORD":           &env.DB.Password,
+		"DB_SSL_MODE":           &env.DB.SSLMode,
+		"MASTODON_USER_ID":      &env.Mastodon.UserID,
 		"MASTODON_SERVER_URL":   &env.Mastodon.ServerURL,
 		"MASTODON_ACCESS_TOKEN": &env.Mastodon.AccessToken,
 		"MQ_HOST":               &env.Queue.Host,
@@ -60,6 +68,12 @@ func Get() (Environment, error) {
 		if *v == "" {
 			missing = append(missing, k)
 		}
+	}
+
+	for k, v := range map[string]*string{
+		"LOG_LEVEL": &logLevel,
+	} {
+		*v = os.Getenv(k)
 	}
 
 	for k, v := range map[string]*time.Duration{
@@ -88,6 +102,15 @@ func Get() (Environment, error) {
 		}
 
 		fmt.Sscanf(s, "%d", v)
+	}
+
+	env.LogLevel = logrus.InfoLevel
+	if logLevel != "" {
+		var err error
+		env.LogLevel, err = logrus.ParseLevel(logLevel)
+		if err != nil {
+			return env, fmt.Errorf("failed to parse log level: %w", err)
+		}
 	}
 
 	if len(missing) > 0 {

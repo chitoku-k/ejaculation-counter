@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
-	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
+	_ "github.com/lib/pq"
 )
 
 type db struct {
@@ -19,21 +18,19 @@ type db struct {
 type DB interface {
 	Query(ctx context.Context, q string) ([]string, error)
 	UpdateCount(ctx context.Context, userID int64, date time.Time, count int) error
-}
-
-func init() {
-	mysql.SetLogger(logrus.StandardLogger())
+	Close() error
 }
 
 func NewDB(environment config.Environment) (DB, error) {
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:3306)/%s",
+		"user=%s password=%s host=%s dbname=%s sslmode=%s",
 		environment.DB.Username,
 		environment.DB.Password,
 		environment.DB.Host,
 		environment.DB.Database,
+		environment.DB.SSLMode,
 	)
-	conn, err := sqlx.Connect("mysql", dsn)
+	conn, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to DB: %w", err)
 	}
@@ -43,6 +40,10 @@ func NewDB(environment config.Environment) (DB, error) {
 		Environment: environment,
 		Connection:  conn,
 	}, nil
+}
+
+func (d *db) Close() error {
+	return d.Connection.Close()
 }
 
 func (d *db) Query(ctx context.Context, q string) ([]string, error) {
@@ -67,7 +68,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 	err := d.Connection.GetContext(
 		ctx,
 		&current,
-		"SELECT COUNT(*) FROM `counts` WHERE `user` = ? AND `date` = ?",
+		`SELECT COUNT(*) FROM "counts" WHERE "user" = ? AND "date" = ?`,
 		userID,
 		date.Format("2006-01-02"),
 	)
@@ -78,7 +79,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 	if current > 0 {
 		_, err = d.Connection.ExecContext(
 			ctx,
-			"UPDATE `counts` SET `count` = ? WHERE `user` = ? AND `date` = ?",
+			`UPDATE "counts" SET "count" = ? WHERE "user" = ? AND "date" = ?`,
 			count,
 			userID,
 			date.Format("2006-01-02"),
@@ -86,7 +87,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 	} else {
 		_, err = d.Connection.ExecContext(
 			ctx,
-			"INSERT INTO `counts` (`user`, `date`, `count`) VALUES (?, ?, ?)",
+			`INSERT INTO "counts" ("user", "date", "count") VALUES (?, ?, ?)`,
 			userID,
 			date.Format("2006-01-02"),
 			count,

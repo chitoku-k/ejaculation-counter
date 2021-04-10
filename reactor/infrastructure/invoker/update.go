@@ -1,4 +1,4 @@
-package actions
+package invoker
 
 import (
 	"context"
@@ -110,12 +110,7 @@ func (u *update) Do(ctx context.Context, event service.UpdateEvent) error {
 		return fmt.Errorf("failed to update current user: %w", err)
 	}
 
-	date, err := time.Parse(time.RFC3339, event.Date)
-	if err != nil {
-		UpdatesErrorTotal.WithLabelValues("parse").Inc()
-		return fmt.Errorf("failed to parse update date: %w", err)
-	}
-
+	date := time.Date(event.Year, time.Month(event.Month), event.Day, 0, 0, 0, 0, time.Local)
 	yesterday := date.AddDate(0, 0, -1)
 	_, err = u.Client.PostStatus(ctx, &mastodon.Toot{
 		Status:     message(yesterday, summary),

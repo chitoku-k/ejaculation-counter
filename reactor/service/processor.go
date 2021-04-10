@@ -2,9 +2,24 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"sort"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	EventsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "ejaculation_counter",
+		Name:      "events_total",
+		Help:      "Total number of events triggered by messages.",
+	}, []string{"name", "action"})
+	EventsErrorTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "ejaculation_counter",
+		Name:      "events_error_total",
+		Help:      "Total number of errors when creating events.",
+	}, []string{"action"})
 )
 
 type processor struct {
@@ -13,10 +28,11 @@ type processor struct {
 	Increment      Increment
 	Update         Update
 	Administration Administration
+	Actions        []Action
 }
 
 type Processor interface {
-	Execute(ctx context.Context) error
+	Execute(ctx context.Context, packets <-chan Packet)
 }
 
 func NewProcessor(
@@ -25,6 +41,7 @@ func NewProcessor(
 	increment Increment,
 	update Update,
 	administration Administration,
+	actions []Action,
 ) Processor {
 	return &processor{
 		Queue:          queue,
@@ -32,64 +49,86 @@ func NewProcessor(
 		Increment:      increment,
 		Update:         update,
 		Administration: administration,
+		Actions:        actions,
 	}
 }
 
-func (ps *processor) Execute(ctx context.Context) error {
-	ch, err := ps.Queue.Consume(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to read from queue: %w", err)
-	}
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-
-			case event := <-ch:
-				switch e := event.(type) {
-				case *ReplyEvent:
-					err = ps.Reply.Send(ctx, *e)
-					if err != nil {
-						logrus.Errorf("Failed to send reply: %v", err)
-						continue
-					}
-
-				case *ReplyErrorEvent:
-					err = ps.Reply.SendError(ctx, *e)
-					if err != nil {
-						logrus.Errorf("Failed to send reply (error): %v", err)
-						continue
-					}
-
-				case *IncrementEvent:
-					err = ps.Increment.Do(ctx, *e)
-					if err != nil {
-						logrus.Errorf("Failed to update increment: %v", err)
-						continue
-					}
-
-				case *UpdateEvent:
-					err = ps.Update.Do(ctx, *e)
-					if err != nil {
-						logrus.Errorf("Failed to update: %v", err)
-						continue
-					}
-
-				case *AdministrationEvent:
-					err = ps.Administration.Do(ctx, *e)
-					if err != nil {
-						logrus.Errorf("Failed to execute administrative operation: %v", err)
-						continue
-					}
-
-				case *ErrorEvent:
-					logrus.Errorf("ErrorEvent: %v", e.Raw)
+func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
+	for packet := range packets {
+		switch p := packet.(type) {
+		case *Tick:
+			go func() {
+				err := ps.Update.Do(ctx, UpdateEvent{
+					Year:  p.Year,
+					Month: p.Month,
+					Day:   p.Day,
+				})
+				if err != nil {
+					logrus.Errorf("Failed to update: %v", err)
 				}
+			}()
+
+		case *Message:
+			var result []actionResult
+			for _, action := range ps.Actions {
+				if !action.Target(*p) {
+					continue
+				}
+
+				event, index, err := action.Event(*p)
+				if err != nil {
+					logrus.Errorf("Error in processing %v: %v", action.Name(), err)
+					EventsErrorTotal.WithLabelValues(action.Name()).Inc()
+					result = append(result, actionResult{
+						Event: &ReplyErrorEvent{
+							InReplyToID: p.ID,
+							Acct:        p.Account.Acct,
+							Visibility:  p.Visibility,
+							ActionName:  action.Name(),
+						},
+					})
+					continue
+				}
+
+				result = append(result, actionResult{event, index})
+				EventsTotal.WithLabelValues(event.Name(), action.Name()).Inc()
+			}
+
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].Index < result[j].Index
+			})
+
+			go ps.doEvents(ctx, result)
+		}
+	}
+}
+
+func (ps *processor) doEvents(ctx context.Context, result []actionResult) {
+	for _, r := range result {
+		switch event := r.Event.(type) {
+		case *ReplyEvent:
+			err := ps.Reply.Send(ctx, *event)
+			if err != nil {
+				logrus.Errorf("Failed to send reply: %v", err)
+			}
+
+		case *ReplyErrorEvent:
+			err := ps.Reply.SendError(ctx, *event)
+			if err != nil {
+				logrus.Errorf("Failed to send reply: %v", err)
+			}
+
+		case *UpdateEvent:
+			err := ps.Update.Do(ctx, *event)
+			if err != nil {
+				logrus.Errorf("Failed to update: %v", err)
+			}
+
+		case *AdministrationEvent:
+			err := ps.Administration.Do(ctx, *event)
+			if err != nil {
+				logrus.Errorf("Failed to execute administrative operation: %v", err)
 			}
 		}
-	}()
-
-	return nil
+	}
 }

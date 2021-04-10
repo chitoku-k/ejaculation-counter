@@ -5,10 +5,10 @@ type Event interface {
 }
 
 type ReplyEvent struct {
-	InReplyToID string `json:"in_reply_to_id"`
-	Acct        string `json:"acct"`
-	Body        string `json:"body"`
-	Visibility  string `json:"visibility"`
+	InReplyToID string
+	Acct        string
+	Body        string
+	Visibility  string
 }
 
 func (*ReplyEvent) Name() string {
@@ -16,10 +16,10 @@ func (*ReplyEvent) Name() string {
 }
 
 type ReplyErrorEvent struct {
-	InReplyToID string `json:"in_reply_to_id"`
-	Acct        string `json:"acct"`
-	Visibility  string `json:"visibility"`
-	ActionName  string `json:"action_name"`
+	InReplyToID string
+	Acct        string
+	Visibility  string
+	ActionName  string
 }
 
 func (*ReplyErrorEvent) Name() string {
@@ -27,8 +27,9 @@ func (*ReplyErrorEvent) Name() string {
 }
 
 type UpdateEvent struct {
-	UserID string `json:"user_id"`
-	Date   string `json:"date"`
+	Year  int
+	Month int
+	Day   int
 }
 
 func (*UpdateEvent) Name() string {
@@ -36,8 +37,9 @@ func (*UpdateEvent) Name() string {
 }
 
 type IncrementEvent struct {
-	UserID string `json:"user_id"`
-	Date   string `json:"date"`
+	Year  int
+	Month int
+	Day   int
 }
 
 func (*IncrementEvent) Name() string {
@@ -45,20 +47,12 @@ func (*IncrementEvent) Name() string {
 }
 
 type AdministrationEvent struct {
-	InReplyToID string `json:"in_reply_to_id"`
-	Acct        string `json:"acct"`
-	Type        string `json:"type"`
-	Command     string `json:"command"`
+	InReplyToID string
+	Acct        string
+	Type        string
+	Command     string
 }
 
 func (*AdministrationEvent) Name() string {
 	return "events.administration"
-}
-
-type ErrorEvent struct {
-	Raw string
-}
-
-func (*ErrorEvent) Name() string {
-	return "events.error"
 }
