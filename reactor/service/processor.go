@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -65,7 +66,9 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 				})
 				if err != nil {
 					logrus.Errorf("Failed to update: %v", err)
+					return
 				}
+				p.Ack()
 			}()
 
 		case *Message:
@@ -98,29 +101,38 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 				return result[i].Index < result[j].Index
 			})
 
-			go ps.doEvents(ctx, result)
+			go func() {
+				err := ps.doEvents(ctx, result)
+				if err == nil {
+					p.Ack()
+				}
+			}()
 		}
 	}
 }
 
-func (ps *processor) doEvents(ctx context.Context, result []actionResult) {
+func (ps *processor) doEvents(ctx context.Context, result []actionResult) error {
+	var requeue bool
 	for _, r := range result {
 		switch event := r.Event.(type) {
 		case *ReplyEvent:
 			err := ps.Reply.Send(ctx, *event)
 			if err != nil {
+				requeue = true
 				logrus.Errorf("Failed to send reply: %v", err)
 			}
 
 		case *ReplyErrorEvent:
 			err := ps.Reply.SendError(ctx, *event)
 			if err != nil {
+				requeue = true
 				logrus.Errorf("Failed to send reply: %v", err)
 			}
 
 		case *UpdateEvent:
 			err := ps.Update.Do(ctx, *event)
 			if err != nil {
+				requeue = true
 				logrus.Errorf("Failed to update: %v", err)
 			}
 
@@ -131,4 +143,9 @@ func (ps *processor) doEvents(ctx context.Context, result []actionResult) {
 			}
 		}
 	}
+
+	if requeue {
+		return fmt.Errorf("failed to process event(s)")
+	}
+	return nil
 }

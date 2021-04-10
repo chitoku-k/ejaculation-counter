@@ -1,36 +1,42 @@
 package service
 
 import (
-	"strconv"
 	"time"
 )
 
 type Packet interface {
-	Name() string
-	HashCode() int64
+	Ack()
+}
+
+func NewTick(ack func()) Tick {
+	return Tick{
+		ack: ack,
+	}
 }
 
 type Tick struct {
+	ack   func()
 	Year  int `json:"year"`
 	Month int `json:"month"`
 	Day   int `json:"day"`
 }
 
-func (t Tick) status() {}
-
 func (t Tick) Name() string {
 	return "packets.tick"
 }
 
-func (t Tick) HashCode() int64 {
-	hash := 7
-	hash = 31*hash + t.Year
-	hash = 31*hash + t.Month
-	hash = 31*hash + t.Day
-	return int64(hash)
+func (t Tick) Ack() {
+	t.ack()
+}
+
+func NewMessage(ack func()) Message {
+	return Message{
+		ack: ack,
+	}
 }
 
 type Message struct {
+	ack         func()
 	ID          string    `json:"id"`
 	Account     Account   `json:"account"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -57,19 +63,10 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
-func (m Message) status() {}
-
 func (m Message) Name() string {
 	return "packets.message"
 }
 
-func (m Message) HashCode() int64 {
-	id, _ := strconv.ParseInt(m.ID, 10, 64)
-	accountID, _ := strconv.ParseInt(m.Account.ID, 10, 64)
-
-	var hash int64
-	hash = 7
-	hash = 31*hash + id
-	hash = 31*hash + accountID
-	return hash
+func (m Message) Ack() {
+	m.ack()
 }

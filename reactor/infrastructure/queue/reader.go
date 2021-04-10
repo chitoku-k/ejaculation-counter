@@ -155,7 +155,7 @@ func (r *reader) connect() error {
 	r.Delivery, err = r.Channel.Consume(
 		q.Name,
 		"",
-		true,
+		false,
 		false,
 		false,
 		false,
@@ -244,7 +244,9 @@ func (r *reader) Consume(ctx context.Context) {
 
 			switch packet.Type {
 			case "packets.tick":
-				var tick service.Tick
+				tick := service.NewTick(func() {
+					r.Channel.Ack(packet.DeliveryTag, false)
+				})
 				err := json.Unmarshal(packet.Body, &tick)
 				if err != nil {
 					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
@@ -253,7 +255,9 @@ func (r *reader) Consume(ctx context.Context) {
 				r.ch <- &tick
 
 			case "packets.message":
-				var message service.Message
+				message := service.NewMessage(func() {
+					r.Channel.Ack(packet.DeliveryTag, false)
+				})
 				err := json.Unmarshal(packet.Body, &message)
 				if err != nil {
 					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
