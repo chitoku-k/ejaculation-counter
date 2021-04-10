@@ -51,10 +51,13 @@ MQ から取得したトゥートに対し、Mastodon でのリプライ送信�
 環境変数に値の設定を行います。
 
 ```bash
+# ログレベル（trace/debug/info/warn/error/fatal/panic）
+LOG_LEVEL=
+
 # DB ユーザー ID（数値）
 USER_ID=
 
-# Mastodon ユーザー ID（数値、スペース区切り）
+# Mastodon ユーザー ID（数値）
 MASTODON_USER_ID=
 
 # Mastodon ユーザー トークン
