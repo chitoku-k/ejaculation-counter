@@ -7,7 +7,6 @@ services:
       target: dev
     environment:
       TZ: Asia/Tokyo
-      MASTODON_USER_ID:
       MASTODON_ACCESS_TOKEN:
       MASTODON_SERVER_URL:
       MASTODON_STREAM: direct
@@ -33,6 +32,8 @@ services:
       DB_DATABASE: ejaculation
       DB_USERNAME: shiko
       DB_PASSWORD: shiko
+      DB_SSL_MODE: disable
+      MASTODON_USER_ID:
       MASTODON_ACCESS_TOKEN:
       MASTODON_SERVER_URL:
       MQ_HOST: amqp://mq
@@ -77,17 +78,15 @@ services:
       - mq:/var/lib/rabbitmq
 
   database:
-    image: mysql:8.0
-    command: [--character-set-server=utf8, --default-authentication-plugin=mysql_native_password]
+    image: postgres:13.2
     volumes:
       - ./database:/docker-entrypoint-initdb.d
-      - database:/var/lib/mysql
+      - database:/var/lib/postgres/data
     environment:
       TZ:
-      MYSQL_DATABASE: ejaculation
-      MYSQL_USER: shiko
-      MYSQL_PASSWORD: shiko
-      MYSQL_ROOT_PASSWORD: shiko
+      POSTGRES_DB: ejaculation
+      POSTGRES_USER: shiko
+      POSTGRES_PASSWORD: shiko
 
 volumes:
   grafana:
