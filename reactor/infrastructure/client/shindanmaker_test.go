@@ -78,6 +78,116 @@ var _ = Describe("Shindanmaker", func() {
 			res *http.Response
 		)
 
+		Describe("token", func() {
+			Context("fetching fails", func() {
+				BeforeEach(func() {
+					c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(
+						nil,
+						errors.New("error"),
+					)
+				})
+
+				It("returns an error", func() {
+					actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
+					Expect(actual).To(BeEmpty())
+					Expect(err).To(MatchError("failed to fetch shindan top: error"))
+				})
+			})
+
+			Context("fetching succeeds", func() {
+				Context("reading fails", func() {
+					BeforeEach(func() {
+						top = &http.Response{
+							Body: ioutil.NopCloser(r),
+						}
+						r.EXPECT().Read(gomock.Any()).Return(
+							0,
+							errors.New("dial tcp [::1]:443: connect: connection refused"),
+						)
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(
+							top,
+							nil,
+						)
+					})
+
+					It("returns an error", func() {
+						actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
+						Expect(actual).To(BeEmpty())
+						Expect(err).To(MatchError("failed to read shindan top: dial tcp [::1]:443: connect: connection refused"))
+					})
+				})
+
+				Context("reading succeeds", func() {
+					Context("parsing fails", func() {
+						BeforeEach(func() {
+							top = &http.Response{
+								Body: ioutil.NopCloser(strings.NewReader(`
+									<html>
+									<head><title>403 Forbidden</title></head>
+									<body bgcolor="white">
+									<center><h1>403 Forbidden</h1></center>
+									</body>
+									</html>
+									<!-- a padding to disable MSIE and Chrome friendly error page -->
+									<!-- a padding to disable MSIE and Chrome friendly error page -->
+									<!-- a padding to disable MSIE and Chrome friendly error page -->
+									<!-- a padding to disable MSIE and Chrome friendly error page -->
+									<!-- a padding to disable MSIE and Chrome friendly error page -->
+									<!-- a padding to disable MSIE and Chrome friendly error page -->
+								`)),
+							}
+
+							c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(
+								top,
+								nil,
+							)
+						})
+
+						It("returns an error", func() {
+							actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
+							Expect(actual).To(BeEmpty())
+							Expect(err).To(MatchError("failed to parse shindan top"))
+						})
+					})
+
+					Context("parsing succeeds", func() {
+						BeforeEach(func() {
+							top = &http.Response{
+								Body: ioutil.NopCloser(strings.NewReader(`
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`)),
+							}
+
+							c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+							c.EXPECT().PostForm(
+								"https://shindanmaker.com/855159",
+								url.Values{
+									"name":   []string{"テスト"},
+									"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								},
+							).Return(
+								nil,
+								errors.New("error"),
+							)
+						})
+
+						It("passes token", func() {
+							shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
+						})
+					})
+				})
+			})
+		})
+
 		Describe("escape name", func() {
 			Context("name does not include special characters", func() {
 				Context("name includes neither at-sign nor parentheses", func() {
@@ -91,6 +201,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -123,6 +235,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -155,6 +269,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -187,6 +303,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -219,6 +337,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -251,6 +371,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -283,6 +405,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -315,6 +439,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -347,6 +473,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -381,6 +509,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -413,6 +543,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -445,6 +577,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -477,6 +611,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -509,6 +645,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 
@@ -537,14 +675,16 @@ var _ = Describe("Shindanmaker", func() {
 				BeforeEach(func() {
 					top = &http.Response{
 						Body: ioutil.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-							`)),
+							<!doctype html>
+							<html lang="ja">
+							<head>
+								<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+								<title>ちんぽ揃えゲーム</title>
+							</head>
+							<body>
+							</body>
+							</html>
+						`)),
 					}
 
 					c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
@@ -584,6 +724,8 @@ var _ = Describe("Shindanmaker", func() {
 									<title>ちんぽ揃えゲーム</title>
 								</head>
 								<body>
+								</body>
+								</html>
 							`)),
 						}
 						res = &http.Response{
@@ -612,14 +754,16 @@ var _ = Describe("Shindanmaker", func() {
 						BeforeEach(func() {
 							top = &http.Response{
 								Body: ioutil.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-							`)),
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`)),
 							}
 							res = &http.Response{
 								Body: ioutil.NopCloser(strings.NewReader(`
@@ -661,14 +805,16 @@ var _ = Describe("Shindanmaker", func() {
 								BeforeEach(func() {
 									top = &http.Response{
 										Body: ioutil.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-							`)),
+											<!doctype html>
+											<html lang="ja">
+											<head>
+												<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+												<title>ちんぽ揃えゲーム</title>
+											</head>
+											<body>
+											</body>
+											</html>
+										`)),
 									}
 									res = &http.Response{
 										Body: ioutil.NopCloser(strings.NewReader(`
@@ -730,14 +876,16 @@ https://shindanmaker.com/855159`))
 								BeforeEach(func() {
 									top = &http.Response{
 										Body: ioutil.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-							`)),
+											<!doctype html>
+											<html lang="ja">
+											<head>
+												<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+												<title>ちんぽ揃えゲーム</title>
+											</head>
+											<body>
+											</body>
+											</html>
+										`)),
 									}
 									res = &http.Response{
 										Body: ioutil.NopCloser(strings.NewReader(`
@@ -802,14 +950,16 @@ https://shindanmaker.com/855159`))
 							BeforeEach(func() {
 								top = &http.Response{
 									Body: ioutil.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-							`)),
+										<!doctype html>
+										<html lang="ja">
+										<head>
+											<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+											<title>ちんぽ揃えゲーム</title>
+										</head>
+										<body>
+										</body>
+										</html>
+									`)),
 								}
 								res = &http.Response{
 									Body: ioutil.NopCloser(strings.NewReader(`
