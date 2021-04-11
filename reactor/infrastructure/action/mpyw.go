@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -15,12 +16,14 @@ var (
 )
 
 type mpyw struct {
-	Client client.Mpyw
+	Client      client.Mpyw
+	Environment config.Environment
 }
 
-func NewMpyw(c client.Mpyw) service.Action {
+func NewMpyw(c client.Mpyw, environment config.Environment) service.Action {
 	return &mpyw{
-		Client: c,
+		Client:      c,
+		Environment: environment,
 	}
 }
 
@@ -29,7 +32,9 @@ func (m *mpyw) Name() string {
 }
 
 func (m *mpyw) Target(message service.Message) bool {
-	return !message.IsReblog && MpywRegex.MatchString(message.Content)
+	return !message.IsReblog &&
+		(message.Account.ID != m.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		MpywRegex.MatchString(message.Content)
 }
 
 func (m *mpyw) Event(message service.Message) (service.Event, int, error) {
@@ -41,7 +46,7 @@ func (m *mpyw) Event(message service.Message) (service.Event, int, error) {
 		count = 1
 	}
 
-	result, err := m.Client.Do("https://mpyw.hinanawi.net/api", count)
+	result, err := m.Client.Do(m.Environment.External.MpywAPIURL, count)
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

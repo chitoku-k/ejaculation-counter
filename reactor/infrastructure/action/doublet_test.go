@@ -5,6 +5,7 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,19 @@ var _ = Describe("Doublet", func() {
 	var (
 		ctrl    *gomock.Controller
 		c       *client.MockDoublet
+		env     config.Environment
 		doublet service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockDoublet(ctrl)
-		doublet = action.NewDoublet(c)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+		}
+		doublet = action.NewDoublet(c, env)
 	})
 
 	AfterEach(func() {
@@ -46,103 +53,158 @@ var _ = Describe("Doublet", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message does not match pattern", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "診断して",
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
+						},
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message matches 今日の doublet", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "今日の doublet",
+			Context("message is not a reply from the admin", func() {
+				Context("message does not match pattern", func() {
+					It("returns false", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "診断して",
+						})
+						Expect(actual).To(BeFalse())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 今日の 二重語", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "今日の 二重語",
+				Context("message matches 今日の doublet", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "今日の doublet",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches doublet ガチャ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "doublet ガチャ",
+				Context("message matches 今日の 二重語", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "今日の 二重語",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 二重語 ガチャ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "二重語 ガチャ",
+				Context("message matches doublet ガチャ", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "doublet ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches doubletガチャ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "doubletガチャ",
+				Context("message matches 二重語 ガチャ", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "二重語 ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 二重語ガチャ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "二重語ガチャ",
+				Context("message matches doubletガチャ", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "doubletガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches doubletｶﾞﾁｬ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "doubletｶﾞﾁｬ",
+				Context("message matches 二重語ガチャ", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "二重語ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 二重語ｶﾞﾁｬ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "二重語ｶﾞﾁｬ",
+				Context("message matches doubletｶﾞﾁｬ", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "doubletｶﾞﾁｬ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 10 連 doublet ガチャ", func() {
-				It("returns true", func() {
-					actual := doublet.Target(service.Message{
-						IsReblog: false,
-						Content:  "10 連 doublet ガチャ",
+				Context("message matches 二重語ｶﾞﾁｬ", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "二重語ｶﾞﾁｬ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
+				})
+
+				Context("message matches 10 連 doublet ガチャ", func() {
+					It("returns true", func() {
+						actual := doublet.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "10 連 doublet ガチャ",
+						})
+						Expect(actual).To(BeTrue())
+					})
 				})
 			})
 		})

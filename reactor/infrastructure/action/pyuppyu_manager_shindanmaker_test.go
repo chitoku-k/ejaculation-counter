@@ -5,6 +5,7 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,19 @@ var _ = Describe("PyuppyuManagerShindanmaker", func() {
 	var (
 		ctrl                       *gomock.Controller
 		c                          *client.MockShindanmaker
+		env                        config.Environment
 		pyuppyuManagerShindanmaker service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockShindanmaker(ctrl)
-		pyuppyuManagerShindanmaker = action.NewPyuppyuManagerShindanmaker(c)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+		}
+		pyuppyuManagerShindanmaker = action.NewPyuppyuManagerShindanmaker(c, env)
 	})
 
 	AfterEach(func() {
@@ -46,63 +53,102 @@ var _ = Describe("PyuppyuManagerShindanmaker", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message does not match pattern", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := pyuppyuManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "診断して",
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
+						},
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message matches ぴゅっぴゅしても良い？", func() {
-				It("returns true", func() {
-					actual := pyuppyuManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ぴゅっぴゅしても良い？",
+			Context("message is not a reply from the admin", func() {
+				Context("message does not match pattern", func() {
+					It("returns false", func() {
+						actual := pyuppyuManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "診断して",
+						})
+						Expect(actual).To(BeFalse())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ぴゅっぴゅしてもよい？", func() {
-				It("returns true", func() {
-					actual := pyuppyuManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ぴゅっぴゅしてもよい？",
+				Context("message matches ぴゅっぴゅしても良い？", func() {
+					It("returns true", func() {
+						actual := pyuppyuManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ぴゅっぴゅしても良い？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ぴゅっぴゅしてもいい？", func() {
-				It("returns true", func() {
-					actual := pyuppyuManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ぴゅっぴゅしてもいい？",
+				Context("message matches ぴゅっぴゅしてもよい？", func() {
+					It("returns true", func() {
+						actual := pyuppyuManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ぴゅっぴゅしてもよい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ぴゅっぴゅしていい？", func() {
-				It("returns true", func() {
-					actual := pyuppyuManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ぴゅっぴゅしていい？",
+				Context("message matches ぴゅっぴゅしてもいい？", func() {
+					It("returns true", func() {
+						actual := pyuppyuManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ぴゅっぴゅしてもいい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ぴゅっぴゅしていい?", func() {
-				It("returns true", func() {
-					actual := pyuppyuManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ぴゅっぴゅしていい?",
+				Context("message matches ぴゅっぴゅしていい？", func() {
+					It("returns true", func() {
+						actual := pyuppyuManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ぴゅっぴゅしていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
+				})
+
+				Context("message matches ぴゅっぴゅしていい?", func() {
+					It("returns true", func() {
+						actual := pyuppyuManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ぴゅっぴゅしていい?",
+						})
+						Expect(actual).To(BeTrue())
+					})
 				})
 			})
 		})

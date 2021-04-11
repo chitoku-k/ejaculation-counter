@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -16,12 +17,14 @@ var (
 )
 
 type doublet struct {
-	Client client.Doublet
+	Client      client.Doublet
+	Environment config.Environment
 }
 
-func NewDoublet(c client.Doublet) service.Action {
+func NewDoublet(c client.Doublet, environment config.Environment) service.Action {
 	return &doublet{
-		Client: c,
+		Client:      c,
+		Environment: environment,
 	}
 }
 
@@ -30,7 +33,9 @@ func (t *doublet) Name() string {
 }
 
 func (t *doublet) Target(message service.Message) bool {
-	return !message.IsReblog && DoubletRegex.MatchString(message.Content)
+	return !message.IsReblog &&
+		(message.Account.ID != t.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		DoubletRegex.MatchString(message.Content)
 }
 
 func (t *doublet) Event(message service.Message) (service.Event, int, error) {

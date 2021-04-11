@@ -5,6 +5,7 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,19 @@ var _ = Describe("OfutonManagerShindanmaker", func() {
 	var (
 		ctrl                      *gomock.Controller
 		c                         *client.MockShindanmaker
+		env                       config.Environment
 		ofutonManagerShindanmaker service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockShindanmaker(ctrl)
-		ofutonManagerShindanmaker = action.NewOfutonManagerShindanmaker(c)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+		}
+		ofutonManagerShindanmaker = action.NewOfutonManagerShindanmaker(c, env)
 	})
 
 	AfterEach(func() {
@@ -46,123 +53,186 @@ var _ = Describe("OfutonManagerShindanmaker", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message does not match pattern", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "診断して",
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
+						},
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message matches おふとんしても良い？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "おふとんしても良い？",
+			Context("message is not a reply from the admin", func() {
+				Context("message does not match pattern", func() {
+					It("returns false", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "診断して",
+						})
+						Expect(actual).To(BeFalse())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches おふとんしてもよい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "おふとんしてもよい？",
+				Context("message matches おふとんしても良い？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "おふとんしても良い？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches おふとんしてもいい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "おふとんしてもいい？",
+				Context("message matches おふとんしてもよい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "おふとんしてもよい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches おふとんしていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "おふとんしていい？",
+				Context("message matches おふとんしてもいい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "おふとんしてもいい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ふとんしていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ふとんしていい？",
+				Context("message matches おふとんしていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "おふとんしていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ふとん入っていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ふとん入っていい？",
+				Context("message matches ふとんしていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ふとんしていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ふとんはいっていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ふとんはいっていい？",
+				Context("message matches ふとん入っていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ふとん入っていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ふとんいっていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ふとんいっていい？",
+				Context("message matches ふとんはいっていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ふとんはいっていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ふとん行っていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ふとん行っていい？",
+				Context("message matches ふとんいっていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ふとんいっていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ふとん潜っていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ふとん潜っていい？",
+				Context("message matches ふとん行っていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ふとん行っていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches ふとんもぐっていい？", func() {
-				It("returns true", func() {
-					actual := ofutonManagerShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Content:  "ふとんもぐっていい？",
+				Context("message matches ふとん潜っていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ふとん潜っていい？",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
+				})
+
+				Context("message matches ふとんもぐっていい？", func() {
+					It("returns true", func() {
+						actual := ofutonManagerShindanmaker.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "ふとんもぐっていい？",
+						})
+						Expect(actual).To(BeTrue())
+					})
 				})
 			})
 		})

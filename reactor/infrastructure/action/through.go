@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -16,12 +17,14 @@ var (
 )
 
 type through struct {
-	Client client.Through
+	Client      client.Through
+	Environment config.Environment
 }
 
-func NewThrough(c client.Through) service.Action {
+func NewThrough(c client.Through, environment config.Environment) service.Action {
 	return &through{
-		Client: c,
+		Client:      c,
+		Environment: environment,
 	}
 }
 
@@ -30,7 +33,9 @@ func (t *through) Name() string {
 }
 
 func (t *through) Target(message service.Message) bool {
-	return !message.IsReblog && ThroughRegex.MatchString(message.Content)
+	return !message.IsReblog &&
+		(message.Account.ID != t.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		ThroughRegex.MatchString(message.Content)
 }
 
 func (t *through) Event(message service.Message) (service.Event, int, error) {

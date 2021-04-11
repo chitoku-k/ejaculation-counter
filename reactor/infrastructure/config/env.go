@@ -18,6 +18,8 @@ type Environment struct {
 
 	Queue Queue
 
+	External External
+
 	LogLevel logrus.Level
 	Port     string
 	UserID   int64
@@ -44,6 +46,10 @@ type Queue struct {
 	Password string
 }
 
+type External struct {
+	MpywAPIURL string
+}
+
 func Get() (Environment, error) {
 	var missing []string
 	var env Environment
@@ -61,6 +67,7 @@ func Get() (Environment, error) {
 		"MQ_HOST":               &env.Queue.Host,
 		"MQ_USERNAME":           &env.Queue.Username,
 		"MQ_PASSWORD":           &env.Queue.Password,
+		"EXT_MPYW_API_URL":      &env.External.MpywAPIURL,
 		"PORT":                  &env.Port,
 	} {
 		*v = os.Getenv(k)

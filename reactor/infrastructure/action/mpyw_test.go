@@ -5,6 +5,7 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,22 @@ var _ = Describe("Mpyw", func() {
 	var (
 		ctrl *gomock.Controller
 		c    *client.MockMpyw
+		env  config.Environment
 		mpyw service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockMpyw(ctrl)
-		mpyw = action.NewMpyw(c)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+			External: config.External{
+				MpywAPIURL: "https://mpyw.hinanawi.net/api",
+			},
+		}
+		mpyw = action.NewMpyw(c, env)
 	})
 
 	AfterEach(func() {
@@ -46,83 +56,130 @@ var _ = Describe("Mpyw", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message does not match pattern", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "診断して",
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
+						},
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message matches mpyw ガチャ", func() {
-				It("returns true", func() {
-					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "mpyw ガチャ",
+			Context("message is not a reply from the admin", func() {
+				Context("message does not match pattern", func() {
+					It("returns false", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "診断して",
+						})
+						Expect(actual).To(BeFalse())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches mpywガチャ", func() {
-				It("returns true", func() {
-					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "mpywガチャ",
+				Context("message matches mpyw ガチャ", func() {
+					It("returns true", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "mpyw ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches まっぴーガチャ", func() {
-				It("returns true", func() {
-					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "まっぴーガチャ",
+				Context("message matches mpywガチャ", func() {
+					It("returns true", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "mpywガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 実務経験ガチャ", func() {
-				It("returns true", func() {
-					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "実務経験ガチャ",
+				Context("message matches まっぴーガチャ", func() {
+					It("returns true", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "まっぴーガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches mpyw 10 連ガチャ", func() {
-				It("returns true", func() {
-					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "mpyw 10 連ガチャ",
+				Context("message matches 実務経験ガチャ", func() {
+					It("returns true", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "実務経験ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches まっぴー 10 連ガチャ", func() {
-				It("returns true", func() {
-					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "まっぴー 10 連ガチャ",
+				Context("message matches mpyw 10 連ガチャ", func() {
+					It("returns true", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "mpyw 10 連ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 実務経験 10 連ガチャ", func() {
-				It("returns true", func() {
-					actual := mpyw.Target(service.Message{
-						IsReblog: false,
-						Content:  "実務経験 10 連ガチャ",
+				Context("message matches まっぴー 10 連ガチャ", func() {
+					It("returns true", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "まっぴー 10 連ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
+				})
+
+				Context("message matches 実務経験 10 連ガチャ", func() {
+					It("returns true", func() {
+						actual := mpyw.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "実務経験 10 連ガチャ",
+						})
+						Expect(actual).To(BeTrue())
+					})
 				})
 			})
 		})

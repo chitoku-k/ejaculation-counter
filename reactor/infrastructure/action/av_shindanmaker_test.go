@@ -5,6 +5,7 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,19 @@ var _ = Describe("AVShindanmaker", func() {
 	var (
 		ctrl           *gomock.Controller
 		c              *client.MockShindanmaker
+		env            config.Environment
 		avShindanmaker service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockShindanmaker(ctrl)
-		avShindanmaker = action.NewAVShindanmaker(c)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+		}
+		avShindanmaker = action.NewAVShindanmaker(c, env)
 	})
 
 	AfterEach(func() {
@@ -46,49 +53,80 @@ var _ = Describe("AVShindanmaker", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message contains shindanmaker tag", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := avShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Tags: []service.Tag{
-							{
-								Name: "同人avタイトルジェネレーター",
-							},
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
 						},
-						Content: "テストのAV",
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message does not contain shindanmaker tag", func() {
-				Context("message does not match pattern", func() {
+			Context("message is not a reply from the admin", func() {
+				Context("message contains shindanmaker tag", func() {
 					It("returns false", func() {
 						actual := avShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "診断して",
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Tags: []service.Tag{
+								{
+									Name: "同人avタイトルジェネレーター",
+								},
+							},
+							Content: "テストのAV",
 						})
 						Expect(actual).To(BeFalse())
 					})
 				})
 
-				Context("message matches without a space before AV", func() {
-					It("returns true", func() {
-						actual := avShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "テストのAV",
+				Context("message does not contain shindanmaker tag", func() {
+					Context("message does not match pattern", func() {
+						It("returns false", func() {
+							actual := avShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "診断して",
+							})
+							Expect(actual).To(BeFalse())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches with a space before AV", func() {
-					It("returns true", func() {
-						actual := avShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "テストの AV",
+					Context("message matches without a space before AV", func() {
+						It("returns true", func() {
+							actual := avShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "テストのAV",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
+					})
+
+					Context("message matches with a space before AV", func() {
+						It("returns true", func() {
+							actual := avShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "テストの AV",
+							})
+							Expect(actual).To(BeTrue())
+						})
 					})
 				})
 			})

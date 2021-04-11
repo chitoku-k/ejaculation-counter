@@ -5,6 +5,7 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,19 @@ var _ = Describe("ChimpoMatchingShindanmaker", func() {
 	var (
 		ctrl                       *gomock.Controller
 		c                          *client.MockShindanmaker
+		env                        config.Environment
 		chimpoMatchingShindanmaker service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockShindanmaker(ctrl)
-		chimpoMatchingShindanmaker = action.NewChimpoMatchingShindanmaker(c)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+		}
+		chimpoMatchingShindanmaker = action.NewChimpoMatchingShindanmaker(c, env)
 	})
 
 	AfterEach(func() {
@@ -46,99 +53,150 @@ var _ = Describe("ChimpoMatchingShindanmaker", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message contains shindanmaker tag", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := chimpoMatchingShindanmaker.Target(service.Message{
-						IsReblog: false,
-						Tags: []service.Tag{
-							{
-								Name: "ちんぽ揃えゲーム",
-							},
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
 						},
-						Content: "ちんぽ揃えゲーム",
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message does not contain shindanmaker tag", func() {
-				Context("message does not match pattern", func() {
+			Context("message is not a reply from the admin", func() {
+				Context("message contains shindanmaker tag", func() {
 					It("returns false", func() {
 						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "診断して",
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Tags: []service.Tag{
+								{
+									Name: "ちんぽ揃えゲーム",
+								},
+							},
+							Content: "ちんぽ揃えゲーム",
 						})
 						Expect(actual).To(BeFalse())
 					})
 				})
 
-				Context("message matches ちんちん揃えゲーム", func() {
-					It("returns true", func() {
-						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "ちんちん揃えゲーム",
+				Context("message does not contain shindanmaker tag", func() {
+					Context("message does not match pattern", func() {
+						It("returns false", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "診断して",
+							})
+							Expect(actual).To(BeFalse())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches ちんちんそろえゲーム", func() {
-					It("returns true", func() {
-						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "ちんちんそろえゲーム",
+					Context("message matches ちんちん揃えゲーム", func() {
+						It("returns true", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ちんちん揃えゲーム",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches ちんぽ揃えゲーム", func() {
-					It("returns true", func() {
-						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "ちんぽ揃えゲーム",
+					Context("message matches ちんちんそろえゲーム", func() {
+						It("returns true", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ちんちんそろえゲーム",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches ちんぽそろえゲーム", func() {
-					It("returns true", func() {
-						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "ちんぽそろえゲーム",
+					Context("message matches ちんぽ揃えゲーム", func() {
+						It("returns true", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ちんぽ揃えゲーム",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches ちんこ揃えゲーム", func() {
-					It("returns true", func() {
-						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "ちんこ揃えゲーム",
+					Context("message matches ちんぽそろえゲーム", func() {
+						It("returns true", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ちんぽそろえゲーム",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches ちんこそろえゲーム", func() {
-					It("returns true", func() {
-						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "ちんこそろえゲーム",
+					Context("message matches ちんこ揃えゲーム", func() {
+						It("returns true", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ちんこ揃えゲーム",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches ちんぽ揃え", func() {
-					It("returns true", func() {
-						actual := chimpoMatchingShindanmaker.Target(service.Message{
-							IsReblog: false,
-							Content:  "ちんぽ揃え",
+					Context("message matches ちんこそろえゲーム", func() {
+						It("returns true", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ちんこそろえゲーム",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
+					})
+
+					Context("message matches ちんぽ揃え", func() {
+						It("returns true", func() {
+							actual := chimpoMatchingShindanmaker.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ちんぽ揃え",
+							})
+							Expect(actual).To(BeTrue())
+						})
 					})
 				})
 			})

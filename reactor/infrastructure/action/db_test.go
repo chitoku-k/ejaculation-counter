@@ -48,7 +48,7 @@ var _ = Describe("DB", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message is not mime", func() {
+			Context("message is not from admin", func() {
 				It("returns false", func() {
 					actual := db.Target(service.Message{
 						IsReblog: false,
@@ -61,7 +61,7 @@ var _ = Describe("DB", func() {
 				})
 			})
 
-			Context("message is mime", func() {
+			Context("message is from admin", func() {
 				Context("message does not match pattern", func() {
 					It("returns false", func() {
 						actual := db.Target(service.Message{

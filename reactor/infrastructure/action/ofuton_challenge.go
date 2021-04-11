@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
@@ -14,11 +15,15 @@ var (
 )
 
 type ofutonChallenge struct {
-	Random wrapper.Random
+	Random      wrapper.Random
+	Environment config.Environment
 }
 
-func NewOfufutonChallenge(r wrapper.Random) service.Action {
-	return &ofutonChallenge{r}
+func NewOfufutonChallenge(r wrapper.Random, environment config.Environment) service.Action {
+	return &ofutonChallenge{
+		Random:      r,
+		Environment: environment,
+	}
 }
 
 func (oc *ofutonChallenge) Name() string {
@@ -26,7 +31,7 @@ func (oc *ofutonChallenge) Name() string {
 }
 
 func (oc *ofutonChallenge) Target(message service.Message) bool {
-	if message.IsReblog {
+	if message.IsReblog || (message.Account.ID == oc.Environment.Mastodon.UserID && message.InReplyToID != "") {
 		return false
 	}
 

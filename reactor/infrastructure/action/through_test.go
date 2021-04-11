@@ -5,6 +5,7 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,19 @@ var _ = Describe("Through", func() {
 	var (
 		ctrl    *gomock.Controller
 		c       *client.MockThrough
+		env     config.Environment
 		through service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockThrough(ctrl)
-		through = action.NewThrough(c)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+		}
+		through = action.NewThrough(c, env)
 	})
 
 	AfterEach(func() {
@@ -46,73 +53,116 @@ var _ = Describe("Through", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message does not match pattern", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := through.Target(service.Message{
-						IsReblog: false,
-						Content:  "診断して",
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
+						},
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message matches 駿河茶", func() {
-				It("returns true", func() {
-					actual := through.Target(service.Message{
-						IsReblog: false,
-						Content:  "駿河茶",
+			Context("message is not a reply from the admin", func() {
+				Context("message does not match pattern", func() {
+					It("returns false", func() {
+						actual := through.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "診断して",
+						})
+						Expect(actual).To(BeFalse())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 今日の through", func() {
-				It("returns true", func() {
-					actual := through.Target(service.Message{
-						IsReblog: false,
-						Content:  "今日の through",
+				Context("message matches 駿河茶", func() {
+					It("returns true", func() {
+						actual := through.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "駿河茶",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches through ガチャ", func() {
-				It("returns true", func() {
-					actual := through.Target(service.Message{
-						IsReblog: false,
-						Content:  "through ガチャ",
+				Context("message matches 今日の through", func() {
+					It("returns true", func() {
+						actual := through.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "今日の through",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches throughガチャ", func() {
-				It("returns true", func() {
-					actual := through.Target(service.Message{
-						IsReblog: false,
-						Content:  "throughガチャ",
+				Context("message matches through ガチャ", func() {
+					It("returns true", func() {
+						actual := through.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "through ガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches throughｶﾞﾁｬ", func() {
-				It("returns true", func() {
-					actual := through.Target(service.Message{
-						IsReblog: false,
-						Content:  "throughｶﾞﾁｬ",
+				Context("message matches throughガチャ", func() {
+					It("returns true", func() {
+						actual := through.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "throughガチャ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
 				})
-			})
 
-			Context("message matches 10 連駿河茶", func() {
-				It("returns true", func() {
-					actual := through.Target(service.Message{
-						IsReblog: false,
-						Content:  "10 連駿河茶",
+				Context("message matches throughｶﾞﾁｬ", func() {
+					It("returns true", func() {
+						actual := through.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "throughｶﾞﾁｬ",
+						})
+						Expect(actual).To(BeTrue())
 					})
-					Expect(actual).To(BeTrue())
+				})
+
+				Context("message matches 10 連駿河茶", func() {
+					It("returns true", func() {
+						actual := through.Target(service.Message{
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Content: "10 連駿河茶",
+						})
+						Expect(actual).To(BeTrue())
+					})
 				})
 			})
 		})

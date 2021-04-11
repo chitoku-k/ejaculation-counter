@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -13,12 +14,14 @@ var (
 )
 
 type avShindanmaker struct {
-	Client client.Shindanmaker
+	Client      client.Shindanmaker
+	Environment config.Environment
 }
 
-func NewAVShindanmaker(c client.Shindanmaker) service.Action {
+func NewAVShindanmaker(c client.Shindanmaker, environment config.Environment) service.Action {
 	return &avShindanmaker{
-		Client: c,
+		Client:      c,
+		Environment: environment,
 	}
 }
 
@@ -27,7 +30,7 @@ func (as *avShindanmaker) Name() string {
 }
 
 func (as *avShindanmaker) Target(message service.Message) bool {
-	if message.IsReblog {
+	if message.IsReblog || (message.Account.ID == as.Environment.Mastodon.UserID && message.InReplyToID != "") {
 		return false
 	}
 

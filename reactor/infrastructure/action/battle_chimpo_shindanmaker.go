@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -13,12 +14,14 @@ var (
 )
 
 type battleChimpoShindanmaker struct {
-	Client client.Shindanmaker
+	Client      client.Shindanmaker
+	Environment config.Environment
 }
 
-func NewBattleChimpoShindanmaker(c client.Shindanmaker) service.Action {
+func NewBattleChimpoShindanmaker(c client.Shindanmaker, environment config.Environment) service.Action {
 	return &battleChimpoShindanmaker{
-		Client: c,
+		Client:      c,
+		Environment: environment,
 	}
 }
 
@@ -27,7 +30,9 @@ func (bs *battleChimpoShindanmaker) Name() string {
 }
 
 func (bs *battleChimpoShindanmaker) Target(message service.Message) bool {
-	return !message.IsReblog && BattleChimpoRegex.MatchString(message.Content)
+	return !message.IsReblog &&
+		(message.Account.ID != bs.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		BattleChimpoRegex.MatchString(message.Content)
 }
 
 func (bs *battleChimpoShindanmaker) Event(message service.Message) (service.Event, int, error) {

@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -13,12 +14,14 @@ var (
 )
 
 type pyuppyuManagerShindanmaker struct {
-	Client client.Shindanmaker
+	Client      client.Shindanmaker
+	Environment config.Environment
 }
 
-func NewPyuppyuManagerShindanmaker(c client.Shindanmaker) service.Action {
+func NewPyuppyuManagerShindanmaker(c client.Shindanmaker, environment config.Environment) service.Action {
 	return &pyuppyuManagerShindanmaker{
-		Client: c,
+		Client:      c,
+		Environment: environment,
 	}
 }
 
@@ -27,7 +30,9 @@ func (ps *pyuppyuManagerShindanmaker) Name() string {
 }
 
 func (ps *pyuppyuManagerShindanmaker) Target(message service.Message) bool {
-	return !message.IsReblog && PyuppyuManagerRegex.MatchString(message.Content)
+	return !message.IsReblog &&
+		(message.Account.ID != ps.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		PyuppyuManagerRegex.MatchString(message.Content)
 }
 
 func (ps *pyuppyuManagerShindanmaker) Event(message service.Message) (service.Event, int, error) {

@@ -2,6 +2,7 @@ package action_test
 
 import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
@@ -13,13 +14,19 @@ var _ = Describe("OfutonChallenge", func() {
 	var (
 		ctrl            *gomock.Controller
 		r               *wrapper.MockRandom
+		env             config.Environment
 		ofutonChallenge service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		r = wrapper.NewMockRandom(ctrl)
-		ofutonChallenge = action.NewOfufutonChallenge(r)
+		env = config.Environment{
+			Mastodon: config.Mastodon{
+				UserID: "1",
+			},
+		}
+		ofutonChallenge = action.NewOfufutonChallenge(r, env)
 	})
 
 	AfterEach(func() {
@@ -44,49 +51,80 @@ var _ = Describe("OfutonChallenge", func() {
 		})
 
 		Context("message is not reblog", func() {
-			Context("message contains shindanmaker tag", func() {
+			Context("message is a reply from the admin", func() {
 				It("returns false", func() {
 					actual := ofutonChallenge.Target(service.Message{
-						IsReblog: false,
-						Tags: []service.Tag{
-							{
-								Name: "おふとんチャレンジ",
-							},
+						IsReblog:    false,
+						InReplyToID: "1",
+						Account: service.Account{
+							ID: "1",
 						},
-						Content: "おふとんチャレンジ",
 					})
 					Expect(actual).To(BeFalse())
 				})
 			})
 
-			Context("message does not contain shindanmaker tag", func() {
-				Context("message does not match pattern", func() {
+			Context("message is not a reply from the admin", func() {
+				Context("message contains shindanmaker tag", func() {
 					It("returns false", func() {
 						actual := ofutonChallenge.Target(service.Message{
-							IsReblog: false,
-							Content:  "診断して",
+							IsReblog:    false,
+							InReplyToID: "",
+							Account: service.Account{
+								ID: "1",
+							},
+							Tags: []service.Tag{
+								{
+									Name: "おふとんチャレンジ",
+								},
+							},
+							Content: "おふとんチャレンジ",
 						})
 						Expect(actual).To(BeFalse())
 					})
 				})
 
-				Context("message matches ふとんチャレンジ", func() {
-					It("returns true", func() {
-						actual := ofutonChallenge.Target(service.Message{
-							IsReblog: false,
-							Content:  "ふとんチャレンジ",
+				Context("message does not contain shindanmaker tag", func() {
+					Context("message does not match pattern", func() {
+						It("returns false", func() {
+							actual := ofutonChallenge.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "診断して",
+							})
+							Expect(actual).To(BeFalse())
 						})
-						Expect(actual).To(BeTrue())
 					})
-				})
 
-				Context("message matches ふとんﾁｬﾚﾝｼﾞ", func() {
-					It("returns true", func() {
-						actual := ofutonChallenge.Target(service.Message{
-							IsReblog: false,
-							Content:  "ふとんﾁｬﾚﾝｼﾞ",
+					Context("message matches ふとんチャレンジ", func() {
+						It("returns true", func() {
+							actual := ofutonChallenge.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ふとんチャレンジ",
+							})
+							Expect(actual).To(BeTrue())
 						})
-						Expect(actual).To(BeTrue())
+					})
+
+					Context("message matches ふとんﾁｬﾚﾝｼﾞ", func() {
+						It("returns true", func() {
+							actual := ofutonChallenge.Target(service.Message{
+								IsReblog:    false,
+								InReplyToID: "",
+								Account: service.Account{
+									ID: "1",
+								},
+								Content: "ふとんﾁｬﾚﾝｼﾞ",
+							})
+							Expect(actual).To(BeTrue())
+						})
 					})
 				})
 			})
