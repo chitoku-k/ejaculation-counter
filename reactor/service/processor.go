@@ -72,36 +72,36 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 			}()
 
 		case *Message:
-			var result []actionResult
-			for _, action := range ps.Actions {
-				if !action.Target(*p) {
-					continue
-				}
-
-				event, index, err := action.Event(*p)
-				if err != nil {
-					logrus.Errorf("Error in processing %v: %v", action.Name(), err)
-					EventsErrorTotal.WithLabelValues(action.Name()).Inc()
-					result = append(result, actionResult{
-						Event: &ReplyErrorEvent{
-							InReplyToID: p.ID,
-							Acct:        p.Account.Acct,
-							Visibility:  p.Visibility,
-							ActionName:  action.Name(),
-						},
-					})
-					continue
-				}
-
-				result = append(result, actionResult{event, index})
-				EventsTotal.WithLabelValues(event.Name(), action.Name()).Inc()
-			}
-
-			sort.Slice(result, func(i, j int) bool {
-				return result[i].Index < result[j].Index
-			})
-
 			go func() {
+				var result []actionResult
+				for _, action := range ps.Actions {
+					if !action.Target(*p) {
+						continue
+					}
+
+					event, index, err := action.Event(*p)
+					if err != nil {
+						logrus.Errorf("Error in processing %v: %v", action.Name(), err)
+						EventsErrorTotal.WithLabelValues(action.Name()).Inc()
+						result = append(result, actionResult{
+							Event: &ReplyErrorEvent{
+								InReplyToID: p.ID,
+								Acct:        p.Account.Acct,
+								Visibility:  p.Visibility,
+								ActionName:  action.Name(),
+							},
+						})
+						continue
+					}
+
+					result = append(result, actionResult{event, index})
+					EventsTotal.WithLabelValues(event.Name(), action.Name()).Inc()
+				}
+
+				sort.Slice(result, func(i, j int) bool {
+					return result[i].Index < result[j].Index
+				})
+
 				err := ps.doEvents(ctx, result)
 				if err == nil {
 					p.Ack()
