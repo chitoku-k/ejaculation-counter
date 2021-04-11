@@ -3,11 +3,11 @@
 package wrapper
 
 import (
-	"io"
 	"net/http"
+	"net/url"
 )
 
 type HttpClient interface {
 	Get(url string) (*http.Response, error)
-	Post(url, contentType string, body io.Reader) (*http.Response, error)
+	PostForm(url string, data url.Values) (*http.Response, error)
 }

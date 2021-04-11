@@ -5,8 +5,8 @@
 package wrapper
 
 import (
-	io "io"
 	http "net/http"
+	url "net/url"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -50,17 +50,17 @@ func (mr *MockHttpClientMockRecorder) Get(url interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockHttpClient)(nil).Get), url)
 }
 
-// Post mocks base method.
-func (m *MockHttpClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+// PostForm mocks base method.
+func (m *MockHttpClient) PostForm(url string, data url.Values) (*http.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Post", url, contentType, body)
+	ret := m.ctrl.Call(m, "PostForm", url, data)
 	ret0, _ := ret[0].(*http.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Post indicates an expected call of Post.
-func (mr *MockHttpClientMockRecorder) Post(url, contentType, body interface{}) *gomock.Call {
+// PostForm indicates an expected call of PostForm.
+func (mr *MockHttpClientMockRecorder) PostForm(url, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Post", reflect.TypeOf((*MockHttpClient)(nil).Post), url, contentType, body)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PostForm", reflect.TypeOf((*MockHttpClient)(nil).PostForm), url, data)
 }

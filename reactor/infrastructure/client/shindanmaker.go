@@ -18,6 +18,7 @@ import (
 var (
 	NameRegex          = regexp.MustCompile(`[$\\]{?\d+`)
 	ShindanNameRegex   = regexp.MustCompile(`[@＠].+|[\(（].+[\)）]`)
+	ShindanTokenRegex  = regexp.MustCompile(`<meta[^>]*name="csrf-token"[^>]*content="([\s\S]*?)"[^>]*>`)
 	ShindanResultRegex = regexp.MustCompile(`<textarea[^>]*id="copy-textarea-140"[^>]*>([\s\S]*?)<\/textarea>`)
 )
 
@@ -45,6 +46,23 @@ func (s *shindanmaker) Name(account service.Account) string {
 }
 
 func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
+	top, err := s.Client.Get(targetURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch shindan top: %w", err)
+	}
+	defer top.Body.Close()
+
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, top.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read shindan top: %w", err)
+	}
+
+	matches := ShindanTokenRegex.FindSubmatch(buf.Bytes())
+	if matches == nil {
+		return "", fmt.Errorf("failed to parse shindan top")
+	}
+
 	name = NameRegex.ReplaceAllString(name, "\\$0")
 
 	if name != strings.Join(ShindanNameRegex.FindStringSubmatch(name), "") {
@@ -52,21 +70,22 @@ func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
 	}
 
 	values := url.Values{}
-	values.Add("u", name)
+	values.Add("name", name)
+	values.Add("_token", string(matches[1]))
 
-	res, err := s.Client.Post(targetURL, "application/x-www-form-urlencoded", strings.NewReader(values.Encode()))
+	res, err := s.Client.PostForm(strings.ReplaceAll(targetURL, "/a/", "/"), values)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch shindan result: %w", err)
 	}
 	defer res.Body.Close()
 
-	var buf bytes.Buffer
+	buf.Reset()
 	_, err = io.Copy(&buf, res.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read shindan result: %w", err)
 	}
 
-	matches := ShindanResultRegex.FindSubmatch(buf.Bytes())
+	matches = ShindanResultRegex.FindSubmatch(buf.Bytes())
 	if matches == nil {
 		return "", fmt.Errorf("failed to parse shindan result")
 	}

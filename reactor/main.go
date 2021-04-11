@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"math/rand"
-	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -72,10 +71,14 @@ func main() {
 
 	wg.Add(1)
 	go func() {
-		shindan := client.NewShindanmaker(http.DefaultClient)
-		through := client.NewThrough(http.DefaultClient)
-		doublet := client.NewDoublet(http.DefaultClient)
-		mpyw := client.NewMpyw(http.DefaultClient)
+		c, err := client.NewHttpClient()
+		if err != nil {
+			logrus.Fatalf("Failed to initialize Cookie Jar: %v", err)
+		}
+		shindan := client.NewShindanmaker(c)
+		through := client.NewThrough(c)
+		doublet := client.NewDoublet(c)
+		mpyw := client.NewMpyw(c)
 
 		mc := client.NewMastodon(env)
 		ps := service.NewProcessor(
@@ -104,7 +107,7 @@ func main() {
 		)
 		ps.Execute(ctx, reader.Packets())
 
-		err := db.Close()
+		err = db.Close()
 		if err != nil {
 			logrus.Errorf("Failed to close connection to DB: %v", err)
 		}

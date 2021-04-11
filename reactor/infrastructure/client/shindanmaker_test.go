@@ -2,8 +2,6 @@ package client_test
 
 import (
 	"errors"
-	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -16,61 +14,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
-
-func Reader(m gomock.Matcher) gomock.Matcher {
-	return &readerMatcher{m, nil}
-}
-
-type readerMatcher struct {
-	m    gomock.Matcher
-	data []byte
-}
-
-func (r *readerMatcher) Matches(x interface{}) bool {
-	var err error
-	r.data, err = ioutil.ReadAll(x.(io.Reader))
-	if err != nil {
-		return false
-	}
-	return r.m.Matches(r.data)
-}
-
-func (r *readerMatcher) Got(got interface{}) string {
-	f, ok := r.m.(gomock.GotFormatter)
-	if ok {
-		return "data(" + f.Got(r.data) + ")"
-	}
-	return fmt.Sprintf("%#v", r.data)
-}
-
-func (r *readerMatcher) String() string {
-	return "data(" + r.m.String() + ")"
-}
-
-func Query(m gomock.Matcher) gomock.Matcher {
-	return &queryMatcher{m}
-}
-
-type queryMatcher struct {
-	m gomock.Matcher
-}
-
-func (q *queryMatcher) Matches(x interface{}) bool {
-	values, err := url.ParseQuery(string(x.([]byte)))
-	if err != nil {
-		return false
-	}
-	return q.m.Matches(values)
-}
-
-func (q *queryMatcher) Got(got interface{}) string {
-	values, _ := url.ParseQuery(string(got.([]byte)))
-	return fmt.Sprintf("url.Values(%v)", values)
-}
-
-func (q *queryMatcher) String() string {
-	return "url.Values(" + q.m.String() + ")"
-}
 
 var _ = Describe("Shindanmaker", func() {
 	var (
@@ -130,22 +73,34 @@ var _ = Describe("Shindanmaker", func() {
 	})
 
 	Describe("Do()", func() {
+		var (
+			top *http.Response
+			res *http.Response
+		)
+
 		Describe("escape name", func() {
 			Context("name does not include special characters", func() {
 				Context("name includes neither at-sign nor parentheses", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"テスト"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"テスト"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -159,18 +114,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name begins with half-width at-sign", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"@test"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"@test"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -184,18 +146,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name begins with full-width at-sign", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"＠テスト"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"＠テスト"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -209,18 +178,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name begins with half-width parentheses", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"(テスト)"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"(テスト)"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -234,18 +210,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name begins with full-width at-sign", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"（テスト）"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"（テスト）"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -259,18 +242,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes half-width at-sign", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"テスト"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"テスト"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -284,18 +274,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes full-width at-sign", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"テスト"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"テスト"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -309,18 +306,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes half-width parentheses", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"テスト"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"テスト"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -334,18 +338,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes full-width parentheses", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"テスト"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"テスト"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -361,18 +372,25 @@ var _ = Describe("Shindanmaker", func() {
 			Context("name includes special characters", func() {
 				Context("name includes neither at-sign nor parentheses", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -386,18 +404,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes half-width at-sign", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -411,18 +436,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes full-width at-sign", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -436,18 +468,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes half-width parentheses", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -461,18 +500,25 @@ var _ = Describe("Shindanmaker", func() {
 
 				Context("name includes full-width parentheses", func() {
 					BeforeEach(func() {
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-										},
-									),
-								),
-							),
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
+
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(
 							nil,
 							errors.New("error"),
@@ -489,36 +535,39 @@ var _ = Describe("Shindanmaker", func() {
 		Describe("fetch", func() {
 			Context("fetching fails", func() {
 				BeforeEach(func() {
-					c.EXPECT().Post(
-						"https://shindanmaker.com/a/855159",
-						"application/x-www-form-urlencoded",
-						Reader(
-							Query(
-								gomock.Eq(
-									url.Values{
-										"u": []string{"テスト"},
-									},
-								),
-							),
-						),
+					top = &http.Response{
+						Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+					}
+
+					c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+					c.EXPECT().PostForm(
+						"https://shindanmaker.com/855159",
+						url.Values{
+							"name":   []string{"テスト"},
+							"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+						},
 					).Return(
 						nil,
-						errors.New(`Get "https://shindanmaker.com/a/855159": dial tcp [::1]:443: connect: connection refused`),
+						errors.New(`Get "https://shindanmaker.com/855159": dial tcp [::1]:443: connect: connection refused`),
 					)
 				})
 
 				It("returns an error", func() {
 					actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
 					Expect(actual).To(Equal(""))
-					Expect(err).To(MatchError(`failed to fetch shindan result: Get "https://shindanmaker.com/a/855159": dial tcp [::1]:443: connect: connection refused`))
+					Expect(err).To(MatchError(`failed to fetch shindan result: Get "https://shindanmaker.com/855159": dial tcp [::1]:443: connect: connection refused`))
 				})
 			})
 
 			Context("fetching succeeds", func() {
-				var (
-					res *http.Response
-				)
-
 				Context("reading fails", func() {
 					BeforeEach(func() {
 						r.EXPECT().Read(gomock.Any()).Return(
@@ -526,22 +575,28 @@ var _ = Describe("Shindanmaker", func() {
 							errors.New("dial tcp [::1]:443: connect: connection refused"),
 						)
 
+						top = &http.Response{
+							Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+						}
 						res = &http.Response{
 							Body: ioutil.NopCloser(r),
 						}
 
-						c.EXPECT().Post(
-							"https://shindanmaker.com/a/855159",
-							"application/x-www-form-urlencoded",
-							Reader(
-								Query(
-									gomock.Eq(
-										url.Values{
-											"u": []string{"テスト"},
-										},
-									),
-								),
-							),
+						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+						c.EXPECT().PostForm(
+							"https://shindanmaker.com/855159",
+							url.Values{
+								"name":   []string{"テスト"},
+								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							},
 						).Return(res, nil)
 					})
 
@@ -555,6 +610,17 @@ var _ = Describe("Shindanmaker", func() {
 				Context("reading succeeds", func() {
 					Context("parsing fails", func() {
 						BeforeEach(func() {
+							top = &http.Response{
+								Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+							}
 							res = &http.Response{
 								Body: ioutil.NopCloser(strings.NewReader(`
 									<html>
@@ -572,18 +638,13 @@ var _ = Describe("Shindanmaker", func() {
 								`)),
 							}
 
-							c.EXPECT().Post(
-								"https://shindanmaker.com/a/855159",
-								"application/x-www-form-urlencoded",
-								Reader(
-									Query(
-										gomock.Eq(
-											url.Values{
-												"u": []string{"テスト"},
-											},
-										),
-									),
-								),
+							c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+							c.EXPECT().PostForm(
+								"https://shindanmaker.com/855159",
+								url.Values{
+									"name":   []string{"テスト"},
+									"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								},
 							).Return(res, nil)
 						})
 
@@ -598,6 +659,17 @@ var _ = Describe("Shindanmaker", func() {
 						Context("result does not include special characters", func() {
 							Context("result is less than 140 characters", func() {
 								BeforeEach(func() {
+									top = &http.Response{
+										Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+									}
 									res = &http.Response{
 										Body: ioutil.NopCloser(strings.NewReader(`
 											<!doctype html>
@@ -632,18 +704,13 @@ var _ = Describe("Shindanmaker", func() {
 										`)),
 									}
 
-									c.EXPECT().Post(
-										"https://shindanmaker.com/a/855159",
-										"application/x-www-form-urlencoded",
-										Reader(
-											Query(
-												gomock.Eq(
-													url.Values{
-														"u": []string{"テスト"},
-													},
-												),
-											),
-										),
+									c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+									c.EXPECT().PostForm(
+										"https://shindanmaker.com/855159",
+										url.Values{
+											"name":   []string{"テスト"},
+											"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+										},
 									).Return(res, nil)
 								})
 
@@ -661,6 +728,17 @@ https://shindanmaker.com/855159`))
 
 							Context("result exceeds 140 characters", func() {
 								BeforeEach(func() {
+									top = &http.Response{
+										Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+									}
 									res = &http.Response{
 										Body: ioutil.NopCloser(strings.NewReader(`
 											<!DOCTYPE html>
@@ -700,18 +778,13 @@ https://shindanmaker.com/855159`))
 										`)),
 									}
 
-									c.EXPECT().Post(
-										"https://shindanmaker.com/a/855159",
-										"application/x-www-form-urlencoded",
-										Reader(
-											Query(
-												gomock.Eq(
-													url.Values{
-														"u": []string{"テスト"},
-													},
-												),
-											),
-										),
+									c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+									c.EXPECT().PostForm(
+										"https://shindanmaker.com/855159",
+										url.Values{
+											"name":   []string{"テスト"},
+											"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+										},
 									).Return(res, nil)
 								})
 
@@ -727,6 +800,17 @@ https://shindanmaker.com/855159`))
 
 						Context("result includes special characters", func() {
 							BeforeEach(func() {
+								top = &http.Response{
+									Body: ioutil.NopCloser(strings.NewReader(`
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+							`)),
+								}
 								res = &http.Response{
 									Body: ioutil.NopCloser(strings.NewReader(`
 										<!doctype html>
@@ -761,18 +845,13 @@ https://shindanmaker.com/855159`))
 									`)),
 								}
 
-								c.EXPECT().Post(
-									"https://shindanmaker.com/a/855159",
-									"application/x-www-form-urlencoded",
-									Reader(
-										Query(
-											gomock.Eq(
-												url.Values{
-													"u": []string{`<>"'&`},
-												},
-											),
-										),
-									),
+								c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
+								c.EXPECT().PostForm(
+									"https://shindanmaker.com/855159",
+									url.Values{
+										"name":   []string{`<>"'&`},
+										"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+									},
 								).Return(res, nil)
 							})
 
