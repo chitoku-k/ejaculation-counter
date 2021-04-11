@@ -83,6 +83,9 @@ DB_SSL_MODE=
 MQ_HOST=
 MQ_USERNAME=
 MQ_PASSWORD=
+
+# 外部 API
+EXT_MPYW_API_URL=https://mpyw.hinanawi.net/api
 ```
 
 ## 本番環境

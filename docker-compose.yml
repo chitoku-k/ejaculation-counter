@@ -39,6 +39,7 @@ services:
       MQ_HOST: amqp://mq
       MQ_USERNAME: shiko
       MQ_PASSWORD: shiko
+      EXT_MPYW_API_URL:
       PORT: 80
       LOG_LEVEL: debug
     deploy:
