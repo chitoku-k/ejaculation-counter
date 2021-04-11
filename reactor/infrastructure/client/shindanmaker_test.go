@@ -600,22 +600,31 @@ var _ = Describe("Shindanmaker", func() {
 								BeforeEach(func() {
 									res = &http.Response{
 										Body: ioutil.NopCloser(strings.NewReader(`
-											<!DOCTYPE html>
+											<!doctype html>
 											<html lang="ja">
 											<head>
 												<title>ちんぽ揃えゲーム</title>
 											</head>
 											<body>
-												<div class="tab-content">
-													<div role="tabpanel" class="tab-pane active" id="copy_panel_140">
-														<form id="forcopy" name="forcopy" method="post" action="/855159" enctype="multipart/form-data" onSubmit="return false">
-															<textarea id="copy_text_140" class="form-control" rows="2">ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ
-
-テストさんは19文字目でちんぽを出せました！
-
-#ちんぽ揃えゲーム #shindanmaker
-https://shindanmaker.com/855159</textarea>
-														</form>
+												<div id="main-container">
+													<div id="main">
+														<div class="modal fade" id="shareModal">
+															<div class="modal-dialog modal-dialog-scrollable modal-md modal-dialog-centered">
+																<div class="modal-content">
+																	<div class="modal-body">
+																		<div class="mb-2">
+																			<div class="tab-content" id="copyContent">
+																				<div class="tab-pane fade show active" id="copy_140">
+																					<div class="form-group mb-2">
+																						<textarea class="form-control border-top-0 nav-tabs-copy-textarea" id="copy-textarea-140" rows="5">ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ&#10;&#10;テストさんは19文字目でちんぽを出せました！&#10;&#10;#ちんぽ揃えゲーム&ensp;#shindanmaker&#10;https://shindanmaker.com/855159</textarea>
+																					</div>
+																				</div>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</div>
 													</div>
 												</div>
 											</body>
@@ -660,21 +669,30 @@ https://shindanmaker.com/855159`))
 												<title>ちんぽ揃えゲーム</title>
 											</head>
 											<body>
-												<div class="tab-content">
-													<div role="tabpanel" class="tab-pane active" id="copy_panel_140">
-														<form id="forcopy" name="forcopy" method="post" action="/855159" enctype="multipart/form-data" onSubmit="return false">
-															<textarea id="copy_text_140" class="form-control" rows="2">んちちんんぽんちちちぽんちちんんんぽぽちちぽちぽぽぽぽんぽぽちんんぽんんんんちちぽぽちんちちんんぽんぽちちぽちぽんんちぽぽんんちんんちんちちぽんんんちちぽちちちちぽちぽんんぽんぽちちぽんちんちちぽんんちんんんぽちんんぽぽ…
-#ちんぽ揃えゲーム #shindanmaker
-https://shindanmaker.com/855159</textarea>
-														</form>
-													</div>
-													<div role="tabpanel" class="tab-pane" id="copy_panel_all">
-														<textarea id="copy_text" class="form-control" rows="2">んちちんんぽんちちちぽんちちんんんぽぽちちぽちぽぽぽぽんぽぽちんんぽんんんんちちぽぽちんちちんんぽんぽちちぽちぽんんちぽぽんんちんんちんちちぽんんんちちぽちちちちぽちぽんんぽんぽちちぽんちんちちぽんんちんんんぽちんんぽぽちんんちぽちんんちぽんちちぽぽぽちぽんんちんちちちちぽぽぽぽぽぽんぽんんちちちんちぽぽちぽちぽんんちちぽんんちんんぽちちんぽ(ﾎﾞﾛﾝ
-
-テストさんは172文字目でちんぽを出せました！
-
-#ちんぽ揃えゲーム #shindanmaker
-https://shindanmaker.com/855159</textarea>
+												<div id="main-container">
+													<div id="main">
+														<div class="modal fade" id="shareModal">
+															<div class="modal-dialog modal-dialog-scrollable modal-md modal-dialog-centered">
+																<div class="modal-content">
+																	<div class="modal-body">
+																		<div class="mb-2">
+																			<div class="tab-content" id="copyContent">
+																				<div class="tab-pane fade show active" id="copy_140">
+																					<div class="form-group mb-2">
+																						<textarea class="form-control border-top-0 nav-tabs-copy-textarea" id="copy-textarea-140" rows="5">んちちんんぽんちちちぽんちちんんんぽぽちちぽちぽぽぽぽんぽぽちんんぽんんんんちちぽぽちんちちんんぽんぽちちぽちぽんんちぽぽんんちんんちんちちぽんんんちちぽちちちちぽちぽんんぽんぽちちぽんちんちちぽんんちんんんぽちんんぽぽ…&#10;#ちんぽ揃えゲーム&ensp;#shindanmaker&#10;https://shindanmaker.com/855159</textarea>
+																					</div>
+																				</div>
+																				<div class="tab-pane fade" id="copy_all">
+																					<div class="form-group mb-2">
+																						<textarea class="form-control border-top-0 nav-tabs-copy-textarea" id="copy-textarea-all" rows="5">んちちんんぽんちちちぽんちちんんんぽぽちちぽちぽぽぽぽんぽぽちんんぽんんんんちちぽぽちんちちんんぽんぽちちぽちぽんんちぽぽんんちんんちんちちぽんんんちちぽちちちちぽちぽんんぽんぽちちぽんちんちちぽんんちんんんぽちんんぽぽちんんちぽちんんちぽんちちぽぽぽちぽんんちんちちちちぽぽぽぽぽぽんぽんんちちちんちぽぽちぽちぽんんちちぽんんちんんぽちちんぽ(ﾎﾞﾛﾝ&#10;&#10;テストさんは172文字目でちんぽを出せました！&#10;&#10;#ちんぽ揃えゲーム&ensp;#shindanmaker&#10;https://shindanmaker.com/855159</textarea>
+																					</div>
+																				</div>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</div>
 													</div>
 												</div>
 											</body>
@@ -711,22 +729,31 @@ https://shindanmaker.com/855159`))
 							BeforeEach(func() {
 								res = &http.Response{
 									Body: ioutil.NopCloser(strings.NewReader(`
-										<!DOCTYPE html>
+										<!doctype html>
 										<html lang="ja">
 										<head>
 											<title>ちんぽ揃えゲーム</title>
 										</head>
 										<body>
-											<div class="tab-content">
-												<div role="tabpanel" class="tab-pane active" id="copy_panel_140">
-													<form id="forcopy" name="forcopy" method="post" action="/855159" enctype="multipart/form-data" onSubmit="return false">
-														<textarea id="copy_text_140" class="form-control" rows="2">ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ
-
-&lt;&gt;&quot;&#039;&amp;さんは19文字目でちんぽを出せました！
-
-#ちんぽ揃えゲーム #shindanmaker
-https://shindanmaker.com/855159</textarea>
-													</form>
+											<div id="main-container">
+												<div id="main">
+													<div class="modal fade" id="shareModal">
+														<div class="modal-dialog modal-dialog-scrollable modal-md modal-dialog-centered">
+															<div class="modal-content">
+																<div class="modal-body">
+																	<div class="mb-2">
+																		<div class="tab-content" id="copyContent">
+																			<div class="tab-pane fade show active" id="copy_140">
+																				<div class="form-group mb-2">
+																					<textarea class="form-control border-top-0 nav-tabs-copy-textarea" id="copy-textarea-140" rows="5">ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ&#10;&#10;&lt;&gt;&quot;&#039;&amp;さんは19文字目でちんぽを出せました！&#10;&#10;#ちんぽ揃えゲーム&ensp;#shindanmaker&#10;https://shindanmaker.com/855159</textarea>
+																				</div>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</div>
+													</div>
 												</div>
 											</div>
 										</body>
