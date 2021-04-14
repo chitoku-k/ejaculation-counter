@@ -530,8 +530,8 @@
           "format": "table",
           "group": [],
           "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  date AS \"time\",\n  count\nFROM counts\nWHERE\n  $__timeFilter(date)\nORDER BY 1",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  \"date\" AS \"time\",\n  \"count\"\nFROM \"counts\"\nWHERE\n  $__timeFilter(\"date\")\nORDER BY \"date\" DESC",
           "refId": "A",
           "select": [
             [
