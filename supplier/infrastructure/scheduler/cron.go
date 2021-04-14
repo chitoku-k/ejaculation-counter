@@ -11,14 +11,14 @@ import (
 
 type scheduler struct {
 	cron        *cron.Cron
-	ch          chan service.Event
+	ch          chan service.Tick
 	Environment config.Environment
 }
 
 func New(environment config.Environment) (service.Scheduler, error) {
 	s := scheduler{
 		cron:        cron.New(),
-		ch:          make(chan service.Event),
+		ch:          make(chan service.Tick),
 		Environment: environment,
 	}
 
@@ -30,14 +30,21 @@ func New(environment config.Environment) (service.Scheduler, error) {
 	return &s, nil
 }
 
-func (s *scheduler) Start() <-chan service.Event {
+func (s *scheduler) Start() <-chan service.Tick {
 	s.cron.Start()
 	return s.ch
 }
 
+func (s *scheduler) Stop() {
+	defer close(s.ch)
+	<-s.cron.Stop().Done()
+}
+
 func (s *scheduler) handle() {
-	s.ch <- &service.UpdateEvent{
-		Date:   time.Now().Format(time.RFC3339),
-		UserID: s.Environment.Mastodon.UserID,
+	year, month, day := time.Now().Local().Date()
+	s.ch <- service.Tick{
+		Year:  year,
+		Month: int(month),
+		Day:   day,
 	}
 }

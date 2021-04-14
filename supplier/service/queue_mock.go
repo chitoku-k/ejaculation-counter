@@ -5,43 +5,59 @@
 package service
 
 import (
-	gomock "github.com/golang/mock/gomock"
+	context "context"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockQueueWriter is a mock of QueueWriter interface
+// MockQueueWriter is a mock of QueueWriter interface.
 type MockQueueWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockQueueWriterMockRecorder
 }
 
-// MockQueueWriterMockRecorder is the mock recorder for MockQueueWriter
+// MockQueueWriterMockRecorder is the mock recorder for MockQueueWriter.
 type MockQueueWriterMockRecorder struct {
 	mock *MockQueueWriter
 }
 
-// NewMockQueueWriter creates a new mock instance
+// NewMockQueueWriter creates a new mock instance.
 func NewMockQueueWriter(ctrl *gomock.Controller) *MockQueueWriter {
 	mock := &MockQueueWriter{ctrl: ctrl}
 	mock.recorder = &MockQueueWriterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockQueueWriter) EXPECT() *MockQueueWriterMockRecorder {
 	return m.recorder
 }
 
-// Publish mocks base method
-func (m *MockQueueWriter) Publish(event Event) error {
+// Close mocks base method.
+func (m *MockQueueWriter) Close() error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Publish", event)
+	ret := m.ctrl.Call(m, "Close")
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Publish indicates an expected call of Publish
-func (mr *MockQueueWriterMockRecorder) Publish(event interface{}) *gomock.Call {
+// Close indicates an expected call of Close.
+func (mr *MockQueueWriterMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockQueueWriter)(nil).Publish), event)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockQueueWriter)(nil).Close))
+}
+
+// Publish mocks base method.
+func (m *MockQueueWriter) Publish(ctx context.Context, packet Packet) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Publish", ctx, packet)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Publish indicates an expected call of Publish.
+func (mr *MockQueueWriterMockRecorder) Publish(ctx, packet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockQueueWriter)(nil).Publish), ctx, packet)
 }

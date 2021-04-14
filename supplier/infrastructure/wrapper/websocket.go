@@ -28,4 +28,5 @@ func (d *dialer) DialContext(ctx context.Context, urlStr string, requestHeader h
 type Conn interface {
 	Close() error
 	ReadJSON(v interface{}) error
+	WriteMessage(messageType int, data []byte) error
 }

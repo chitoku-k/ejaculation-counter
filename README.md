@@ -28,7 +28,7 @@
 
 ## アーキテクチャー
 
-<img src="doc/architecture.png" alt="" width="623" />
+<img src="doc/architecture.png" alt="" width="643" />
 
 ### Web
 
@@ -36,39 +36,28 @@ Grafana または REST API へのリクエストの振り分けを行います�
 
 ### Supplier
 
-Mastodon から WebSocket でトゥートを取得し、イベントに変換して MQ へ送信します。
+Mastodon から WebSocket でトゥートを取得して MQ へ送信します。
 
 ### Reactor
 
-MQ からイベントを受信し、Mastodon でのリプライ送信や DB の更新などの処理を行います。  
+MQ から取得したトゥートに対し、Mastodon でのリプライ送信や DB の更新などの処理を行います。  
 また、REST API を実装しています。
 
 ## 設定方法
 
-データベースの作成とテーブルの設定を行います。
-
-```sql
-CREATE TABLE `counts` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `user` int(11) DEFAULT NULL,
-    `date` date DEFAULT NULL,
-    `count` int(11) DEFAULT NULL,
-    PRIMARY KEY (`id`)
-);
-CREATE TABLE `users` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `screen_name` varchar(20) DEFAULT NULL,
-    PRIMARY KEY (`id`)
-);
-```
+データベースの作成とテーブルの設定を行います。  
+スキーマ: [database/](./database)
 
 環境変数に値の設定を行います。
 
 ```bash
+# ログレベル（trace/debug/info/warn/error/fatal/panic）
+LOG_LEVEL=
+
 # DB ユーザー ID（数値）
 USER_ID=
 
-# Mastodon ユーザー ID（数値、スペース区切り）
+# Mastodon ユーザー ID（数値）
 MASTODON_USER_ID=
 
 # Mastodon ユーザー トークン
@@ -87,16 +76,22 @@ DB_DATABASE=
 DB_USER=
 DB_PASSWORD=
 
+# データベース SSL モード（disable/require/verify-ca/verify-full）
+DB_SSL_MODE=
+
 # メッセージキュー 接続情報
 MQ_HOST=
 MQ_USERNAME=
 MQ_PASSWORD=
+
+# 外部 API
+EXT_MPYW_API_URL=https://mpyw.hinanawi.net/api
 ```
 
 ## 本番環境
 
 Docker のインストールが必要です。  
-nginx + RabbitMQ + MySQL + Go App で構成されています。
+nginx + RabbitMQ + PostgreSQL + Go App で構成されています。
 
 ### ビルド
 
@@ -108,6 +103,10 @@ $ docker build .
 $ popd
 
 $ pushd supplier/
+$ docker build .
+$ popd
+
+$ pushd mq/
 $ docker build .
 $ popd
 ```

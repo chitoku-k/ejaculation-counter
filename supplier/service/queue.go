@@ -2,6 +2,9 @@
 
 package service
 
+import "context"
+
 type QueueWriter interface {
-	Publish(event Event) error
+	Publish(ctx context.Context, packet Packet) error
+	Close() error
 }

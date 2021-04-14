@@ -2,27 +2,29 @@ version: '3.8'
 
 services:
   supplier:
-    image: golang:1.15-buster
-    command: bash -c 'go build -o /usr/bin && /usr/bin/supplier'
-    working_dir: /usr/src/app
+    build:
+      context: ./supplier
+      target: dev
     environment:
       TZ: Asia/Tokyo
-      MASTODON_USER_ID:
       MASTODON_ACCESS_TOKEN:
       MASTODON_SERVER_URL:
       MASTODON_STREAM: direct
       MQ_HOST: amqp://mq
       MQ_USERNAME: shiko
       MQ_PASSWORD: shiko
-      REACTOR_HOST: reactor
       PORT: 80
+      LOG_LEVEL: debug
+    deploy:
+      mode: replicated
+      replicas: 2
     volumes:
       - ./supplier:/usr/src/app
 
   reactor:
-    image: golang:1.15-buster
-    command: bash -c 'go build -o /usr/bin && /usr/bin/reactor'
-    working_dir: /usr/src/app
+    build:
+      context: ./reactor
+      target: dev
     environment:
       USER_ID: 1
       TZ: Asia/Tokyo
@@ -30,12 +32,16 @@ services:
       DB_DATABASE: ejaculation
       DB_USERNAME: shiko
       DB_PASSWORD: shiko
+      DB_SSL_MODE: disable
+      MASTODON_USER_ID:
       MASTODON_ACCESS_TOKEN:
       MASTODON_SERVER_URL:
       MQ_HOST: amqp://mq
       MQ_USERNAME: shiko
       MQ_PASSWORD: shiko
+      EXT_MPYW_API_URL:
       PORT: 80
+      LOG_LEVEL: debug
     deploy:
       mode: replicated
       replicas: 2
@@ -43,7 +49,7 @@ services:
       - ./reactor:/usr/src/app
 
   web:
-    image: nginx:1.18
+    image: nginx:1.19
     ports:
       - "${COUNTER_PORT-8080}:80"
     volumes:
@@ -51,7 +57,7 @@ services:
       - ./conf:/etc/nginx/conf.d
 
   grafana:
-    image: grafana/grafana:7.1.5
+    image: grafana/grafana:7.5.1
     environment:
       TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
@@ -64,7 +70,8 @@ services:
       - grafana:/var/lib/grafana
 
   mq:
-    image: rabbitmq:3.8-management
+    build:
+      context: ./mq
     environment:
       RABBITMQ_DEFAULT_USER: shiko
       RABBITMQ_DEFAULT_PASS: shiko
@@ -72,17 +79,15 @@ services:
       - mq:/var/lib/rabbitmq
 
   database:
-    image: mysql:8.0
-    command: [--character-set-server=utf8, --default-authentication-plugin=mysql_native_password]
+    image: postgres:13.2
     volumes:
       - ./database:/docker-entrypoint-initdb.d
-      - database:/var/lib/mysql
+      - database:/var/lib/postgres/data
     environment:
       TZ:
-      MYSQL_DATABASE: ejaculation
-      MYSQL_USER: shiko
-      MYSQL_PASSWORD: shiko
-      MYSQL_ROOT_PASSWORD: shiko
+      POSTGRES_DB: ejaculation
+      POSTGRES_USER: shiko
+      POSTGRES_PASSWORD: shiko
 
 volumes:
   grafana:

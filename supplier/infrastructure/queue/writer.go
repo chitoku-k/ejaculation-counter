@@ -38,25 +38,29 @@ var (
 
 type writer struct {
 	Exchange      string
+	QueueName     string
 	RoutingKey    string
 	Environment   config.Environment
+	Connection    *amqp.Connection
 	Channel       *amqp.Channel
 	Confirmations chan amqp.Confirmation
 	Closes        chan *amqp.Error
-	Queue         chan service.Event
+	Queue         chan service.Packet
 }
 
 func NewWriter(
 	ctx context.Context,
 	exchange string,
+	queue string,
 	routingKey string,
 	environment config.Environment,
 ) (service.QueueWriter, error) {
 	w := &writer{
 		Exchange:    exchange,
+		QueueName:   queue,
 		RoutingKey:  routingKey,
 		Environment: environment,
-		Queue:       make(chan service.Event, QueueSize),
+		Queue:       make(chan service.Packet, QueueSize),
 	}
 
 	return w, w.connect(ctx)
@@ -75,6 +79,8 @@ func (w *writer) dial(url string) (*amqp.Connection, net.Conn, error) {
 }
 
 func (w *writer) connect(ctx context.Context) error {
+	logrus.Debugf("Connecting to MQ broker...")
+
 	uri, err := amqp.ParseURI(w.Environment.Queue.Host)
 	if err != nil {
 		return fmt.Errorf("failed to parse MQ URI: %w", err)
@@ -83,27 +89,32 @@ func (w *writer) connect(ctx context.Context) error {
 	uri.Username = w.Environment.Queue.Username
 	uri.Password = w.Environment.Queue.Password
 
-	conn, nc, err := w.dial(uri.String())
+	var nc net.Conn
+	w.Connection, nc, err = w.dial(uri.String())
 	if err != nil {
 		return fmt.Errorf("failed to connect to MQ broker: %w", err)
 	}
 
-	w.Channel, err = conn.Channel()
+	w.Channel, err = w.Connection.Channel()
 	if err != nil {
 		return fmt.Errorf("failed to open a channel for MQ connection: %w", err)
 	}
 
-	w.Closes = conn.NotifyClose(make(chan *amqp.Error, 1))
+	w.Closes = w.Connection.NotifyClose(make(chan *amqp.Error, 1))
 	w.Confirmations = w.Channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+
+	logrus.Debugf("Declaring exchange in MQ...")
 
 	err = w.Channel.ExchangeDeclare(
 		w.Exchange,
-		"topic",
+		"x-message-deduplication",
 		true,
 		false,
 		false,
 		false,
-		nil,
+		amqp.Table{
+			"x-cache-size": QueueSize,
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare exchange in MQ channel: %w", err)
@@ -114,11 +125,37 @@ func (w *writer) connect(ctx context.Context) error {
 		return fmt.Errorf("failed to put channel into confirm mode: %w", err)
 	}
 
+	logrus.Debugf("Declaring queue in MQ...")
+
+	q, err := w.Channel.QueueDeclare(
+		w.QueueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare queue in MQ channel: %w", err)
+	}
+
+	logrus.Debugf("Binding queue in MQ...")
+
+	err = w.Channel.QueueBind(
+		q.Name,
+		w.RoutingKey,
+		w.Exchange,
+		false,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to bind queue for MQ channel: %w", err)
+	}
+
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
-				w.disconnect()
 				return
 
 			case err := <-w.Closes:
@@ -126,15 +163,10 @@ func (w *writer) connect(ctx context.Context) error {
 				w.reconnect(ctx)
 				return
 
-			case event := <-w.Queue:
-				err := w.Publish(event)
+			case packet := <-w.Queue:
+				err := w.Publish(ctx, packet)
 				if err != nil {
 					logrus.Errorf("Error in publishing from queue: %v", err)
-				}
-
-			case _, ok := <-w.Confirmations:
-				if !ok {
-					return
 				}
 			}
 		}
@@ -145,10 +177,13 @@ func (w *writer) connect(ctx context.Context) error {
 }
 
 func (w *writer) disconnect() error {
-	<-w.Confirmations
 	err := w.Channel.Close()
 	if err != nil {
 		return fmt.Errorf("failed to close the MQ channel: %w", err)
+	}
+	err = w.Connection.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close the MQ connection: %w", err)
 	}
 	return nil
 }
@@ -184,10 +219,14 @@ func (w *writer) reconnect(ctx context.Context) {
 	}
 }
 
-func (w *writer) Publish(event service.Event) error {
-	body, err := json.Marshal(event)
+func (w *writer) Close() error {
+	return w.disconnect()
+}
+
+func (w *writer) Publish(ctx context.Context, packet service.Packet) error {
+	body, err := json.Marshal(packet)
 	if err != nil {
-		return fmt.Errorf("failed to marshal event: %w", err)
+		return fmt.Errorf("failed to marshal packet: %w", err)
 	}
 
 	err = w.Channel.Publish(
@@ -197,16 +236,23 @@ func (w *writer) Publish(event service.Event) error {
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
-			Type:        event.Name(),
-			Body:        body,
+			Type:        packet.Name(),
+			Headers: amqp.Table{
+				"x-deduplication-header": fmt.Sprintf("%v-%v", packet.Name(), packet.HashCode()),
+			},
+			Body: body,
 		},
 	)
+	<-w.Confirmations
 	QueuedMessageTotal.Inc()
 
 	if err != nil {
 		QueuedMessageErrorTotal.Inc()
 		select {
-		case w.Queue <- event:
+		case <-ctx.Done():
+			return fmt.Errorf("failed to publish message (%v): %w", ctx.Err(), err)
+
+		case w.Queue <- packet:
 			return fmt.Errorf("failed to publish message (requeued): %w", err)
 
 		default:

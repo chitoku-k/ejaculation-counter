@@ -1,39 +1,8 @@
 package service
 
-import "time"
-
-type Status interface {
-	status()
-}
-
-type Message struct {
-	ID          string
-	Account     Account
-	CreatedAt   time.Time
-	Content     string
-	Emojis      []Emoji
-	InReplyToID string
-	IsReblog    bool
-	Tags        []Tag
-	Visibility  string
-}
-
-type Account struct {
-	ID          string
-	Acct        string
-	DisplayName string
-	Username    string
-}
-
-type Emoji struct {
-	Shortcode string
-}
-
-type Tag struct {
-	Name string
-}
-
-func (m Message) status() {}
+import (
+	"time"
+)
 
 type Connection struct {
 	Server string

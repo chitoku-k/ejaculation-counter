@@ -3,5 +3,6 @@
 package service
 
 type Scheduler interface {
-	Start() <-chan Event
+	Start() <-chan Tick
+	Stop()
 }
