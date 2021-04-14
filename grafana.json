@@ -29,9 +29,7 @@
       ],
       "datasource": null,
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "format": "locale",
@@ -91,7 +89,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": false,
-          "rawSql": "SELECT\n  UNIX_TIMESTAMP(<time_column>) as time_sec,\n  <value column> as value,\n  <series name column> as metric\nFROM <table name>\nWHERE $__timeFilter(time_column)\nORDER BY <time_column> ASC\n",
+          "rawSql": "SELECT\n  count AS \"time\",\n  count\nFROM counts\nWHERE\n  \"user\" = 1\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -108,10 +106,10 @@
           "timeColumnType": "int",
           "where": [
             {
-              "datatype": "int",
+              "datatype": "int4",
               "name": "",
               "params": [
-                "user",
+                "\"user\"",
                 "=",
                 "1"
               ],
@@ -178,9 +176,7 @@
       },
       "datasource": null,
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "gridPos": {
@@ -196,7 +192,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": false,
-          "rawSql": "SELECT\n  UNIX_TIMESTAMP(<time_column>) as time_sec,\n  <value column> as value,\n  <series name column> as metric\nFROM <table name>\nWHERE $__timeFilter(time_column)\nORDER BY <time_column> ASC\n",
+          "rawSql": "SELECT\n  date AS \"time\",\n  count\nFROM counts\nWHERE\n  $__timeFilter(date) AND\n  \"user\" = 1\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -218,10 +214,10 @@
               "type": "macro"
             },
             {
-              "datatype": "int",
+              "datatype": "int4",
               "name": "",
               "params": [
-                "user",
+                "\"user\"",
                 "=",
                 "1"
               ],
@@ -242,7 +238,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "mappings": [],
           "max": 100,
           "min": 0,
@@ -279,16 +274,18 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.1.5",
+      "pluginVersion": "7.5.1",
       "targets": [
         {
           "format": "time_series",
           "group": [],
+          "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  SUM(`count`) as `count`,\n  NOW() as `time`\nFROM `counts`\nWHERE $__timeFilter(`date`) AND `user` = 1\nORDER BY `date`\n",
+          "rawSql": "SELECT\n  SUM(\"count\") AS \"count\",\n  NOW() AS \"time\"\nFROM \"counts\"\nWHERE $__timeFilter(\"date\") AND \"user\" = 1\n",
           "refId": "A",
           "select": [
             [
@@ -326,7 +323,6 @@
       "decimals": 0,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "links": []
         },
         "overrides": []
@@ -354,8 +350,11 @@
       "lines": false,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.5",
+      "pluginVersion": "7.5.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -369,7 +368,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  UNIX_TIMESTAMP(CONVERT_TZ(`date`, '+09:00', 'GMT')) as time_sec,\n  `count` as value\nFROM `counts`\nWHERE $__timeFilter(`date`)\nORDER BY `date` ASC\n",
+          "rawSql": "SELECT\n  EXTRACT(EPOCH FROM \"date\") AS \"time\",\n  \"count\" AS \"value\"\nFROM \"counts\"\nWHERE $__timeFilter(\"date\")\nORDER BY \"date\" ASC\n",
           "refId": "A",
           "select": [
             [
@@ -446,16 +445,75 @@
       }
     },
     {
-      "columns": [],
       "datasource": null,
       "description": "",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Count"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-text"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "orange",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Date"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "time: YYYY/MM/DD"
+              }
+            ]
+          }
+        ]
       },
-      "fontSize": "100%",
       "gridPos": {
         "h": 10,
         "w": 8,
@@ -463,59 +521,31 @@
         "y": 6
       },
       "id": 10,
-      "pageSize": null,
-      "scroll": true,
-      "showHeader": true,
-      "sort": {
-        "col": 0,
-        "desc": true
+      "options": {
+        "showHeader": true
       },
-      "styles": [
-        {
-          "alias": "Date",
-          "align": "auto",
-          "dateFormat": "YYYY-MM-DD",
-          "pattern": "Time",
-          "type": "date"
-        },
-        {
-          "alias": "",
-          "align": "auto",
-          "colorMode": "value",
-          "colors": [
-            "#F2495C",
-            "#FF9830",
-            "#73BF69"
-          ],
-          "decimals": 0,
-          "pattern": "/.*/",
-          "thresholds": [
-            "0",
-            "1"
-          ],
-          "type": "number",
-          "unit": "short"
-        }
-      ],
+      "pluginVersion": "7.5.1",
       "targets": [
         {
           "format": "table",
           "group": [],
           "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  DATE_FORMAT(`date`, '%Y-%m-%d') as `Date`,\n  `count` as `Count`\nFROM `counts`\nWHERE `user` = 1\nORDER BY `date` DESC",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  date AS \"time\",\n  count\nFROM counts\nWHERE\n  $__timeFilter(date)\nORDER BY 1",
           "refId": "A",
           "select": [
             [
               {
                 "params": [
-                  "value"
+                  "count"
                 ],
                 "type": "column"
               }
             ]
           ],
-          "timeColumn": "time",
+          "table": "counts",
+          "timeColumn": "date",
+          "timeColumnType": "date",
           "where": [
             {
               "name": "$__timeFilter",
@@ -528,12 +558,23 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Metrics",
-      "transform": "timeseries_to_columns",
-      "transformations": [],
-      "type": "table-old"
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "count": "Count",
+              "time": "Date"
+            }
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
-  "schemaVersion": 26,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
