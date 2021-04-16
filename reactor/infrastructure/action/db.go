@@ -40,6 +40,7 @@ func (d *db) Event(message service.Message) (service.Event, int, error) {
 		Acct:        message.Account.Acct,
 		Type:        d.Name(),
 		Command:     matches[1],
+		Visibility:  message.Visibility,
 	}
 
 	return &event, index[0], nil
