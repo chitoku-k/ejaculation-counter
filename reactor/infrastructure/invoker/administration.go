@@ -54,8 +54,8 @@ func (a *administration) Do(ctx context.Context, event service.AdministrationEve
 
 	_, err = a.Client.PostStatus(ctx, &mastodon.Toot{
 		InReplyToID: mastodon.ID(event.InReplyToID),
-		Status:      pack(fmt.Sprintf("@%s %s", event.Acct, strings.Join(result, "\n"))),
-		Visibility:  "private",
+		Status:      pack(fmt.Sprintf("@%s\n%s", event.Acct, strings.Join(result, "\n"))),
+		Visibility:  event.Visibility,
 	})
 	if err != nil {
 		ExecutedAdministrationEventsErrorsTotal.Inc()

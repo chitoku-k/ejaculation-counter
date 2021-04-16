@@ -18,8 +18,8 @@ func (*ReplyEvent) Name() string {
 type ReplyErrorEvent struct {
 	InReplyToID string
 	Acct        string
-	Visibility  string
 	ActionName  string
+	Visibility  string
 }
 
 func (*ReplyErrorEvent) Name() string {
@@ -51,6 +51,7 @@ type AdministrationEvent struct {
 	Acct        string
 	Type        string
 	Command     string
+	Visibility  string
 }
 
 func (*AdministrationEvent) Name() string {

@@ -98,13 +98,15 @@ var _ = Describe("DB", func() {
 				Account: service.Account{
 					Acct: "@test",
 				},
-				Content: "SQL: SELECT 1",
+				Content:    "SQL: SELECT 1",
+				Visibility: "private",
 			})
 			Expect(actual).To(Equal(&service.AdministrationEvent{
 				InReplyToID: "1",
 				Acct:        "@test",
 				Type:        "DB",
 				Command:     "SELECT 1",
+				Visibility:  "private",
 			}))
 			Expect(index).To(Equal(0))
 			Expect(err).NotTo(HaveOccurred())

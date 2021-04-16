@@ -10,6 +10,25 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	separator = "--------"
+)
+
+type Column struct {
+	Name  string
+	Value interface{}
+}
+
+func NewColumn(name string) *Column {
+	return &Column{
+		Name: name,
+	}
+}
+
+func (c *Column) String() string {
+	return fmt.Sprintf("%v: %v", c.Name, c.Value)
+}
+
 type db struct {
 	Environment config.Environment
 	Connection  *sqlx.DB
@@ -53,11 +72,33 @@ func (d *db) Query(ctx context.Context, q string) ([]string, error) {
 	}
 	defer rows.Close()
 
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get columns: %w", err)
+	}
+
 	var result []string
 	for rows.Next() {
-		var r string
-		rows.Scan(&r)
-		result = append(result, r)
+		if len(result) > 0 {
+			result = append(result, separator)
+		}
+
+		var row []*Column
+		var values []interface{}
+		for _, column := range columns {
+			c := NewColumn(column)
+			row = append(row, c)
+			values = append(values, &c.Value)
+		}
+
+		err := rows.Scan(values...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan: %w", err)
+		}
+
+		for _, v := range row {
+			result = append(result, v.String())
+		}
 	}
 
 	return result, nil
