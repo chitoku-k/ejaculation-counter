@@ -129,11 +129,11 @@ func (ps *processor) doEvents(ctx context.Context, result []actionResult) error 
 				logrus.Errorf("Failed to send reply: %v", err)
 			}
 
-		case *UpdateEvent:
-			err := ps.Update.Do(ctx, *event)
+		case *IncrementEvent:
+			err := ps.Increment.Do(ctx, *event)
 			if err != nil {
 				requeue = true
-				logrus.Errorf("Failed to update: %v", err)
+				logrus.Errorf("Failed to increment: %v", err)
 			}
 
 		case *AdministrationEvent:
@@ -141,6 +141,10 @@ func (ps *processor) doEvents(ctx context.Context, result []actionResult) error 
 			if err != nil {
 				logrus.Errorf("Failed to execute administrative operation: %v", err)
 			}
+
+		default:
+			requeue = true
+			logrus.Warnf("Failed to process unknown event: %v", event.Name())
 		}
 	}
 
