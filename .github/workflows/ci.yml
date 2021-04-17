@@ -30,7 +30,7 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.14
+          go-version: 1.16
       - name: Test
         run: go test ./...
         working-directory: supplier
@@ -48,6 +48,24 @@ jobs:
       - name: Build supplier
         run: docker build .
         working-directory: supplier
+  reactor-test:
+    name: Reactor Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Log into Docker Hub
+        uses: azure/docker-login@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Set up go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.16
+      - name: Test
+        run: go test ./...
+        working-directory: reactor
   reactor-build:
     name: Reactor Build
     runs-on: ubuntu-latest
