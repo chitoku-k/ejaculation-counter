@@ -234,6 +234,10 @@ func (r *reader) Consume(ctx context.Context) {
 				continue
 			}
 			logrus.Infof("Disconnected from MQ: %v", amqperr)
+			err := r.reconnect(ctx)
+			if err != nil {
+				continue
+			}
 
 		case packet, ok := <-r.Delivery:
 			if !ok {
