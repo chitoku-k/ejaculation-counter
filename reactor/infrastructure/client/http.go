@@ -13,5 +13,8 @@ func NewHttpClient() (*http.Client, error) {
 
 	return &http.Client{
 		Jar: jar,
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: 16,
+		},
 	}, nil
 }
