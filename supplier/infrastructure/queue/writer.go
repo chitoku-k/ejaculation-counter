@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net"
@@ -220,7 +221,11 @@ func (w *writer) reconnect(ctx context.Context) {
 }
 
 func (w *writer) Close() error {
-	return w.disconnect()
+	err := w.disconnect()
+	if !errors.Is(err, amqp.ErrClosed) {
+		return err
+	}
+	return nil
 }
 
 func (w *writer) Publish(ctx context.Context, packet service.Packet) error {

@@ -45,33 +45,41 @@ func (s *shindanmaker) Name(account service.Account) string {
 	}
 }
 
-func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
-	top, err := s.Client.Get(targetURL)
+func (s *shindanmaker) token(targetURL string) (string, error) {
+	res, err := s.Client.Get(targetURL)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch shindan top: %w", err)
+		return "", fmt.Errorf("failed to fetch shindan page: %w", err)
 	}
-	defer top.Body.Close()
+	defer res.Body.Close()
 
 	var buf bytes.Buffer
-	_, err = io.Copy(&buf, top.Body)
+	_, err = io.Copy(&buf, res.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read shindan top: %w", err)
+		return "", fmt.Errorf("failed to read shindan page: %w", err)
 	}
 
 	matches := ShindanTokenRegex.FindSubmatch(buf.Bytes())
 	if matches == nil {
-		return "", fmt.Errorf("failed to parse shindan top")
+		return "", fmt.Errorf("failed to parse shindan page")
+	}
+
+	return string(matches[1]), nil
+}
+
+func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
+	token, err := s.token(targetURL)
+	if err != nil {
+		return "", err
 	}
 
 	name = NameRegex.ReplaceAllString(name, "\\$0")
-
 	if name != strings.Join(ShindanNameRegex.FindStringSubmatch(name), "") {
 		name = ShindanNameRegex.ReplaceAllString(name, "")
 	}
 
 	values := url.Values{}
 	values.Add("name", name)
-	values.Add("_token", string(matches[1]))
+	values.Add("_token", token)
 
 	res, err := s.Client.PostForm(strings.ReplaceAll(targetURL, "/a/", "/"), values)
 	if err != nil {
@@ -79,13 +87,13 @@ func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
 	}
 	defer res.Body.Close()
 
-	buf.Reset()
+	var buf bytes.Buffer
 	_, err = io.Copy(&buf, res.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read shindan result: %w", err)
 	}
 
-	matches = ShindanResultRegex.FindSubmatch(buf.Bytes())
+	matches := ShindanResultRegex.FindSubmatch(buf.Bytes())
 	if matches == nil {
 		return "", fmt.Errorf("failed to parse shindan result")
 	}

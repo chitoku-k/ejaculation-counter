@@ -90,7 +90,7 @@ var _ = Describe("Shindanmaker", func() {
 				It("returns an error", func() {
 					actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
 					Expect(actual).To(BeEmpty())
-					Expect(err).To(MatchError("failed to fetch shindan top: error"))
+					Expect(err).To(MatchError("failed to fetch shindan page: error"))
 				})
 			})
 
@@ -114,7 +114,7 @@ var _ = Describe("Shindanmaker", func() {
 					It("returns an error", func() {
 						actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
 						Expect(actual).To(BeEmpty())
-						Expect(err).To(MatchError("failed to read shindan top: dial tcp [::1]:443: connect: connection refused"))
+						Expect(err).To(MatchError("failed to read shindan page: dial tcp [::1]:443: connect: connection refused"))
 					})
 				})
 
@@ -147,7 +147,7 @@ var _ = Describe("Shindanmaker", func() {
 						It("returns an error", func() {
 							actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
 							Expect(actual).To(BeEmpty())
-							Expect(err).To(MatchError("failed to parse shindan top"))
+							Expect(err).To(MatchError("failed to parse shindan page"))
 						})
 					})
 
