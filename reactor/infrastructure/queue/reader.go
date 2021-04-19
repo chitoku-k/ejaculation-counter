@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net"
@@ -222,7 +223,11 @@ func (r *reader) Close(exit bool) error {
 		close(r.ch)
 		r.ch = nil
 	}
-	return r.disconnect()
+	err := r.disconnect()
+	if !errors.Is(err, amqp.ErrClosed) {
+		return err
+	}
+	return nil
 }
 
 func (r *reader) Consume(ctx context.Context) {
