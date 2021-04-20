@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"os"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -27,15 +26,8 @@ func init() {
 
 func main() {
 	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(context.Background())
-
-	sig := make(chan os.Signal)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		defer close(sig)
-		<-sig
-		cancel()
-	}()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	env, err := config.Get()
 	if err != nil {
