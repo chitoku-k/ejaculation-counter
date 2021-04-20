@@ -2,7 +2,7 @@ package client_test
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -98,7 +98,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("reading fails", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(r),
+							Body: io.NopCloser(r),
 						}
 						r.EXPECT().Read(gomock.Any()).Return(
 							0,
@@ -122,7 +122,7 @@ var _ = Describe("Shindanmaker", func() {
 					Context("parsing fails", func() {
 						BeforeEach(func() {
 							top = &http.Response{
-								Body: ioutil.NopCloser(strings.NewReader(`
+								Body: io.NopCloser(strings.NewReader(`
 									<html>
 									<head><title>403 Forbidden</title></head>
 									<body bgcolor="white">
@@ -154,7 +154,7 @@ var _ = Describe("Shindanmaker", func() {
 					Context("parsing succeeds", func() {
 						BeforeEach(func() {
 							top = &http.Response{
-								Body: ioutil.NopCloser(strings.NewReader(`
+								Body: io.NopCloser(strings.NewReader(`
 									<!doctype html>
 									<html lang="ja">
 									<head>
@@ -193,7 +193,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes neither at-sign nor parentheses", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -227,7 +227,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name begins with half-width at-sign", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -261,7 +261,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name begins with full-width at-sign", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -295,7 +295,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name begins with half-width parentheses", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -329,7 +329,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name begins with full-width at-sign", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -363,7 +363,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes half-width at-sign", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -397,7 +397,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes full-width at-sign", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -431,7 +431,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes half-width parentheses", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -465,7 +465,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes full-width parentheses", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -501,7 +501,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes neither at-sign nor parentheses", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -535,7 +535,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes half-width at-sign", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -569,7 +569,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes full-width at-sign", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -603,7 +603,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes half-width parentheses", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -637,7 +637,7 @@ var _ = Describe("Shindanmaker", func() {
 				Context("name includes full-width parentheses", func() {
 					BeforeEach(func() {
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -674,7 +674,7 @@ var _ = Describe("Shindanmaker", func() {
 			Context("fetching fails", func() {
 				BeforeEach(func() {
 					top = &http.Response{
-						Body: ioutil.NopCloser(strings.NewReader(`
+						Body: io.NopCloser(strings.NewReader(`
 							<!doctype html>
 							<html lang="ja">
 							<head>
@@ -716,7 +716,7 @@ var _ = Describe("Shindanmaker", func() {
 						)
 
 						top = &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(`
+							Body: io.NopCloser(strings.NewReader(`
 								<!doctype html>
 								<html lang="ja">
 								<head>
@@ -729,7 +729,7 @@ var _ = Describe("Shindanmaker", func() {
 							`)),
 						}
 						res = &http.Response{
-							Body: ioutil.NopCloser(r),
+							Body: io.NopCloser(r),
 						}
 
 						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
@@ -753,7 +753,7 @@ var _ = Describe("Shindanmaker", func() {
 					Context("parsing fails", func() {
 						BeforeEach(func() {
 							top = &http.Response{
-								Body: ioutil.NopCloser(strings.NewReader(`
+								Body: io.NopCloser(strings.NewReader(`
 									<!doctype html>
 									<html lang="ja">
 									<head>
@@ -766,7 +766,7 @@ var _ = Describe("Shindanmaker", func() {
 								`)),
 							}
 							res = &http.Response{
-								Body: ioutil.NopCloser(strings.NewReader(`
+								Body: io.NopCloser(strings.NewReader(`
 									<html>
 									<head><title>403 Forbidden</title></head>
 									<body bgcolor="white">
@@ -804,7 +804,7 @@ var _ = Describe("Shindanmaker", func() {
 							Context("result is less than 140 characters", func() {
 								BeforeEach(func() {
 									top = &http.Response{
-										Body: ioutil.NopCloser(strings.NewReader(`
+										Body: io.NopCloser(strings.NewReader(`
 											<!doctype html>
 											<html lang="ja">
 											<head>
@@ -817,7 +817,7 @@ var _ = Describe("Shindanmaker", func() {
 										`)),
 									}
 									res = &http.Response{
-										Body: ioutil.NopCloser(strings.NewReader(`
+										Body: io.NopCloser(strings.NewReader(`
 											<!doctype html>
 											<html lang="ja">
 											<head>
@@ -875,7 +875,7 @@ https://shindanmaker.com/855159`))
 							Context("result exceeds 140 characters", func() {
 								BeforeEach(func() {
 									top = &http.Response{
-										Body: ioutil.NopCloser(strings.NewReader(`
+										Body: io.NopCloser(strings.NewReader(`
 											<!doctype html>
 											<html lang="ja">
 											<head>
@@ -888,7 +888,7 @@ https://shindanmaker.com/855159`))
 										`)),
 									}
 									res = &http.Response{
-										Body: ioutil.NopCloser(strings.NewReader(`
+										Body: io.NopCloser(strings.NewReader(`
 											<!DOCTYPE html>
 											<html lang="ja">
 											<head>
@@ -949,7 +949,7 @@ https://shindanmaker.com/855159`))
 						Context("result includes special characters", func() {
 							BeforeEach(func() {
 								top = &http.Response{
-									Body: ioutil.NopCloser(strings.NewReader(`
+									Body: io.NopCloser(strings.NewReader(`
 										<!doctype html>
 										<html lang="ja">
 										<head>
@@ -962,7 +962,7 @@ https://shindanmaker.com/855159`))
 									`)),
 								}
 								res = &http.Response{
-									Body: ioutil.NopCloser(strings.NewReader(`
+									Body: io.NopCloser(strings.NewReader(`
 										<!doctype html>
 										<html lang="ja">
 										<head>
