@@ -2,7 +2,7 @@ package client_test
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -54,7 +54,7 @@ var _ = Describe("Through", func() {
 			Context("decoding fails", func() {
 				BeforeEach(func() {
 					res = &http.Response{
-						Body: ioutil.NopCloser(strings.NewReader("[")),
+						Body: io.NopCloser(strings.NewReader("[")),
 					}
 
 					c.EXPECT().Get("http://reactor/through").Return(res, nil)
@@ -69,7 +69,7 @@ var _ = Describe("Through", func() {
 			Context("decoding succeeds", func() {
 				BeforeEach(func() {
 					res = &http.Response{
-						Body: ioutil.NopCloser(strings.NewReader(`
+						Body: io.NopCloser(strings.NewReader(`
 							[
 								"through"
 							]

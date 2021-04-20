@@ -3,7 +3,7 @@ package client_test
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
@@ -61,7 +61,7 @@ var _ = Describe("Mpyw", func() {
 				Context("decoding fails", func() {
 					BeforeEach(func() {
 						res = &http.Response{
-							Body: ioutil.NopCloser(bytes.NewBufferString("{")),
+							Body: io.NopCloser(bytes.NewBufferString("{")),
 						}
 						c.EXPECT().Get("https://mpyw.kb10uy.org/api?count=1").Return(res, nil)
 					})
@@ -75,7 +75,7 @@ var _ = Describe("Mpyw", func() {
 				Context("decoding succeeds", func() {
 					BeforeEach(func() {
 						res = &http.Response{
-							Body: ioutil.NopCloser(bytes.NewBufferString(`
+							Body: io.NopCloser(bytes.NewBufferString(`
 								{
 									"title": "実務経験ガチャ",
 									"result": [
