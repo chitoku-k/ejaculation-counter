@@ -20,6 +20,7 @@ import (
 const (
 	QueueSize         = 1024
 	ConnectionTimeout = 30 * time.Second
+	ReconnectNone     = 0 * time.Second
 	ReconnectInitial  = 5 * time.Second
 	ReconnectMax      = 320 * time.Second
 )
@@ -183,9 +184,17 @@ func (r *reader) disconnect() error {
 }
 
 func (r *reader) reconnect(ctx context.Context) error {
-	reconnect := ReconnectInitial
+	reconnect := ReconnectNone
 
 	for {
+		r.disconnect()
+		err := r.connect()
+		if err == nil {
+			return nil
+		}
+
+		logrus.Errorf("Error from MQ: %v", err)
+
 		reconnect = time.Duration(
 			math.Min(
 				math.Max(
@@ -203,13 +212,7 @@ func (r *reader) reconnect(ctx context.Context) error {
 			return ctx.Err()
 
 		case <-time.After(reconnect):
-			r.disconnect()
-			err := r.connect()
-			if err != nil {
-				logrus.Errorf("Error from MQ: %v", err)
-				continue
-			}
-			return nil
+			continue
 		}
 	}
 }

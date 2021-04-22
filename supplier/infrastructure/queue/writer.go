@@ -20,6 +20,7 @@ import (
 const (
 	QueueSize         = 1024
 	ConnectionTimeout = 30 * time.Second
+	ReconnectNone     = 0 * time.Second
 	ReconnectInitial  = 5 * time.Second
 	ReconnectMax      = 320 * time.Second
 )
@@ -190,9 +191,17 @@ func (w *writer) disconnect() error {
 }
 
 func (w *writer) reconnect(ctx context.Context) {
-	reconnect := ReconnectInitial
+	reconnect := ReconnectNone
 
 	for {
+		w.disconnect()
+		err := w.connect(ctx)
+		if err == nil {
+			return
+		}
+
+		logrus.Errorf("Error from MQ: %v", err)
+
 		reconnect = time.Duration(
 			math.Min(
 				math.Max(
@@ -210,12 +219,7 @@ func (w *writer) reconnect(ctx context.Context) {
 			return
 
 		case <-time.After(reconnect):
-			w.disconnect()
-			err := w.connect(ctx)
-			if err != nil {
-				continue
-			}
-			return
+			continue
 		}
 	}
 }
