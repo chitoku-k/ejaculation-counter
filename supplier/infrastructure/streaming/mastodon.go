@@ -162,19 +162,19 @@ func (m *mastodon) disconnect(ctx context.Context, err error) error {
 
 	case m.ch <- service.Disconnection{Err: err}:
 		err = m.Close(false)
-		if err != nil {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-
-			case m.ch <- service.Error{Err: err}:
-				m.conn = nil
-				return nil
-			}
+		if err == nil {
+			return nil
 		}
 	}
 
-	return nil
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+
+	case m.ch <- service.Error{Err: err}:
+		m.conn = nil
+		return nil
+	}
 }
 
 func (m *mastodon) Run(ctx context.Context) error {
