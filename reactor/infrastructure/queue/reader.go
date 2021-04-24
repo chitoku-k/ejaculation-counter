@@ -133,7 +133,9 @@ func (r *reader) connect() error {
 		false,
 		false,
 		false,
-		nil,
+		amqp.Table{
+			"x-queue-type": "quorum",
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare queue in MQ channel: %w", err)
