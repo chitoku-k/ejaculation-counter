@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/application/server"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -67,6 +68,7 @@ func main() {
 		if err != nil {
 			logrus.Fatalf("Failed to initialize Cookie Jar: %v", err)
 		}
+		rand.Seed(time.Now().Unix())
 		shindan := client.NewShindanmaker(c)
 		through := client.NewThrough(c)
 		doublet := client.NewDoublet(c)
