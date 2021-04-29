@@ -32,10 +32,6 @@ updates:
     time: "00:00"
     timezone: Asia/Tokyo
   open-pull-requests-limit: 99
-  ignore:
-  - dependency-name: golang
-    versions:
-    - 1.16.3.pre.buster
 - package-ecosystem: docker
   directory: "/reactor"
   schedule:
