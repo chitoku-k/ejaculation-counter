@@ -1,0 +1,46 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/supplier"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "00:00"
+    timezone: Asia/Tokyo
+  open-pull-requests-limit: 99
+- package-ecosystem: gomod
+  directory: "/reactor"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "00:00"
+    timezone: Asia/Tokyo
+  open-pull-requests-limit: 99
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "00:00"
+    timezone: Asia/Tokyo
+  open-pull-requests-limit: 99
+- package-ecosystem: docker
+  directory: "/supplier"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "00:00"
+    timezone: Asia/Tokyo
+  open-pull-requests-limit: 99
+  ignore:
+  - dependency-name: golang
+    versions:
+    - 1.16.3.pre.buster
+- package-ecosystem: docker
+  directory: "/reactor"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "00:00"
+    timezone: Asia/Tokyo
+  open-pull-requests-limit: 99
