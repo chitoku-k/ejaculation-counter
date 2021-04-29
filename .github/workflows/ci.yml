@@ -9,11 +9,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Log into Docker Hub
-        uses: azure/docker-login@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build web
         run: docker build .
   supplier-test:
@@ -22,11 +17,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Log into Docker Hub
-        uses: azure/docker-login@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Set up go
         uses: actions/setup-go@v1
         with:
@@ -40,11 +30,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Log into Docker Hub
-        uses: azure/docker-login@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build supplier
         run: docker build .
         working-directory: supplier
@@ -54,11 +39,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Log into Docker Hub
-        uses: azure/docker-login@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Set up go
         uses: actions/setup-go@v1
         with:
@@ -72,11 +52,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Log into Docker Hub
-        uses: azure/docker-login@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build reactor
         run: docker build .
         working-directory: reactor
@@ -86,11 +61,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Log into Docker Hub
-        uses: azure/docker-login@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build MQ
         run: docker build .
         working-directory: mq
