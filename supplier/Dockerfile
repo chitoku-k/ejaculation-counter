@@ -1,8 +1,8 @@
-FROM golang:1.16.3-buster AS dev
+FROM golang:1.16.4-buster AS dev
 WORKDIR /usr/src/app
 CMD ["bash", "-c", "go build -o /usr/bin && exec /usr/bin/supplier"]
 
-FROM golang:1.16.3-buster AS build
+FROM golang:1.16.4-buster AS build
 WORKDIR /usr/src
 COPY . /usr/src
 RUN CGO_ENABLED=0 go build -ldflags='-s -w'
