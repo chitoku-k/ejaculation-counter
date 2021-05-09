@@ -4,7 +4,8 @@ services:
   supplier:
     build:
       context: ./supplier
-      target: dev
+      target: build
+    command: ./supplier
     environment:
       TZ: Asia/Tokyo
       MASTODON_ACCESS_TOKEN:
@@ -24,7 +25,8 @@ services:
   reactor:
     build:
       context: ./reactor
-      target: dev
+      target: build
+    command: ./reactor
     environment:
       USER_ID: 1
       TZ: Asia/Tokyo
@@ -52,9 +54,12 @@ services:
     image: nginx:1.19
     ports:
       - "${COUNTER_PORT-8080}:80"
+    environment:
+      REACTOR_HOST: reactor
+      GF_HOST: grafana
     volumes:
       - ./public:/var/www/html
-      - ./conf:/etc/nginx/conf.d
+      - ./conf:/etc/nginx/templates
 
   grafana:
     image: grafana/grafana:7.5.1

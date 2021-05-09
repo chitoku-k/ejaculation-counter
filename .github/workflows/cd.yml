@@ -5,35 +5,143 @@ on:
       - '*'
 
 jobs:
-  deploy:
-    name: Deploy
+  web-build:
+    name: Web Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Log into Docker Registry
-        uses: azure/docker-login@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Log into Container Registry
+        uses: docker/login-action@v1
         with:
-          login-server: docker.chitoku.jp
+          registry: container.chitoku.jp
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-      - name: Build web
-        run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/web
-      - name: Build supplier
-        run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/supplier
-        working-directory: supplier
-      - name: Build reactor
-        run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/reactor
-        working-directory: reactor
-      - name: Build MQ
-        run: docker build . -t docker.chitoku.jp/chitoku-k/ejaculation-counter/mq
-        working-directory: mq
-      - name: Push to Docker Registry
+      - name: Cache Buildx
+        uses: actions/cache@v2
+        with:
+          path: /tmp/buildx-cache
+          key: buildx-web-${{ github.sha }}
+          restore-keys: buildx-web-
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          cache-from: type=local,src=/tmp/buildx-cache
+          cache-to: type=local,dest=/tmp/buildx-cache.new
+          push: true
+          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/web
+      - name: Move cache
         run: |
-          docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/web
-          docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/supplier
-          docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/reactor
-          docker push docker.chitoku.jp/chitoku-k/ejaculation-counter/mq
+          rm -rf /tmp/buildx-cache
+          mv /tmp/buildx-cache{.new,}
+  supplier-build:
+    name: Supplier Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Log into Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: container.chitoku.jp
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Cache Buildx
+        uses: actions/cache@v2
+        with:
+          path: /tmp/buildx-cache
+          key: buildx-supplier-${{ github.sha }}
+          restore-keys: buildx-supplier-
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./supplier
+          cache-from: type=local,src=/tmp/buildx-cache
+          cache-to: type=local,dest=/tmp/buildx-cache.new
+          push: true
+          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/supplier
+      - name: Move cache
+        run: |
+          rm -rf /tmp/buildx-cache
+          mv /tmp/buildx-cache{.new,}
+  reactor-build:
+    name: Reactor Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Log into Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: container.chitoku.jp
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Cache Buildx
+        uses: actions/cache@v2
+        with:
+          path: /tmp/buildx-cache
+          key: buildx-reactor-${{ github.sha }}
+          restore-keys: buildx-reactor-
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./reactor
+          cache-from: type=local,src=/tmp/buildx-cache
+          cache-to: type=local,dest=/tmp/buildx-cache.new
+          push: true
+          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/reactor
+      - name: Move cache
+        run: |
+          rm -rf /tmp/buildx-cache
+          mv /tmp/buildx-cache{.new,}
+  mq-build:
+    name: MQ Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Log into Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: container.chitoku.jp
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Cache Buildx
+        uses: actions/cache@v2
+        with:
+          path: /tmp/buildx-cache
+          key: buildx-mq-${{ github.sha }}
+          restore-keys: buildx-mq-
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./mq
+          cache-from: type=local,src=/tmp/buildx-cache
+          cache-to: type=local,dest=/tmp/buildx-cache.new
+          push: true
+          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/mq
+      - name: Move cache
+        run: |
+          rm -rf /tmp/buildx-cache
+          mv /tmp/buildx-cache{.new,}
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs:
+      - web-build
+      - supplier-build
+      - reactor-build
+      - mq-build
+    steps:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v1
       - name: Set context
