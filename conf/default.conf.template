@@ -24,15 +24,15 @@ server {
     }
 
     location /through {
-        proxy_pass http://reactor:80;
+        proxy_pass http://$REACTOR_HOST:80;
     }
 
     location /doublet {
-        proxy_pass http://reactor:80;
+        proxy_pass http://$REACTOR_HOST:80;
     }
 
     location /grafana {
-        proxy_pass http://grafana:3000;
+        proxy_pass http://$GF_HOST:3000;
     }
 
     location /healthz {

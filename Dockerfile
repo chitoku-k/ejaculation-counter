@@ -1,4 +1,3 @@
 FROM nginx:1.19.10-alpine
-COPY conf /etc/nginx/conf.d
+COPY conf /etc/nginx/templates
 COPY public /var/www/html
-CMD ["/bin/ash", "-c", "sed -i \"s/reactor:/$REACTOR_HOST:/;s/grafana:/$GF_HOST:/\" /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
