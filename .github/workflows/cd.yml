@@ -32,7 +32,7 @@ jobs:
           cache-from: type=local,src=/tmp/buildx-cache
           cache-to: type=local,dest=/tmp/buildx-cache.new
           push: true
-          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/web
+          tags: container.chitoku.jp/chitoku-k/ejaculation-counter/web
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache
@@ -64,7 +64,7 @@ jobs:
           cache-from: type=local,src=/tmp/buildx-cache
           cache-to: type=local,dest=/tmp/buildx-cache.new
           push: true
-          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/supplier
+          tags: container.chitoku.jp/chitoku-k/ejaculation-counter/supplier
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache
@@ -96,7 +96,7 @@ jobs:
           cache-from: type=local,src=/tmp/buildx-cache
           cache-to: type=local,dest=/tmp/buildx-cache.new
           push: true
-          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/reactor
+          tags: container.chitoku.jp/chitoku-k/ejaculation-counter/reactor
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache
@@ -128,7 +128,7 @@ jobs:
           cache-from: type=local,src=/tmp/buildx-cache
           cache-to: type=local,dest=/tmp/buildx-cache.new
           push: true
-          tags: container.chitoku.jp/chitoku-k/chitoku-k/ejaculation-counter/mq
+          tags: container.chitoku.jp/chitoku-k/ejaculation-counter/mq
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache
