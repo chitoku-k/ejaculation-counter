@@ -5,7 +5,9 @@ database
 doc
 docker-compose.yml
 grafana.json
+mq
 reactor
 supplier
 .git
+.github
 .gitignore

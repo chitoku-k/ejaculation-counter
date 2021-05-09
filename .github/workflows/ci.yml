@@ -22,7 +22,7 @@ jobs:
         with:
           context: .
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache
@@ -65,7 +65,7 @@ jobs:
         with:
           context: ./supplier
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache
@@ -108,7 +108,7 @@ jobs:
         with:
           context: ./reactor
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache
@@ -132,7 +132,7 @@ jobs:
         with:
           context: ./mq
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
       - name: Move cache
         run: |
           rm -rf /tmp/buildx-cache

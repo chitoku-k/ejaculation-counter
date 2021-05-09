@@ -30,7 +30,7 @@ jobs:
         with:
           context: .
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
           push: true
           tags: container.chitoku.jp/chitoku-k/ejaculation-counter/web
       - name: Move cache
@@ -62,7 +62,7 @@ jobs:
         with:
           context: ./supplier
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
           push: true
           tags: container.chitoku.jp/chitoku-k/ejaculation-counter/supplier
       - name: Move cache
@@ -94,7 +94,7 @@ jobs:
         with:
           context: ./reactor
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
           push: true
           tags: container.chitoku.jp/chitoku-k/ejaculation-counter/reactor
       - name: Move cache
@@ -126,7 +126,7 @@ jobs:
         with:
           context: ./mq
           cache-from: type=local,src=/tmp/buildx-cache
-          cache-to: type=local,dest=/tmp/buildx-cache.new
+          cache-to: type=local,mode=max,dest=/tmp/buildx-cache.new
           push: true
           tags: container.chitoku.jp/chitoku-k/ejaculation-counter/mq
       - name: Move cache
