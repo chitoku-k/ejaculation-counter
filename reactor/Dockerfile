@@ -1,11 +1,13 @@
-FROM golang:1.16.4-buster AS dev
-WORKDIR /usr/src/app
-CMD ["bash", "-c", "go build -o /usr/bin && exec /usr/bin/reactor"]
-
+# syntax = docker/dockerfile:experimental
 FROM golang:1.16.4-buster AS build
 WORKDIR /usr/src
-COPY . /usr/src
-RUN CGO_ENABLED=0 go build -ldflags='-s -w'
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go \
+    go mod download
+COPY . ./
+RUN --mount=type=cache,target=/go \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 go build -ldflags='-s -w'
 
 FROM scratch AS production
 ENV GIN_MODE release

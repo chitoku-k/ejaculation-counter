@@ -4,7 +4,8 @@ services:
   supplier:
     build:
       context: ./supplier
-      target: dev
+      target: build
+    command: ./supplier
     environment:
       TZ: Asia/Tokyo
       MASTODON_ACCESS_TOKEN:
@@ -24,7 +25,8 @@ services:
   reactor:
     build:
       context: ./reactor
-      target: dev
+      target: build
+    command: ./reactor
     environment:
       USER_ID: 1
       TZ: Asia/Tokyo
