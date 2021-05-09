@@ -90,25 +90,20 @@ EXT_MPYW_API_URL=https://mpyw.hinanawi.net/api
 
 ## 本番環境
 
-Docker のインストールが必要です。  
+BuildKit（または Docker の対応するバージョン）あるいは Buildah のインストールが必要です。
+
+- `docker build` を利用する場合: Docker 18.09 以上
+- `docker buildx` を利用する場合: Docker 19.03 以上
+
 nginx + RabbitMQ + PostgreSQL + Go App で構成されています。
 
 ### ビルド
 
 ```sh
-$ docker build .
-
-$ pushd reactor/
-$ docker build .
-$ popd
-
-$ pushd supplier/
-$ docker build .
-$ popd
-
-$ pushd mq/
-$ docker build .
-$ popd
+$ docker buildx build .
+$ docker buildx build ./reactor
+$ docker buildx build ./supplier
+$ docker buildx build ./mq
 ```
 
 ## 開発環境
@@ -118,7 +113,9 @@ Docker Compose のインストールが必要です。
 ### 実行
 
 ```sh
-$ docker-compose up -d
+$ COMPOSE_DOCKER_CLI_BUILD=1 \
+  DOCKER_BUILDKIT=1 \
+  docker-compose up -d --build
 ```
 
 ## メトリクス
