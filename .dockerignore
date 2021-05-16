@@ -8,6 +8,7 @@ grafana.json
 mq
 reactor
 supplier
+.dockerignore
 .git
 .github
 .gitignore
