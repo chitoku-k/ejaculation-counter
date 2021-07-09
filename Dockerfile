@@ -1,3 +1,3 @@
-FROM nginx:1.21.0-alpine
+FROM nginx:1.21.1-alpine
 COPY conf /etc/nginx/templates
 COPY public /var/www/html
