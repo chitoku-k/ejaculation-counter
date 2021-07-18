@@ -171,8 +171,8 @@ var _ = Describe("Shindanmaker", func() {
 							c.EXPECT().PostForm(
 								"https://shindanmaker.com/855159",
 								url.Values{
-									"name":   []string{"テスト"},
-									"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								},
 							).Return(
 								nil,
@@ -210,8 +210,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"テスト"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"テスト"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -244,8 +244,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"@test"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"@test"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -278,8 +278,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"＠テスト"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"＠テスト"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -312,8 +312,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"(テスト)"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"(テスト)"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -346,8 +346,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"（テスト）"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"（テスト）"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -380,8 +380,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"テスト"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"テスト"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -414,8 +414,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"テスト"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"テスト"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -448,8 +448,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"テスト"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"テスト"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -482,8 +482,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"テスト"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"テスト"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -518,8 +518,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -552,8 +552,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -586,8 +586,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -620,8 +620,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -654,8 +654,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(
 							nil,
@@ -691,8 +691,8 @@ var _ = Describe("Shindanmaker", func() {
 					c.EXPECT().PostForm(
 						"https://shindanmaker.com/855159",
 						url.Values{
-							"name":   []string{"テスト"},
-							"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+							"shindanName": []string{"テスト"},
+							"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 						},
 					).Return(
 						nil,
@@ -736,8 +736,8 @@ var _ = Describe("Shindanmaker", func() {
 						c.EXPECT().PostForm(
 							"https://shindanmaker.com/855159",
 							url.Values{
-								"name":   []string{"テスト"},
-								"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								"shindanName": []string{"テスト"},
+								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 							},
 						).Return(res, nil)
 					})
@@ -786,8 +786,8 @@ var _ = Describe("Shindanmaker", func() {
 							c.EXPECT().PostForm(
 								"https://shindanmaker.com/855159",
 								url.Values{
-									"name":   []string{"テスト"},
-									"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								},
 							).Return(res, nil)
 						})
@@ -854,8 +854,8 @@ var _ = Describe("Shindanmaker", func() {
 									c.EXPECT().PostForm(
 										"https://shindanmaker.com/855159",
 										url.Values{
-											"name":   []string{"テスト"},
-											"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+											"shindanName": []string{"テスト"},
+											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 										},
 									).Return(res, nil)
 								})
@@ -930,8 +930,8 @@ https://shindanmaker.com/855159`))
 									c.EXPECT().PostForm(
 										"https://shindanmaker.com/855159",
 										url.Values{
-											"name":   []string{"テスト"},
-											"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+											"shindanName": []string{"テスト"},
+											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 										},
 									).Return(res, nil)
 								})
@@ -999,8 +999,8 @@ https://shindanmaker.com/855159`))
 								c.EXPECT().PostForm(
 									"https://shindanmaker.com/855159",
 									url.Values{
-										"name":   []string{`<>"'&`},
-										"_token": []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+										"shindanName": []string{`<>"'&`},
+										"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 									},
 								).Return(res, nil)
 							})

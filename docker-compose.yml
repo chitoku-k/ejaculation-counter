@@ -20,7 +20,9 @@ services:
       mode: replicated
       replicas: 2
     volumes:
-      - ./supplier:/usr/src/app
+      - type: bind
+        source: ./supplier
+        target: /usr/src/app
 
   reactor:
     build:
@@ -48,7 +50,9 @@ services:
       mode: replicated
       replicas: 2
     volumes:
-      - ./reactor:/usr/src/app
+      - type: bind
+        source: ./reactor
+        target: /usr/src/app
 
   web:
     image: nginx:1.19
@@ -58,8 +62,12 @@ services:
       REACTOR_HOST: reactor
       GF_HOST: grafana
     volumes:
-      - ./public:/var/www/html
-      - ./conf:/etc/nginx/templates
+      - type: bind
+        source: ./public
+        target: /var/www/html
+      - type: bind
+        source: ./conf
+        target: /etc/nginx/templates
 
   grafana:
     image: grafana/grafana:7.5.1
@@ -72,7 +80,9 @@ services:
       GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       GF_SERVER_DOMAIN: grafana
     volumes:
-      - grafana:/var/lib/grafana
+      - type: volume
+        source: grafana
+        target: /var/lib/grafana
 
   mq:
     build:
@@ -81,13 +91,19 @@ services:
       RABBITMQ_DEFAULT_USER: shiko
       RABBITMQ_DEFAULT_PASS: shiko
     volumes:
-      - mq:/var/lib/rabbitmq
+      - type: volume
+        source: mq
+        target: /var/lib/rabbitmq
 
   database:
     image: postgres:13.2
     volumes:
-      - ./database:/docker-entrypoint-initdb.d
-      - database:/var/lib/postgres/data
+      - type: bind
+        source: ./database
+        target: /docker-entrypoint-initdb.d
+      - type: volume
+        source: database
+        target: /var/lib/postgres/data
     environment:
       TZ:
       POSTGRES_DB: ejaculation
