@@ -75,14 +75,23 @@ services:
       TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
       GF_AUTH_ANONYMOUS_ENABLED: 1
+      GF_PATHS_PROVISIONING: conf/provisioning
       GF_SECURITY_ALLOW_EMBEDDING: 1
+      GF_SERVER_ENABLE_GZIP: 1
       GF_SERVER_SERVE_FROM_SUB_PATH: 1
       GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       GF_SERVER_DOMAIN: grafana
+      POSTGRES_DB: ejaculation
+      POSTGRES_USER: shiko
+      POSTGRES_PASSWORD: shiko
+      POSTGRES_SSLMODE: disable
     volumes:
-      - type: volume
-        source: grafana
-        target: /var/lib/grafana
+      - type: bind
+        source: ./grafana/dashboards
+        target: /usr/share/grafana/conf/provisioning/dashboards
+      - type: bind
+        source: ./grafana/datasources
+        target: /usr/share/grafana/conf/provisioning/datasources
 
   mq:
     build:
@@ -111,8 +120,6 @@ services:
       POSTGRES_PASSWORD: shiko
 
 volumes:
-  grafana:
-    driver: local
   mq:
     driver: local
   database:
