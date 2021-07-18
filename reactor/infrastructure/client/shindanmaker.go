@@ -78,7 +78,7 @@ func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
 	}
 
 	values := url.Values{}
-	values.Add("name", name)
+	values.Add("shindanName", name)
 	values.Add("_token", token)
 
 	res, err := s.Client.PostForm(strings.ReplaceAll(targetURL, "/a/", "/"), values)
