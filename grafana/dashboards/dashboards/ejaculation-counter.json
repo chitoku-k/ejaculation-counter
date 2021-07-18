@@ -27,7 +27,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": null,
+      "datasource": "Database",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -174,7 +174,7 @@
         },
         "verticalOrientation": false
       },
-      "datasource": null,
+      "datasource": "Database",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -232,7 +232,7 @@
       "type": "neocat-cal-heatmap-panel"
     },
     {
-      "datasource": null,
+      "datasource": "Database",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -319,7 +319,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "Database",
       "decimals": 0,
       "fieldConfig": {
         "defaults": {
@@ -445,7 +445,7 @@
       }
     },
     {
-      "datasource": null,
+      "datasource": "Database",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -600,6 +600,6 @@
   },
   "timezone": "",
   "title": "ぴゅっぴゅカウンター",
-  "uid": "vh6PgbpWz",
+  "uid": "ejaculation-counter",
   "version": 3
 }

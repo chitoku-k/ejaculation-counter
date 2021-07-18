@@ -55,7 +55,7 @@ services:
         target: /usr/src/app
 
   web:
-    image: nginx:1.19
+    image: nginx:1.21
     ports:
       - "${COUNTER_PORT-8080}:80"
     environment:
@@ -70,19 +70,28 @@ services:
         target: /etc/nginx/templates
 
   grafana:
-    image: grafana/grafana:7.5.1
+    image: grafana/grafana:7.5.10
     environment:
       TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
       GF_AUTH_ANONYMOUS_ENABLED: 1
+      GF_PATHS_PROVISIONING: conf/provisioning
       GF_SECURITY_ALLOW_EMBEDDING: 1
+      GF_SERVER_ENABLE_GZIP: 1
       GF_SERVER_SERVE_FROM_SUB_PATH: 1
       GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       GF_SERVER_DOMAIN: grafana
+      POSTGRES_DB: ejaculation
+      POSTGRES_USER: shiko
+      POSTGRES_PASSWORD: shiko
+      POSTGRES_SSLMODE: disable
     volumes:
-      - type: volume
-        source: grafana
-        target: /var/lib/grafana
+      - type: bind
+        source: ./grafana/dashboards
+        target: /usr/share/grafana/conf/provisioning/dashboards
+      - type: bind
+        source: ./grafana/datasources
+        target: /usr/share/grafana/conf/provisioning/datasources
 
   mq:
     build:
@@ -96,7 +105,7 @@ services:
         target: /var/lib/rabbitmq
 
   database:
-    image: postgres:13.2
+    image: postgres:13.3
     volumes:
       - type: bind
         source: ./database
@@ -111,8 +120,6 @@ services:
       POSTGRES_PASSWORD: shiko
 
 volumes:
-  grafana:
-    driver: local
   mq:
     driver: local
   database:
