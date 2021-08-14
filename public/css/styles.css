@@ -10,10 +10,14 @@ main {
     margin: 0 auto;
 }
 
-h1#title {
-    color: #d8d9da;
-    font-size: 24px;
-    font-weight: normal;
+#title {
+    margin: 20px 0 10px;
+}
+
+#title svg {
+    width: 320px;
+    max-width: 100%;
+    fill: #d8d9da;
 }
 
 .graph-container {
