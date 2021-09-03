@@ -5,7 +5,6 @@ import (
 	"errors"
 	"os/signal"
 	"sync"
-	"syscall"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/application/server"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
@@ -17,6 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sys/unix"
 )
 
 func init() {
@@ -26,7 +26,7 @@ func init() {
 
 func main() {
 	var wg sync.WaitGroup
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), unix.SIGINT, unix.SIGTERM)
 	defer stop()
 
 	env, err := config.Get()
