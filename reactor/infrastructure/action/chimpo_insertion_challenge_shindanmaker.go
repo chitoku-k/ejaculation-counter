@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
@@ -43,9 +44,9 @@ func (cs *chimpoInsertionChallengeShindanmaker) Target(message service.Message) 
 	return ChimpoInsertionChallengeRegex.MatchString(message.Content)
 }
 
-func (cs *chimpoInsertionChallengeShindanmaker) Event(message service.Message) (service.Event, int, error) {
+func (cs *chimpoInsertionChallengeShindanmaker) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := ChimpoInsertionChallengeRegex.FindStringIndex(message.Content)
-	result, err := cs.Client.Do(cs.Client.Name(message.Account), "https://shindanmaker.com/a/670773")
+	result, err := cs.Client.Do(ctx, cs.Client.Name(message.Account), "https://shindanmaker.com/a/670773")
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

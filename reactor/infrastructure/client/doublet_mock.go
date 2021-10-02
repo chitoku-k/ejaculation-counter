@@ -5,6 +5,7 @@
 package client
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,16 +35,16 @@ func (m *MockDoublet) EXPECT() *MockDoubletMockRecorder {
 }
 
 // Do mocks base method.
-func (m *MockDoublet) Do(targetURL string) (DoubletResult, error) {
+func (m *MockDoublet) Do(ctx context.Context, targetURL string) (DoubletResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", targetURL)
+	ret := m.ctrl.Call(m, "Do", ctx, targetURL)
 	ret0, _ := ret[0].(DoubletResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockDoubletMockRecorder) Do(targetURL interface{}) *gomock.Call {
+func (mr *MockDoubletMockRecorder) Do(ctx, targetURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockDoublet)(nil).Do), targetURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockDoublet)(nil).Do), ctx, targetURL)
 }

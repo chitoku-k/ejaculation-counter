@@ -3,19 +3,19 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
-
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
 )
 
 type mpyw struct {
-	Client wrapper.HttpClient
+	Client *http.Client
 }
 
 type Mpyw interface {
-	Do(targetURL string, count int) (MpywChallengeResult, error)
+	Do(ctx context.Context, targetURL string, count int) (MpywChallengeResult, error)
 }
 
 type MpywChallengeResult struct {
@@ -23,13 +23,13 @@ type MpywChallengeResult struct {
 	Result []string `json:"result"`
 }
 
-func NewMpyw(client wrapper.HttpClient) Mpyw {
+func NewMpyw(client *http.Client) Mpyw {
 	return &mpyw{
 		Client: client,
 	}
 }
 
-func (m *mpyw) Do(targetURL string, count int) (MpywChallengeResult, error) {
+func (m *mpyw) Do(ctx context.Context, targetURL string, count int) (MpywChallengeResult, error) {
 	var result MpywChallengeResult
 
 	u, err := url.Parse(targetURL)
@@ -41,7 +41,12 @@ func (m *mpyw) Do(targetURL string, count int) (MpywChallengeResult, error) {
 	q.Add("count", fmt.Sprint(count))
 	u.RawQuery = q.Encode()
 
-	res, err := m.Client.Get(u.String())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return result, fmt.Errorf("failed to create challenge request: %w", err)
+	}
+
+	res, err := m.Client.Do(req)
 	if err != nil {
 		return result, fmt.Errorf("failed to fetch challenge result: %w", err)
 	}

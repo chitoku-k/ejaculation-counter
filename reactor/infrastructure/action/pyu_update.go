@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
@@ -31,7 +32,7 @@ func (pu *pyuUpdate) Target(message service.Message) bool {
 		PyuUpdateRegex.MatchString(message.Content)
 }
 
-func (pu *pyuUpdate) Event(message service.Message) (service.Event, int, error) {
+func (pu *pyuUpdate) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := PyuUpdateRegex.FindStringIndex(message.Content)
 	event := service.IncrementEvent{
 		Year:  message.CreatedAt.Year(),

@@ -3,30 +3,35 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
+	"net/http"
 )
 
 type through struct {
-	Client wrapper.HttpClient
+	Client *http.Client
 }
 
 type Through interface {
-	Do(targetURL string) (ThroughResult, error)
+	Do(ctx context.Context, targetURL string) (ThroughResult, error)
 }
 
 type ThroughResult []string
 
-func NewThrough(client wrapper.HttpClient) Through {
+func NewThrough(client *http.Client) Through {
 	return &through{
 		Client: client,
 	}
 }
 
-func (t *through) Do(targetURL string) (ThroughResult, error) {
-	res, err := t.Client.Get(targetURL)
+func (t *through) Do(ctx context.Context, targetURL string) (ThroughResult, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create challenge request: %w", err)
+	}
+
+	res, err := t.Client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch challenge result: %w", err)
 	}

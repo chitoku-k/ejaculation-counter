@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
@@ -31,7 +32,7 @@ func (d *db) Target(message service.Message) bool {
 		DBRegex.MatchString(message.Content)
 }
 
-func (d *db) Event(message service.Message) (service.Event, int, error) {
+func (d *db) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := DBRegex.FindStringIndex(message.Content)
 	matches := DBRegex.FindStringSubmatch(message.Content)
 

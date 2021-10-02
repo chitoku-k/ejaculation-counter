@@ -1,11 +1,11 @@
 package action
 
 import (
+	"context"
 	"regexp"
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -15,11 +15,11 @@ var (
 )
 
 type ofutonChallenge struct {
-	Random      wrapper.Random
+	Random      Random
 	Environment config.Environment
 }
 
-func NewOfufutonChallenge(r wrapper.Random, environment config.Environment) service.Action {
+func NewOfufutonChallenge(r Random, environment config.Environment) service.Action {
 	return &ofutonChallenge{
 		Random:      r,
 		Environment: environment,
@@ -44,7 +44,7 @@ func (oc *ofutonChallenge) Target(message service.Message) bool {
 	return OfutonRegex.MatchString(message.Content)
 }
 
-func (oc *ofutonChallenge) Event(message service.Message) (service.Event, int, error) {
+func (oc *ofutonChallenge) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := OfutonRegex.FindStringIndex(message.Content)
 	ofuton := make([]string, len(Ofuton))
 

@@ -1,8 +1,11 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
+	"net"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -38,7 +41,7 @@ func (t *doublet) Target(message service.Message) bool {
 		DoubletRegex.MatchString(message.Content)
 }
 
-func (t *doublet) Event(message service.Message) (service.Event, int, error) {
+func (t *doublet) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := DoubletRegex.FindStringIndex(message.Content)
 	matches := DoubletRegex.FindStringSubmatch(message.Content)
 
@@ -47,7 +50,13 @@ func (t *doublet) Event(message service.Message) (service.Event, int, error) {
 		count = 1
 	}
 
-	items, err := t.Client.Do("http://localhost/doublet")
+	u := url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort("localhost", t.Environment.Port),
+		Path:   "/doublet",
+	}
+
+	items, err := t.Client.Do(ctx, u.String())
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
@@ -43,11 +44,11 @@ func (as *avShindanmaker) Target(message service.Message) bool {
 	return AVRegex.MatchString(message.Content)
 }
 
-func (as *avShindanmaker) Event(message service.Message) (service.Event, int, error) {
+func (as *avShindanmaker) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := AVRegex.FindStringSubmatchIndex(message.Content)
 	matches := AVRegex.FindStringSubmatch(message.Content)
 
-	result, err := as.Client.Do(matches[1], "https://shindanmaker.com/a/794363")
+	result, err := as.Client.Do(ctx, matches[1], "https://shindanmaker.com/a/794363")
 	if err != nil {
 		return nil, index[4], fmt.Errorf("failed to create event: %w", err)
 	}

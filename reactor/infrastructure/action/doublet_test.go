@@ -1,6 +1,7 @@
 package action_test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -24,6 +25,7 @@ var _ = Describe("Doublet", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockDoublet(ctrl)
 		env = config.Environment{
+			Port: "80",
 			Mastodon: config.Mastodon{
 				UserID: "1",
 			},
@@ -213,14 +215,14 @@ var _ = Describe("Doublet", func() {
 	Describe("Event()", func() {
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("http://localhost/doublet").Return(
+				c.EXPECT().Do(context.Background(), "http://localhost:80/doublet").Return(
 					client.DoubletResult{},
-					errors.New(`failed to fetch challenge result: Get "http://localhost/doublet": dial tcp [::1]:80: connect: connection refused`),
+					errors.New(`failed to fetch challenge result: Get "http://localhost:80/doublet": dial tcp [::1]:80: connect: connection refused`),
 				)
 			})
 
 			It("returns an error", func() {
-				_, index, err := doublet.Event(service.Message{
+				_, index, err := doublet.Event(context.Background(), service.Message{
 					IsReblog: false,
 					Account: service.Account{
 						DisplayName: "テスト",
@@ -229,14 +231,14 @@ var _ = Describe("Doublet", func() {
 					Content: "二重語ガチャ",
 				})
 				Expect(index).To(Equal(0))
-				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://localhost/doublet": dial tcp [::1]:80: connect: connection refused`))
+				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://localhost:80/doublet": dial tcp [::1]:80: connect: connection refused`))
 			})
 		})
 
 		Context("fetching succeeds", func() {
 			Context("with count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do("http://localhost/doublet").Return(
+					c.EXPECT().Do(context.Background(), "http://localhost:80/doublet").Return(
 						client.DoubletResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
 						nil,
 					)
@@ -244,7 +246,7 @@ var _ = Describe("Doublet", func() {
 
 				Context("toot does not start with name", func() {
 					It("returns an event", func() {
-						event, index, err := doublet.Event(service.Message{
+						event, index, err := doublet.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{
@@ -267,7 +269,7 @@ var _ = Describe("Doublet", func() {
 
 				Context("toot starts with name", func() {
 					It("returns an event", func() {
-						event, index, err := doublet.Event(service.Message{
+						event, index, err := doublet.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{
@@ -291,7 +293,7 @@ var _ = Describe("Doublet", func() {
 
 			Context("without count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do("http://localhost/doublet").Return(
+					c.EXPECT().Do(context.Background(), "http://localhost:80/doublet").Return(
 						client.DoubletResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
 						nil,
 					)
@@ -299,7 +301,7 @@ var _ = Describe("Doublet", func() {
 
 				Context("toot does not start with name", func() {
 					It("returns an event", func() {
-						event, index, err := doublet.Event(service.Message{
+						event, index, err := doublet.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{
@@ -322,7 +324,7 @@ var _ = Describe("Doublet", func() {
 
 				Context("toot starts with name", func() {
 					It("returns an event", func() {
-						event, index, err := doublet.Event(service.Message{
+						event, index, err := doublet.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{

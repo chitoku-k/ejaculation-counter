@@ -1,8 +1,11 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
+	"net"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -38,7 +41,7 @@ func (t *through) Target(message service.Message) bool {
 		ThroughRegex.MatchString(message.Content)
 }
 
-func (t *through) Event(message service.Message) (service.Event, int, error) {
+func (t *through) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := ThroughRegex.FindStringIndex(message.Content)
 	matches := ThroughRegex.FindStringSubmatch(message.Content)
 
@@ -47,7 +50,13 @@ func (t *through) Event(message service.Message) (service.Event, int, error) {
 		count = 1
 	}
 
-	items, err := t.Client.Do("http://localhost/through")
+	u := url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort("localhost", t.Environment.Port),
+		Path:   "/through",
+	}
+
+	items, err := t.Client.Do(ctx, u.String())
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

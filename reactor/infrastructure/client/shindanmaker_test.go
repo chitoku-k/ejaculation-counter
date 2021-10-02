@@ -1,37 +1,32 @@
 package client_test
 
 import (
-	"errors"
-	"io"
+	"context"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
 )
 
 var _ = Describe("Shindanmaker", func() {
 	var (
-		ctrl         *gomock.Controller
-		c            *wrapper.MockHttpClient
-		r            *wrapper.MockReader
+		server       *ghttp.Server
+		serverURL    string
 		shindanmaker client.Shindanmaker
 	)
 
 	BeforeEach(func() {
-		ctrl = gomock.NewController(GinkgoT())
-		c = wrapper.NewMockHttpClient(ctrl)
-		r = wrapper.NewMockReader(ctrl)
-		shindanmaker = client.NewShindanmaker(c)
+		server = ghttp.NewTLSServer()
+		serverURL = server.URL()
+		shindanmaker = client.NewShindanmaker(server.HTTPTestServer.Client())
 	})
 
 	AfterEach(func() {
-		ctrl.Finish()
+		server.Close()
 	})
 
 	Describe("Name()", func() {
@@ -73,56 +68,26 @@ var _ = Describe("Shindanmaker", func() {
 	})
 
 	Describe("Do()", func() {
-		var (
-			top *http.Response
-			res *http.Response
-		)
-
 		Describe("token", func() {
 			Context("fetching fails", func() {
 				BeforeEach(func() {
-					c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(
-						nil,
-						errors.New("error"),
-					)
+					server.Close()
 				})
 
 				It("returns an error", func() {
-					actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
+					actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
 					Expect(actual).To(BeEmpty())
-					Expect(err).To(MatchError("failed to fetch shindan page: error"))
+					Expect(err).To(MatchError(HavePrefix("failed to fetch shindan page:")))
 				})
 			})
 
 			Context("fetching succeeds", func() {
-				Context("reading fails", func() {
+				Context("parsing fails", func() {
 					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(r),
-						}
-						r.EXPECT().Read(gomock.Any()).Return(
-							0,
-							errors.New("dial tcp [::1]:443: connect: connection refused"),
-						)
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(
-							top,
-							nil,
-						)
-					})
-
-					It("returns an error", func() {
-						actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-						Expect(actual).To(BeEmpty())
-						Expect(err).To(MatchError("failed to read shindan page: dial tcp [::1]:443: connect: connection refused"))
-					})
-				})
-
-				Context("reading succeeds", func() {
-					Context("parsing fails", func() {
-						BeforeEach(func() {
-							top = &http.Response{
-								Body: io.NopCloser(strings.NewReader(`
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusForbidden, `
 									<html>
 									<head><title>403 Forbidden</title></head>
 									<body bgcolor="white">
@@ -135,26 +100,24 @@ var _ = Describe("Shindanmaker", func() {
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
-								`)),
-							}
-
-							c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(
-								top,
-								nil,
-							)
-						})
-
-						It("returns an error", func() {
-							actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-							Expect(actual).To(BeEmpty())
-							Expect(err).To(MatchError("failed to parse shindan page"))
-						})
+								`),
+							),
+						)
 					})
 
-					Context("parsing succeeds", func() {
-						BeforeEach(func() {
-							top = &http.Response{
-								Body: io.NopCloser(strings.NewReader(`
+					It("returns an error", func() {
+						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						Expect(actual).To(BeEmpty())
+						Expect(err).To(MatchError("failed to parse shindan page"))
+					})
+				})
+
+				Context("parsing succeeds", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
 									<!doctype html>
 									<html lang="ja">
 									<head>
@@ -164,25 +127,20 @@ var _ = Describe("Shindanmaker", func() {
 									<body>
 									</body>
 									</html>
-								`)),
-							}
-
-							c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-							c.EXPECT().PostForm(
-								"https://shindanmaker.com/855159",
-								url.Values{
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-								},
-							).Return(
-								nil,
-								errors.New("error"),
-							)
-						})
+								}),
+							),
+						)
+					})
 
-						It("passes token", func() {
-							shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-						})
+					It("passes token", func() {
+						shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
 					})
 				})
 			})
@@ -192,568 +150,10 @@ var _ = Describe("Shindanmaker", func() {
 			Context("name does not include special characters", func() {
 				Context("name includes neither at-sign nor parentheses", func() {
 					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"テスト"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name", func() {
-						shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name begins with half-width at-sign", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"@test"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name", func() {
-						shindanmaker.Do("@test", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name begins with full-width at-sign", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"＠テスト"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name", func() {
-						shindanmaker.Do("＠テスト", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name begins with half-width parentheses", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"(テスト)"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name", func() {
-						shindanmaker.Do("(テスト)", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name begins with full-width at-sign", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"（テスト）"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name", func() {
-						shindanmaker.Do("（テスト）", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes half-width at-sign", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"テスト"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before half-width at-sign", func() {
-						shindanmaker.Do("テスト@がんばらない", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes full-width at-sign", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"テスト"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before full-width at-sign", func() {
-						shindanmaker.Do("テスト＠がんばらない", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes half-width parentheses", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"テスト"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before half-width parentheses", func() {
-						shindanmaker.Do("テスト(昨日: 1 / 今日: 1)", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes full-width parentheses", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"テスト"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before full-width parentheses", func() {
-						shindanmaker.Do("テスト（昨日: 1 / 今日: 1）", "https://shindanmaker.com/a/855159")
-					})
-				})
-			})
-
-			Context("name includes special characters", func() {
-				Context("name includes neither at-sign nor parentheses", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name", func() {
-						shindanmaker.Do("$1\\1${10}\\{10}", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes half-width at-sign", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before half-width at-sign", func() {
-						shindanmaker.Do("$1\\1${10}\\{10}@がんばらない", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes full-width at-sign", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before full-width at-sign", func() {
-						shindanmaker.Do("$1\\1${10}\\{10}＠がんばらない", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes half-width parentheses", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before half-width parentheses", func() {
-						shindanmaker.Do("$1\\1${10}\\{10}(昨日: 1 / 今日: 1)", "https://shindanmaker.com/a/855159")
-					})
-				})
-
-				Context("name includes full-width parentheses", func() {
-					BeforeEach(func() {
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(
-							nil,
-							errors.New("error"),
-						)
-					})
-
-					It("passes name before full-width parentheses", func() {
-						shindanmaker.Do("$1\\1${10}\\{10}（昨日: 1 / 今日: 1）", "https://shindanmaker.com/a/855159")
-					})
-				})
-			})
-		})
-
-		Describe("fetch", func() {
-			Context("fetching fails", func() {
-				BeforeEach(func() {
-					top = &http.Response{
-						Body: io.NopCloser(strings.NewReader(`
-							<!doctype html>
-							<html lang="ja">
-							<head>
-								<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-								<title>ちんぽ揃えゲーム</title>
-							</head>
-							<body>
-							</body>
-							</html>
-						`)),
-					}
-
-					c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-					c.EXPECT().PostForm(
-						"https://shindanmaker.com/855159",
-						url.Values{
-							"shindanName": []string{"テスト"},
-							"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-						},
-					).Return(
-						nil,
-						errors.New(`Get "https://shindanmaker.com/855159": dial tcp [::1]:443: connect: connection refused`),
-					)
-				})
-
-				It("returns an error", func() {
-					actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-					Expect(actual).To(Equal(""))
-					Expect(err).To(MatchError(`failed to fetch shindan result: Get "https://shindanmaker.com/855159": dial tcp [::1]:443: connect: connection refused`))
-				})
-			})
-
-			Context("fetching succeeds", func() {
-				Context("reading fails", func() {
-					BeforeEach(func() {
-						r.EXPECT().Read(gomock.Any()).Return(
-							0,
-							errors.New("dial tcp [::1]:443: connect: connection refused"),
-						)
-
-						top = &http.Response{
-							Body: io.NopCloser(strings.NewReader(`
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`)),
-						}
-						res = &http.Response{
-							Body: io.NopCloser(r),
-						}
-
-						c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-						c.EXPECT().PostForm(
-							"https://shindanmaker.com/855159",
-							url.Values{
-								"shindanName": []string{"テスト"},
-								"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-							},
-						).Return(res, nil)
-					})
-
-					It("returns an error", func() {
-						actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-						Expect(actual).To(BeEmpty())
-						Expect(err).To(MatchError("failed to read shindan result: dial tcp [::1]:443: connect: connection refused"))
-					})
-				})
-
-				Context("reading succeeds", func() {
-					Context("parsing fails", func() {
-						BeforeEach(func() {
-							top = &http.Response{
-								Body: io.NopCloser(strings.NewReader(`
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
 									<!doctype html>
 									<html lang="ja">
 									<head>
@@ -763,10 +163,501 @@ var _ = Describe("Shindanmaker", func() {
 									<body>
 									</body>
 									</html>
-								`)),
-							}
-							res = &http.Response{
-								Body: io.NopCloser(strings.NewReader(`
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name", func() {
+						shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name begins with half-width at-sign", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"@test"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name", func() {
+						shindanmaker.Do(context.Background(), "@test", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name begins with full-width at-sign", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"＠テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name", func() {
+						shindanmaker.Do(context.Background(), "＠テスト", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name begins with half-width parentheses", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"(テスト)"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name", func() {
+						shindanmaker.Do(context.Background(), "(テスト)", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name begins with full-width at-sign", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"（テスト）"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name", func() {
+						shindanmaker.Do(context.Background(), "（テスト）", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes half-width at-sign", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before half-width at-sign", func() {
+						shindanmaker.Do(context.Background(), "テスト@がんばらない", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes full-width at-sign", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before full-width at-sign", func() {
+						shindanmaker.Do(context.Background(), "テスト＠がんばらない", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes half-width parentheses", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before half-width parentheses", func() {
+						shindanmaker.Do(context.Background(), "テスト(昨日: 1 / 今日: 1)", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes full-width parentheses", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before full-width parentheses", func() {
+						shindanmaker.Do(context.Background(), "テスト（昨日: 1 / 今日: 1）", serverURL+"/a/855159")
+					})
+				})
+			})
+
+			Context("name includes special characters", func() {
+				Context("name includes neither at-sign nor parentheses", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name", func() {
+						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes half-width at-sign", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before half-width at-sign", func() {
+						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}@がんばらない", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes full-width at-sign", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before full-width at-sign", func() {
+						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}＠がんばらない", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes half-width parentheses", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before half-width parentheses", func() {
+						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}(昨日: 1 / 今日: 1)", serverURL+"/a/855159")
+					})
+				})
+
+				Context("name includes full-width parentheses", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+							),
+						)
+					})
+
+					It("passes name before full-width parentheses", func() {
+						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}（昨日: 1 / 今日: 1）", serverURL+"/a/855159")
+					})
+				})
+			})
+		})
+
+		Describe("fetch", func() {
+			Context("fetching fails", func() {
+				BeforeEach(func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+							ghttp.RespondWith(http.StatusOK, `
+								<!doctype html>
+								<html lang="ja">
+								<head>
+									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+									<title>ちんぽ揃えゲーム</title>
+								</head>
+								<body>
+								</body>
+								</html>
+							`),
+						),
+						func(w http.ResponseWriter, r *http.Request) {
+							c, _, err := w.(http.Hijacker).Hijack()
+							Expect(err).NotTo(HaveOccurred())
+							Expect(c.Close()).NotTo(HaveOccurred())
+						},
+					)
+				})
+
+				It("returns an error", func() {
+					actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+					Expect(actual).To(Equal(""))
+					Expect(err).To(MatchError(HavePrefix("failed to fetch shindan result:")))
+				})
+			})
+
+			Context("fetching succeeds", func() {
+				Context("parsing fails", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyForm(url.Values{
+									"shindanName": []string{"テスト"},
+									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+								ghttp.RespondWith(http.StatusForbidden, `
 									<html>
 									<head><title>403 Forbidden</title></head>
 									<body bgcolor="white">
@@ -779,32 +670,26 @@ var _ = Describe("Shindanmaker", func() {
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
-								`)),
-							}
-
-							c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-							c.EXPECT().PostForm(
-								"https://shindanmaker.com/855159",
-								url.Values{
-									"shindanName": []string{"テスト"},
-									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-								},
-							).Return(res, nil)
-						})
-
-						It("returns an error", func() {
-							actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-							Expect(actual).To(BeEmpty())
-							Expect(err).To(MatchError("failed to parse shindan result"))
-						})
+								`),
+							),
+						)
 					})
 
-					Context("parsing succeeds", func() {
-						Context("result does not include special characters", func() {
-							Context("result is less than 140 characters", func() {
-								BeforeEach(func() {
-									top = &http.Response{
-										Body: io.NopCloser(strings.NewReader(`
+					It("returns an error", func() {
+						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						Expect(actual).To(BeEmpty())
+						Expect(err).To(MatchError("failed to parse shindan result"))
+					})
+				})
+
+				Context("parsing succeeds", func() {
+					Context("result does not include special characters", func() {
+						Context("result is less than 140 characters", func() {
+							BeforeEach(func() {
+								server.AppendHandlers(
+									ghttp.CombineHandlers(
+										ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+										ghttp.RespondWith(http.StatusOK, `
 											<!doctype html>
 											<html lang="ja">
 											<head>
@@ -814,10 +699,15 @@ var _ = Describe("Shindanmaker", func() {
 											<body>
 											</body>
 											</html>
-										`)),
-									}
-									res = &http.Response{
-										Body: io.NopCloser(strings.NewReader(`
+										`),
+									),
+									ghttp.CombineHandlers(
+										ghttp.VerifyRequest(http.MethodPost, "/855159"),
+										ghttp.VerifyForm(url.Values{
+											"shindanName": []string{"テスト"},
+											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+										}),
+										ghttp.RespondWith(http.StatusOK, `
 											<!doctype html>
 											<html lang="ja">
 											<head>
@@ -847,35 +737,29 @@ var _ = Describe("Shindanmaker", func() {
 												</div>
 											</body>
 											</html>
-										`)),
-									}
+										`),
+									),
+								)
+							})
 
-									c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-									c.EXPECT().PostForm(
-										"https://shindanmaker.com/855159",
-										url.Values{
-											"shindanName": []string{"テスト"},
-											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-										},
-									).Return(res, nil)
-								})
-
-								It("returns the result", func() {
-									actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-									Expect(actual).To(Equal(`ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ
+							It("returns the result", func() {
+								actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+								Expect(actual).To(Equal(`ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ
 
 テストさんは19文字目でちんぽを出せました！
 
 #ちんぽ揃えゲーム #shindanmaker
 https://shindanmaker.com/855159`))
-									Expect(err).NotTo(HaveOccurred())
-								})
+								Expect(err).NotTo(HaveOccurred())
 							})
+						})
 
-							Context("result exceeds 140 characters", func() {
-								BeforeEach(func() {
-									top = &http.Response{
-										Body: io.NopCloser(strings.NewReader(`
+						Context("result exceeds 140 characters", func() {
+							BeforeEach(func() {
+								server.AppendHandlers(
+									ghttp.CombineHandlers(
+										ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+										ghttp.RespondWith(http.StatusOK, `
 											<!doctype html>
 											<html lang="ja">
 											<head>
@@ -885,10 +769,15 @@ https://shindanmaker.com/855159`))
 											<body>
 											</body>
 											</html>
-										`)),
-									}
-									res = &http.Response{
-										Body: io.NopCloser(strings.NewReader(`
+										`),
+									),
+									ghttp.CombineHandlers(
+										ghttp.VerifyRequest(http.MethodPost, "/855159"),
+										ghttp.VerifyForm(url.Values{
+											"shindanName": []string{"テスト"},
+											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+										}),
+										ghttp.RespondWith(http.StatusOK, `
 											<!DOCTYPE html>
 											<html lang="ja">
 											<head>
@@ -923,33 +812,27 @@ https://shindanmaker.com/855159`))
 												</div>
 											</body>
 											</html>
-										`)),
-									}
+										`),
+									),
+								)
+							})
 
-									c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-									c.EXPECT().PostForm(
-										"https://shindanmaker.com/855159",
-										url.Values{
-											"shindanName": []string{"テスト"},
-											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-										},
-									).Return(res, nil)
-								})
-
-								It("returns the result", func() {
-									actual, err := shindanmaker.Do("テスト", "https://shindanmaker.com/a/855159")
-									Expect(actual).To(Equal(`んちちんんぽんちちちぽんちちんんんぽぽちちぽちぽぽぽぽんぽぽちんんぽんんんんちちぽぽちんちちんんぽんぽちちぽちぽんんちぽぽんんちんんちんちちぽんんんちちぽちちちちぽちぽんんぽんぽちちぽんちんちちぽんんちんんんぽちんんぽぽ…
+							It("returns the result", func() {
+								actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+								Expect(actual).To(Equal(`んちちんんぽんちちちぽんちちんんんぽぽちちぽちぽぽぽぽんぽぽちんんぽんんんんちちぽぽちんちちんんぽんぽちちぽちぽんんちぽぽんんちんんちんちちぽんんんちちぽちちちちぽちぽんんぽんぽちちぽんちんちちぽんんちんんんぽちんんぽぽ…
 #ちんぽ揃えゲーム #shindanmaker
 https://shindanmaker.com/855159`))
-									Expect(err).NotTo(HaveOccurred())
-								})
+								Expect(err).NotTo(HaveOccurred())
 							})
 						})
+					})
 
-						Context("result includes special characters", func() {
-							BeforeEach(func() {
-								top = &http.Response{
-									Body: io.NopCloser(strings.NewReader(`
+					Context("result includes special characters", func() {
+						BeforeEach(func() {
+							server.AppendHandlers(
+								ghttp.CombineHandlers(
+									ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+									ghttp.RespondWith(http.StatusOK, `
 										<!doctype html>
 										<html lang="ja">
 										<head>
@@ -959,10 +842,15 @@ https://shindanmaker.com/855159`))
 										<body>
 										</body>
 										</html>
-									`)),
-								}
-								res = &http.Response{
-									Body: io.NopCloser(strings.NewReader(`
+									`),
+								),
+								ghttp.CombineHandlers(
+									ghttp.VerifyRequest(http.MethodPost, "/855159"),
+									ghttp.VerifyForm(url.Values{
+										"shindanName": []string{`<>"'&`},
+										"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+									}),
+									ghttp.RespondWith(http.StatusOK, `
 										<!doctype html>
 										<html lang="ja">
 										<head>
@@ -992,29 +880,20 @@ https://shindanmaker.com/855159`))
 											</div>
 										</body>
 										</html>
-									`)),
-								}
+									`),
+								),
+							)
+						})
 
-								c.EXPECT().Get("https://shindanmaker.com/a/855159").Return(top, nil)
-								c.EXPECT().PostForm(
-									"https://shindanmaker.com/855159",
-									url.Values{
-										"shindanName": []string{`<>"'&`},
-										"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
-									},
-								).Return(res, nil)
-							})
-
-							It("returns the result", func() {
-								actual, err := shindanmaker.Do(`<>"'&`, "https://shindanmaker.com/a/855159")
-								Expect(actual).To(Equal(`ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ
+						It("returns the result", func() {
+							actual, err := shindanmaker.Do(context.Background(), `<>"'&`, serverURL+"/a/855159")
+							Expect(actual).To(Equal(`ちんんんんぽんんぽちぽちちぽぽぽちんぽ(ﾎﾞﾛﾝ
 
 <>"'&さんは19文字目でちんぽを出せました！
 
 #ちんぽ揃えゲーム #shindanmaker
 https://shindanmaker.com/855159`))
-								Expect(err).NotTo(HaveOccurred())
-							})
+							Expect(err).NotTo(HaveOccurred())
 						})
 					})
 				})

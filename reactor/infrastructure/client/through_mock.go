@@ -5,6 +5,7 @@
 package client
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,16 +35,16 @@ func (m *MockThrough) EXPECT() *MockThroughMockRecorder {
 }
 
 // Do mocks base method.
-func (m *MockThrough) Do(targetURL string) (ThroughResult, error) {
+func (m *MockThrough) Do(ctx context.Context, targetURL string) (ThroughResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", targetURL)
+	ret := m.ctrl.Call(m, "Do", ctx, targetURL)
 	ret0, _ := ret[0].(ThroughResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockThroughMockRecorder) Do(targetURL interface{}) *gomock.Call {
+func (mr *MockThroughMockRecorder) Do(ctx, targetURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockThrough)(nil).Do), targetURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockThrough)(nil).Do), ctx, targetURL)
 }

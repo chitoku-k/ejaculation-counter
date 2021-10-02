@@ -1,6 +1,7 @@
 package action_test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -24,6 +25,7 @@ var _ = Describe("Through", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockThrough(ctrl)
 		env = config.Environment{
+			Port: "80",
 			Mastodon: config.Mastodon{
 				UserID: "1",
 			},
@@ -171,14 +173,14 @@ var _ = Describe("Through", func() {
 	Describe("Event()", func() {
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("http://localhost/through").Return(
+				c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
 					client.ThroughResult{},
-					errors.New(`failed to fetch challenge result: Get "http://localhost/through": dial tcp [::1]:80: connect: connection refused`),
+					errors.New(`failed to fetch challenge result: Get "http://localhost:80/through": dial tcp [::1]:80: connect: connection refused`),
 				)
 			})
 
 			It("returns an error", func() {
-				_, index, err := through.Event(service.Message{
+				_, index, err := through.Event(context.Background(), service.Message{
 					IsReblog: false,
 					Account: service.Account{
 						DisplayName: "テスト",
@@ -187,14 +189,14 @@ var _ = Describe("Through", func() {
 					Content: "駿河茶",
 				})
 				Expect(index).To(Equal(0))
-				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://localhost/through": dial tcp [::1]:80: connect: connection refused`))
+				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://localhost:80/through": dial tcp [::1]:80: connect: connection refused`))
 			})
 		})
 
 		Context("fetching succeeds", func() {
 			Context("with count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do("http://localhost/through").Return(
+					c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
 						client.ThroughResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
 						nil,
 					)
@@ -202,7 +204,7 @@ var _ = Describe("Through", func() {
 
 				Context("toot does not start with name", func() {
 					It("returns an event", func() {
-						event, index, err := through.Event(service.Message{
+						event, index, err := through.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{
@@ -225,7 +227,7 @@ var _ = Describe("Through", func() {
 
 				Context("toot starts with name", func() {
 					It("returns an event", func() {
-						event, index, err := through.Event(service.Message{
+						event, index, err := through.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{
@@ -249,7 +251,7 @@ var _ = Describe("Through", func() {
 
 			Context("without count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do("http://localhost/through").Return(
+					c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
 						client.ThroughResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
 						nil,
 					)
@@ -257,7 +259,7 @@ var _ = Describe("Through", func() {
 
 				Context("toot does not start with name", func() {
 					It("returns an event", func() {
-						event, index, err := through.Event(service.Message{
+						event, index, err := through.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{
@@ -280,7 +282,7 @@ var _ = Describe("Through", func() {
 
 				Context("toot starts with name", func() {
 					It("returns an event", func() {
-						event, index, err := through.Event(service.Message{
+						event, index, err := through.Event(context.Background(), service.Message{
 							ID:       "1",
 							IsReblog: false,
 							Account: service.Account{

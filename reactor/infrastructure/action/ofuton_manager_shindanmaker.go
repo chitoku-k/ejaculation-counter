@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -54,9 +55,9 @@ func (os *ofutonManagerShindanmaker) Target(message service.Message) bool {
 		OfutonManagerRegex.MatchString(message.Content)
 }
 
-func (os *ofutonManagerShindanmaker) Event(message service.Message) (service.Event, int, error) {
+func (os *ofutonManagerShindanmaker) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := OfutonManagerRegex.FindStringIndex(message.Content)
-	result, err := os.Client.Do(os.Client.Name(message.Account), "https://shindanmaker.com/a/503598")
+	result, err := os.Client.Do(ctx, os.Client.Name(message.Account), "https://shindanmaker.com/a/503598")
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

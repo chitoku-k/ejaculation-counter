@@ -2,6 +2,8 @@
 
 package service
 
+import "context"
+
 type actionResult struct {
 	Event Event
 	Index int
@@ -10,5 +12,5 @@ type actionResult struct {
 type Action interface {
 	Name() string
 	Target(message Message) bool
-	Event(message Message) (Event, int, error)
+	Event(ctx context.Context, message Message) (Event, int, error)
 }

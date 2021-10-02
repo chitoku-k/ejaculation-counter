@@ -5,6 +5,7 @@
 package service
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,9 +35,9 @@ func (m *MockAction) EXPECT() *MockActionMockRecorder {
 }
 
 // Event mocks base method.
-func (m *MockAction) Event(message Message) (Event, int, error) {
+func (m *MockAction) Event(ctx context.Context, message Message) (Event, int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Event", message)
+	ret := m.ctrl.Call(m, "Event", ctx, message)
 	ret0, _ := ret[0].(Event)
 	ret1, _ := ret[1].(int)
 	ret2, _ := ret[2].(error)
@@ -44,9 +45,9 @@ func (m *MockAction) Event(message Message) (Event, int, error) {
 }
 
 // Event indicates an expected call of Event.
-func (mr *MockActionMockRecorder) Event(message interface{}) *gomock.Call {
+func (mr *MockActionMockRecorder) Event(ctx, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockAction)(nil).Event), message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Event", reflect.TypeOf((*MockAction)(nil).Event), ctx, message)
 }
 
 // Name mocks base method.
