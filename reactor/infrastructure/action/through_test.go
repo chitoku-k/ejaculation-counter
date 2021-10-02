@@ -25,6 +25,7 @@ var _ = Describe("Through", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockThrough(ctrl)
 		env = config.Environment{
+			Port: "80",
 			Mastodon: config.Mastodon{
 				UserID: "1",
 			},
@@ -172,9 +173,9 @@ var _ = Describe("Through", func() {
 	Describe("Event()", func() {
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do(context.Background(), "http://localhost/through").Return(
+				c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
 					client.ThroughResult{},
-					errors.New(`failed to fetch challenge result: Get "http://localhost/through": dial tcp [::1]:80: connect: connection refused`),
+					errors.New(`failed to fetch challenge result: Get "http://localhost:80/through": dial tcp [::1]:80: connect: connection refused`),
 				)
 			})
 
@@ -188,14 +189,14 @@ var _ = Describe("Through", func() {
 					Content: "駿河茶",
 				})
 				Expect(index).To(Equal(0))
-				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://localhost/through": dial tcp [::1]:80: connect: connection refused`))
+				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://localhost:80/through": dial tcp [::1]:80: connect: connection refused`))
 			})
 		})
 
 		Context("fetching succeeds", func() {
 			Context("with count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do(context.Background(), "http://localhost/through").Return(
+					c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
 						client.ThroughResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
 						nil,
 					)
@@ -250,7 +251,7 @@ var _ = Describe("Through", func() {
 
 			Context("without count", func() {
 				BeforeEach(func() {
-					c.EXPECT().Do(context.Background(), "http://localhost/through").Return(
+					c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
 						client.ThroughResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
 						nil,
 					)

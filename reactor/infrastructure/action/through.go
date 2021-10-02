@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"net"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -48,7 +50,13 @@ func (t *through) Event(ctx context.Context, message service.Message) (service.E
 		count = 1
 	}
 
-	items, err := t.Client.Do(ctx, "http://localhost/through")
+	u := url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort("localhost", t.Environment.Port),
+		Path:   "/through",
+	}
+
+	items, err := t.Client.Do(ctx, u.String())
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}
