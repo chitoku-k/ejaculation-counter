@@ -1,6 +1,7 @@
 package action_test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -442,14 +443,14 @@ var _ = Describe("BattleChimpoShindanmaker", func() {
 
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("テスト", "https://shindanmaker.com/a/584238").Return(
+				c.EXPECT().Do(context.Background(), "テスト", "https://shindanmaker.com/a/584238").Return(
 					"",
 					errors.New(`failed to fetch shindan result: Get "https://shindanmaker.com/a/584238": dial tcp [::1]:443: connect: connection refused`),
 				)
 			})
 
 			It("returns an error", func() {
-				_, index, err := battleChimpoShindanmaker.Event(service.Message{
+				_, index, err := battleChimpoShindanmaker.Event(context.Background(), service.Message{
 					IsReblog: false,
 					Account: service.Account{
 						DisplayName: "テスト",
@@ -464,14 +465,14 @@ var _ = Describe("BattleChimpoShindanmaker", func() {
 
 		Context("fetching succeeds", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("テスト", "https://shindanmaker.com/a/584238").Return(
+				c.EXPECT().Do(context.Background(), "テスト", "https://shindanmaker.com/a/584238").Return(
 					"診断結果",
 					nil,
 				)
 			})
 
 			It("returns an event", func() {
-				event, index, err := battleChimpoShindanmaker.Event(service.Message{
+				event, index, err := battleChimpoShindanmaker.Event(context.Background(), service.Message{
 					ID:       "1",
 					IsReblog: false,
 					Account: service.Account{

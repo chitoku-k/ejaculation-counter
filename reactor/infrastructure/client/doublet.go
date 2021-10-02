@@ -3,30 +3,35 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
+	"net/http"
 )
 
 type doublet struct {
-	Client wrapper.HttpClient
+	Client *http.Client
 }
 
 type Doublet interface {
-	Do(targetURL string) (DoubletResult, error)
+	Do(ctx context.Context, targetURL string) (DoubletResult, error)
 }
 
 type DoubletResult []string
 
-func NewDoublet(client wrapper.HttpClient) Doublet {
+func NewDoublet(client *http.Client) Doublet {
 	return &doublet{
 		Client: client,
 	}
 }
 
-func (t *doublet) Do(targetURL string) (DoubletResult, error) {
-	res, err := t.Client.Get(targetURL)
+func (t *doublet) Do(ctx context.Context, targetURL string) (DoubletResult, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create challenge request: %w", err)
+	}
+
+	res, err := t.Client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch challenge result: %w", err)
 	}

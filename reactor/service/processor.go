@@ -79,7 +79,7 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 						continue
 					}
 
-					event, index, err := action.Event(*p)
+					event, index, err := action.Event(ctx, *p)
 					if err != nil {
 						logrus.Errorf("Error in processing %v: %v", action.Name(), err)
 						EventsErrorTotal.WithLabelValues(action.Name()).Inc()

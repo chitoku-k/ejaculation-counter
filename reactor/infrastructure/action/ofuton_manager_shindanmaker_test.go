@@ -1,6 +1,7 @@
 package action_test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -248,14 +249,14 @@ var _ = Describe("OfutonManagerShindanmaker", func() {
 
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("テスト", "https://shindanmaker.com/a/503598").Return(
+				c.EXPECT().Do(context.Background(), "テスト", "https://shindanmaker.com/a/503598").Return(
 					"",
 					errors.New(`failed to fetch shindan result: Get "https://shindanmaker.com/a/503598": dial tcp [::1]:443: connect: connection refused`),
 				)
 			})
 
 			It("returns an error", func() {
-				_, index, err := ofutonManagerShindanmaker.Event(service.Message{
+				_, index, err := ofutonManagerShindanmaker.Event(context.Background(), service.Message{
 					IsReblog: false,
 					Account: service.Account{
 						DisplayName: "テスト",
@@ -270,7 +271,7 @@ var _ = Describe("OfutonManagerShindanmaker", func() {
 
 		Context("fetching succeeds", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("テスト", "https://shindanmaker.com/a/503598").Return(
+				c.EXPECT().Do(context.Background(), "テスト", "https://shindanmaker.com/a/503598").Return(
 					`むむ……このおちんちんしゅっしゅは…………よしよし、ちゃんと申請してありますね♥えらいえらい♥ もっとぴゅっぴゅってさせたげる♥ あは、おちんちんびくびくしちゃってる♥
 あっ、今日のぴゅっぴゅは…………ちょっと！おちんちんぴゅっぴゅの許可は下りてないじゃない！ぴゅっぴゅするの駄目っ！おちんちんやめなさいっ！！
 むむ……今日のおちんちんしこしこは…………こらっ！おちんちんぴゅっぴゅの許可は下りてないじゃない！こらーっ！おちんちんしこしこするなっ！ぴゅっぴゅしちゃ駄目でしょ！！
@@ -282,7 +283,7 @@ https://shindanmaker.com/503598`,
 			})
 
 			It("returns an event", func() {
-				event, index, err := ofutonManagerShindanmaker.Event(service.Message{
+				event, index, err := ofutonManagerShindanmaker.Event(context.Background(), service.Message{
 					ID:       "1",
 					IsReblog: false,
 					Account: service.Account{

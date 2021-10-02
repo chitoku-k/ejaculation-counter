@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -37,7 +38,7 @@ func (m *mpyw) Target(message service.Message) bool {
 		MpywRegex.MatchString(message.Content)
 }
 
-func (m *mpyw) Event(message service.Message) (service.Event, int, error) {
+func (m *mpyw) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := MpywRegex.FindStringIndex(message.Content)
 	matches := MpywRegex.FindStringSubmatch(message.Content)
 
@@ -46,7 +47,7 @@ func (m *mpyw) Event(message service.Message) (service.Event, int, error) {
 		count = 1
 	}
 
-	result, err := m.Client.Do(m.Environment.External.MpywAPIURL, count)
+	result, err := m.Client.Do(ctx, m.Environment.External.MpywAPIURL, count)
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

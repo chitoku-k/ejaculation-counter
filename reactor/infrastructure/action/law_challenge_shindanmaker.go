@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
@@ -43,9 +44,9 @@ func (ls *lawChallengeShindanmaker) Target(message service.Message) bool {
 	return LawChallengeRegex.MatchString(message.Content)
 }
 
-func (ls *lawChallengeShindanmaker) Event(message service.Message) (service.Event, int, error) {
+func (ls *lawChallengeShindanmaker) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := LawChallengeRegex.FindStringIndex(message.Content)
-	result, err := ls.Client.Do(ls.Client.Name(message.Account), "https://shindanmaker.com/a/877845")
+	result, err := ls.Client.Do(ctx, ls.Client.Name(message.Account), "https://shindanmaker.com/a/877845")
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

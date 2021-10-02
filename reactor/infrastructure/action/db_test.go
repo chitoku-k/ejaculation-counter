@@ -1,6 +1,8 @@
 package action_test
 
 import (
+	"context"
+
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
@@ -93,7 +95,7 @@ var _ = Describe("DB", func() {
 
 	Describe("Event()", func() {
 		It("returns an event", func() {
-			actual, index, err := db.Event(service.Message{
+			actual, index, err := db.Event(context.Background(), service.Message{
 				ID: "1",
 				Account: service.Account{
 					Acct: "@test",

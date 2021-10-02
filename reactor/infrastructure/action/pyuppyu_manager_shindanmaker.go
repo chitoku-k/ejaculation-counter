@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
@@ -35,9 +36,9 @@ func (ps *pyuppyuManagerShindanmaker) Target(message service.Message) bool {
 		PyuppyuManagerRegex.MatchString(message.Content)
 }
 
-func (ps *pyuppyuManagerShindanmaker) Event(message service.Message) (service.Event, int, error) {
+func (ps *pyuppyuManagerShindanmaker) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := PyuppyuManagerRegex.FindStringIndex(message.Content)
-	result, err := ps.Client.Do(ps.Client.Name(message.Account), "https://shindanmaker.com/a/503598")
+	result, err := ps.Client.Do(ctx, ps.Client.Name(message.Account), "https://shindanmaker.com/a/503598")
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

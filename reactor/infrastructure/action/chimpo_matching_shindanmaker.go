@@ -1,6 +1,7 @@
 package action
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
@@ -43,9 +44,9 @@ func (bs *chimpoMatchingShindanmaker) Target(message service.Message) bool {
 	return ChimpoMatchingRegex.MatchString(message.Content)
 }
 
-func (bs *chimpoMatchingShindanmaker) Event(message service.Message) (service.Event, int, error) {
+func (bs *chimpoMatchingShindanmaker) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := ChimpoMatchingRegex.FindStringIndex(message.Content)
-	result, err := bs.Client.Do(bs.Client.Name(message.Account), "https://shindanmaker.com/a/855159")
+	result, err := bs.Client.Do(ctx, bs.Client.Name(message.Account), "https://shindanmaker.com/a/855159")
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

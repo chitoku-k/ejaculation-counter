@@ -1,6 +1,7 @@
 package action_test
 
 import (
+	"context"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -97,7 +98,7 @@ var _ = Describe("PyuUpdate", func() {
 
 	Describe("Event()", func() {
 		It("returns an event", func() {
-			actual, index, err := pyuUpdate.Event(service.Message{
+			actual, index, err := pyuUpdate.Event(context.Background(), service.Message{
 				ID:        "1",
 				CreatedAt: time.Date(2006, 1, 2, 15, 4, 5, 0, JST),
 				Account: service.Account{

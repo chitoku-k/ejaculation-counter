@@ -1,6 +1,7 @@
 package action_test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -213,14 +214,14 @@ var _ = Describe("ChimpoMatchingShindanmaker", func() {
 
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("テスト", "https://shindanmaker.com/a/855159").Return(
+				c.EXPECT().Do(context.Background(), "テスト", "https://shindanmaker.com/a/855159").Return(
 					"",
 					errors.New(`failed to fetch shindan result: Get "https://shindanmaker.com/a/855159": dial tcp [::1]:443: connect: connection refused`),
 				)
 			})
 
 			It("returns an error", func() {
-				_, index, err := chimpoMatchingShindanmaker.Event(service.Message{
+				_, index, err := chimpoMatchingShindanmaker.Event(context.Background(), service.Message{
 					IsReblog: false,
 					Account: service.Account{
 						DisplayName: "テスト",
@@ -235,7 +236,7 @@ var _ = Describe("ChimpoMatchingShindanmaker", func() {
 
 		Context("fetching succeeds", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do("テスト", "https://shindanmaker.com/a/855159").Return(
+				c.EXPECT().Do(context.Background(), "テスト", "https://shindanmaker.com/a/855159").Return(
 					"診断結果",
 					nil,
 				)
@@ -243,7 +244,7 @@ var _ = Describe("ChimpoMatchingShindanmaker", func() {
 
 			Context("toot does not start with name", func() {
 				It("returns an event", func() {
-					event, index, err := chimpoMatchingShindanmaker.Event(service.Message{
+					event, index, err := chimpoMatchingShindanmaker.Event(context.Background(), service.Message{
 						ID:       "1",
 						IsReblog: false,
 						Account: service.Account{
@@ -266,7 +267,7 @@ var _ = Describe("ChimpoMatchingShindanmaker", func() {
 
 			Context("toot starts with name", func() {
 				It("returns an event", func() {
-					event, index, err := chimpoMatchingShindanmaker.Event(service.Message{
+					event, index, err := chimpoMatchingShindanmaker.Event(context.Background(), service.Message{
 						ID:       "1",
 						IsReblog: false,
 						Account: service.Account{

@@ -1,86 +1,74 @@
 package client_test
 
 import (
-	"errors"
-	"io"
+	"context"
 	"net/http"
-	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
 )
 
 var _ = Describe("Through", func() {
 	var (
-		ctrl    *gomock.Controller
-		c       *wrapper.MockHttpClient
-		through client.Through
+		server    *ghttp.Server
+		serverURL string
+		through   client.Through
 	)
 
 	BeforeEach(func() {
-		ctrl = gomock.NewController(GinkgoT())
-		c = wrapper.NewMockHttpClient(ctrl)
-		through = client.NewThrough(c)
+		server = ghttp.NewServer()
+		serverURL = server.URL()
+		through = client.NewThrough(server.HTTPTestServer.Client())
 	})
 
 	AfterEach(func() {
-		ctrl.Finish()
+		server.Close()
 	})
 
 	Describe("Do()", func() {
 		Context("fetching fails", func() {
 			BeforeEach(func() {
-				c.EXPECT().Get("http://reactor/through").Return(
-					nil,
-					errors.New(`Get "http://reactor/through": dial tcp [::1]:80: connect: connection refused`),
-				)
+				server.Close()
 			})
 
 			It("returns an error", func() {
-				actual, err := through.Do("http://reactor/through")
+				actual, err := through.Do(context.Background(), serverURL+"/through")
 				Expect(actual).To(BeNil())
-				Expect(err).To(MatchError(`failed to fetch challenge result: Get "http://reactor/through": dial tcp [::1]:80: connect: connection refused`))
+				Expect(err).To(MatchError(HavePrefix("failed to fetch challenge result:")))
 			})
 		})
 
 		Context("fetching succeeds", func() {
-			var (
-				res *http.Response
-			)
-
 			Context("decoding fails", func() {
 				BeforeEach(func() {
-					res = &http.Response{
-						Body: io.NopCloser(strings.NewReader("[")),
-					}
-
-					c.EXPECT().Get("http://reactor/through").Return(res, nil)
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest(http.MethodGet, "/through"),
+							ghttp.RespondWith(http.StatusOK, "["),
+						),
+					)
 				})
 
 				It("returns the result", func() {
-					_, err := through.Do("http://reactor/through")
+					_, err := through.Do(context.Background(), serverURL+"/through")
 					Expect(err).To(MatchError("failed to decode challenge result: unexpected EOF"))
 				})
 			})
 
 			Context("decoding succeeds", func() {
 				BeforeEach(func() {
-					res = &http.Response{
-						Body: io.NopCloser(strings.NewReader(`
-							[
-								"through"
-							]
-						`)),
-					}
-
-					c.EXPECT().Get("http://reactor/through").Return(res, nil)
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest(http.MethodGet, "/through"),
+							ghttp.RespondWithJSONEncoded(http.StatusOK, []string{"through"}),
+						),
+					)
 				})
 
 				It("returns the result", func() {
-					actual, err := through.Do("http://reactor/through")
+					actual, err := through.Do(context.Background(), serverURL+"/through")
 					Expect(actual).To(Equal(client.ThroughResult{"through"}))
 					Expect(err).To(BeNil())
 				})

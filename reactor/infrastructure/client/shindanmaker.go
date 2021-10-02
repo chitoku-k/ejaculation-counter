@@ -4,14 +4,15 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html"
 	"io"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -23,15 +24,15 @@ var (
 )
 
 type shindanmaker struct {
-	Client wrapper.HttpClient
+	Client *http.Client
 }
 
 type Shindanmaker interface {
-	Do(name string, targerURL string) (string, error)
+	Do(ctx context.Context, name string, targerURL string) (string, error)
 	Name(account service.Account) string
 }
 
-func NewShindanmaker(client wrapper.HttpClient) Shindanmaker {
+func NewShindanmaker(client *http.Client) Shindanmaker {
 	return &shindanmaker{
 		Client: client,
 	}
@@ -45,8 +46,13 @@ func (s *shindanmaker) Name(account service.Account) string {
 	}
 }
 
-func (s *shindanmaker) token(targetURL string) (string, error) {
-	res, err := s.Client.Get(targetURL)
+func (s *shindanmaker) token(ctx context.Context, targetURL string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create sindan page request: %w", err)
+	}
+
+	res, err := s.Client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch shindan page: %w", err)
 	}
@@ -66,8 +72,8 @@ func (s *shindanmaker) token(targetURL string) (string, error) {
 	return string(matches[1]), nil
 }
 
-func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
-	token, err := s.token(targetURL)
+func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (string, error) {
+	token, err := s.token(ctx, targetURL)
 	if err != nil {
 		return "", err
 	}
@@ -80,8 +86,15 @@ func (s *shindanmaker) Do(name string, targetURL string) (string, error) {
 	values := url.Values{}
 	values.Add("shindanName", name)
 	values.Add("_token", token)
+	body := strings.NewReader(values.Encode())
 
-	res, err := s.Client.PostForm(strings.ReplaceAll(targetURL, "/a/", "/"), values)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.ReplaceAll(targetURL, "/a/", "/"), body)
+	if err != nil {
+		return "", fmt.Errorf("failed to create shindan result request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := s.Client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch shindan result: %w", err)
 	}

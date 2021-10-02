@@ -5,6 +5,7 @@
 package client
 
 import (
+	context "context"
 	reflect "reflect"
 
 	service "github.com/chitoku-k/ejaculation-counter/reactor/service"
@@ -35,18 +36,18 @@ func (m *MockShindanmaker) EXPECT() *MockShindanmakerMockRecorder {
 }
 
 // Do mocks base method.
-func (m *MockShindanmaker) Do(name, targerURL string) (string, error) {
+func (m *MockShindanmaker) Do(ctx context.Context, name, targerURL string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", name, targerURL)
+	ret := m.ctrl.Call(m, "Do", ctx, name, targerURL)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockShindanmakerMockRecorder) Do(name, targerURL interface{}) *gomock.Call {
+func (mr *MockShindanmakerMockRecorder) Do(ctx, name, targerURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockShindanmaker)(nil).Do), name, targerURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockShindanmaker)(nil).Do), ctx, name, targerURL)
 }
 
 // Name mocks base method.

@@ -1,9 +1,10 @@
 package action_test
 
 import (
+	"context"
+
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -13,14 +14,14 @@ import (
 var _ = Describe("OfutonChallenge", func() {
 	var (
 		ctrl            *gomock.Controller
-		r               *wrapper.MockRandom
+		r               *action.MockRandom
 		env             config.Environment
 		ofutonChallenge service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		r = wrapper.NewMockRandom(ctrl)
+		r = action.NewMockRandom(ctrl)
 		env = config.Environment{
 			Mastodon: config.Mastodon{
 				UserID: "1",
@@ -142,7 +143,7 @@ var _ = Describe("OfutonChallenge", func() {
 		})
 
 		It("returns an event", func() {
-			event, index, err := ofutonChallenge.Event(service.Message{
+			event, index, err := ofutonChallenge.Event(context.Background(), service.Message{
 				ID:       "1",
 				IsReblog: false,
 				Account: service.Account{
