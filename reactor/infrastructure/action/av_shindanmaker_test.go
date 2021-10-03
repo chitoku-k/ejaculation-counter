@@ -3,6 +3,8 @@ package action_test
 import (
 	"context"
 	"errors"
+	"io"
+	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
@@ -173,10 +175,10 @@ var _ = Describe("AVShindanmaker", func() {
 							Content:    "テスト。テストくんの AV",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(Equal(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(31))
@@ -195,10 +197,10 @@ var _ = Describe("AVShindanmaker", func() {
 							Content:    "テスト。テストちゃんの AV",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(Equal(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(34))
@@ -217,10 +219,10 @@ var _ = Describe("AVShindanmaker", func() {
 							Content:    "テスト。テストの AV",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(Equal(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(25))
@@ -241,10 +243,10 @@ var _ = Describe("AVShindanmaker", func() {
 							Content:    "テストくんの AV",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(Equal(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(19))
@@ -263,10 +265,10 @@ var _ = Describe("AVShindanmaker", func() {
 							Content:    "テストちゃんの AV",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(Equal(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(22))
@@ -285,10 +287,10 @@ var _ = Describe("AVShindanmaker", func() {
 							Content:    "テストの AV",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(Equal(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(13))

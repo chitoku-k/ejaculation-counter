@@ -44,5 +44,5 @@ func (d *db) Event(ctx context.Context, message service.Message) (service.Event,
 		Visibility:  message.Visibility,
 	}
 
-	return &event, index[0], nil
+	return event, index[0], nil
 }

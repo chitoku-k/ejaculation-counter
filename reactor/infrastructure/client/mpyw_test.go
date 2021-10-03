@@ -2,6 +2,7 @@ package client_test
 
 import (
 	"context"
+	"io"
 	"net/http"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
@@ -48,44 +49,36 @@ var _ = Describe("Mpyw", func() {
 			})
 
 			Context("fetching succeeds", func() {
-				Context("decoding fails", func() {
-					BeforeEach(func() {
-						server.AppendHandlers(
-							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/api", "count=1"),
-								ghttp.RespondWith(http.StatusOK, `{`),
-							),
-						)
-					})
-
-					It("returns an error", func() {
-						_, err := mpyw.Do(context.Background(), serverURL+"/api", 1)
-						Expect(err).To(MatchError("failed to decode challenge result: unexpected EOF"))
-					})
+				BeforeEach(func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest(http.MethodGet, "/api", "count=1"),
+							ghttp.RespondWith(http.StatusOK, `
+								{
+									"title": "実務経験ガチャ",
+									"result": [
+										"https://web.archive.org/web/20181111004435/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q13198470468"
+									]
+								}
+							`),
+						),
+					)
 				})
 
-				Context("decoding succeeds", func() {
-					BeforeEach(func() {
-						server.AppendHandlers(
-							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/api", "count=1"),
-								ghttp.RespondWith(http.StatusOK, `
-									{
-										"title": "実務経験ガチャ",
-										"result": [
-											"https://web.archive.org/web/20181111004435/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q13198470468"
-										]
-									}
-								`),
-							),
-						)
-					})
+				It("returns decoded result", func() {
+					body, err := mpyw.Do(context.Background(), serverURL+"/api", 1)
+					Expect(err).NotTo(HaveOccurred())
 
-					It("returns decoded result", func() {
-						actual, err := mpyw.Do(context.Background(), serverURL+"/api", 1)
-						Expect(actual.Result).To(Equal([]string{"https://web.archive.org/web/20181111004435/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q13198470468"}))
-						Expect(err).NotTo(HaveOccurred())
-					})
+					actual, err := io.ReadAll(body)
+					Expect(actual).To(MatchJSON(`
+						{
+							"title": "実務経験ガチャ",
+							"result": [
+								"https://web.archive.org/web/20181111004435/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q13198470468"
+							]
+						}
+					`))
+					Expect(err).NotTo(HaveOccurred())
 				})
 			})
 		})

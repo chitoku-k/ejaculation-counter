@@ -40,5 +40,5 @@ func (pu *pyuUpdate) Event(ctx context.Context, message service.Message) (servic
 		Day:   message.CreatedAt.Day(),
 	}
 
-	return &event, index[0], nil
+	return event, index[0], nil
 }

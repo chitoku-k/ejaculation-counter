@@ -3,15 +3,16 @@ package action
 import (
 	"context"
 	"fmt"
+	"io"
 	"math/rand"
 	"net"
 	"net/url"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -61,17 +62,16 @@ func (t *doublet) Event(ctx context.Context, message service.Message) (service.E
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}
 
-	var result []string
-	for i := 0; i < count; i++ {
-		result = append(result, items[rand.Intn(len(items))])
+	generator := func() string {
+		return items[rand.Intn(len(items))]
 	}
 
 	event := service.ReplyEvent{
 		InReplyToID: message.ID,
 		Acct:        message.Account.Acct,
-		Body:        strings.Join(result, "\n"),
+		Body:        io.NopCloser(reader.NewStringFuncReader("\n", count, generator)),
 		Visibility:  message.Visibility,
 	}
 
-	return &event, index[0], nil
+	return event, index[0], nil
 }

@@ -2,6 +2,8 @@ package action_test
 
 import (
 	"context"
+	"io"
+	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
@@ -153,10 +155,10 @@ var _ = Describe("OfutonChallenge", func() {
 				Content:    "おふとんチャレンジ",
 				Visibility: "private",
 			})
-			Expect(event).To(Equal(&service.ReplyEvent{
+			Expect(event).To(ReplyEventEqual(service.ReplyEvent{
 				InReplyToID: "1",
 				Acct:        "@test",
-				Body:        "とおふお\n#おふとんチャレンジ",
+				Body:        io.NopCloser(strings.NewReader("とおふお\n#おふとんチャレンジ")),
 				Visibility:  "private",
 			}))
 			Expect(index).To(Equal(3))

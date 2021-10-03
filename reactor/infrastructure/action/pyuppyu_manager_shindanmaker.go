@@ -3,7 +3,9 @@ package action
 import (
 	"context"
 	"fmt"
+	"io"
 	"regexp"
+	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
@@ -46,9 +48,9 @@ func (ps *pyuppyuManagerShindanmaker) Event(ctx context.Context, message service
 	event := service.ReplyEvent{
 		InReplyToID: message.ID,
 		Acct:        message.Account.Acct,
-		Body:        result,
+		Body:        io.NopCloser(strings.NewReader(result)),
 		Visibility:  message.Visibility,
 	}
 
-	return &event, index[0], nil
+	return event, index[0], nil
 }

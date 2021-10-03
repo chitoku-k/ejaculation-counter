@@ -3,6 +3,8 @@ package action_test
 import (
 	"context"
 	"errors"
+	"io"
+	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
@@ -190,7 +192,7 @@ var _ = Describe("Mpyw", func() {
 		Context("fetching fails", func() {
 			BeforeEach(func() {
 				c.EXPECT().Do(context.Background(), "https://mpyw.hinanawi.net/api", 1).Return(
-					client.MpywChallengeResult{},
+					nil,
 					errors.New(`failed to fetch challenge result: Get "https://mpyw.hinanawi.net/api": dial tcp [::1]:443: connect: connection refused`),
 				)
 			})
@@ -214,10 +216,12 @@ var _ = Describe("Mpyw", func() {
 			Context("with count", func() {
 				BeforeEach(func() {
 					c.EXPECT().Do(context.Background(), "https://mpyw.hinanawi.net/api", 10).Return(
-						client.MpywChallengeResult{
-							Title:  "診断結果",
-							Result: []string{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
-						},
+						io.NopCloser(strings.NewReader(`
+							{
+								"title": "診断結果",
+								"result": ["診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"]
+							}
+						`)),
 						nil,
 					)
 				})
@@ -234,10 +238,10 @@ var _ = Describe("Mpyw", func() {
 							Content:    "テスト。実務経験 10 連ガチャ。",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(12))
@@ -257,10 +261,10 @@ var _ = Describe("Mpyw", func() {
 							Content:    "実務経験 10 連ガチャ",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(0))
@@ -272,10 +276,12 @@ var _ = Describe("Mpyw", func() {
 			Context("without count", func() {
 				BeforeEach(func() {
 					c.EXPECT().Do(context.Background(), "https://mpyw.hinanawi.net/api", 1).Return(
-						client.MpywChallengeResult{
-							Title:  "診断結果",
-							Result: []string{"診断結果"},
-						},
+						io.NopCloser(strings.NewReader(`
+							{
+								"title": "診断結果",
+								"result": ["診断結果"]
+							}
+						`)),
 						nil,
 					)
 				})
@@ -292,10 +298,10 @@ var _ = Describe("Mpyw", func() {
 							Content:    "テスト。実務経験ガチャ。",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(12))
@@ -315,10 +321,10 @@ var _ = Describe("Mpyw", func() {
 							Content:    "実務経験ガチャ",
 							Visibility: "private",
 						})
-						Expect(event).To(Equal(&service.ReplyEvent{
+						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
 							InReplyToID: "1",
 							Acct:        "@test",
-							Body:        "診断結果",
+							Body:        io.NopCloser(strings.NewReader("診断結果")),
 							Visibility:  "private",
 						}))
 						Expect(index).To(Equal(0))
