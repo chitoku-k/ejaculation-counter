@@ -3,6 +3,8 @@ package action_test
 import (
 	"context"
 	"errors"
+	"io"
+	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
@@ -293,15 +295,15 @@ https://shindanmaker.com/503598`,
 					Content:    "おふとんしても良い？",
 					Visibility: "private",
 				})
-				Expect(event).To(Equal(&service.ReplyEvent{
+				Expect(event).To(Equal(service.ReplyEvent{
 					InReplyToID: "1",
 					Acct:        "@test",
-					Body: `むむ……このおふとんもふもふは…………よしよし、ちゃんと申請してありますね♥えらいえらい♥ もっともふもふってさせたげる♥ あは、おふとんびくびくしちゃってる♥
+					Body: io.NopCloser(strings.NewReader(`むむ……このおふとんもふもふは…………よしよし、ちゃんと申請してありますね♥えらいえらい♥ もっともふもふってさせたげる♥ あは、おふとんびくびくしちゃってる♥
 あっ、今日のおふとんは…………ちょっと！おふとんおふとんの許可は下りてないじゃない！おふとんするの駄目っ！おふとんやめなさいっ！！
 むむ……今日のおふとんもふもふは…………こらっ！おふとんおふとんの許可は下りてないじゃない！こらーっ！おふとんもふもふするなっ！おふとんしちゃ駄目でしょ！！
 んっ？このおふとんもふもふは…………こらっ！おふとんおふとん申請してないじゃないっ！おふとんピクピクさせちゃ駄目っ！おふとん禁止です！！
 #shindanmaker
-https://shindanmaker.com/503598`,
+https://shindanmaker.com/503598`)),
 					Visibility: "private",
 				}))
 				Expect(index).To(Equal(3))

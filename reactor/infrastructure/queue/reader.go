@@ -178,10 +178,12 @@ func (r *reader) disconnect() error {
 	if err != nil {
 		return fmt.Errorf("failed to close the MQ channel: %w", err)
 	}
+
 	err = r.Connection.Close()
 	if err != nil {
 		return fmt.Errorf("failed to close the MQ connection: %w", err)
 	}
+
 	return nil
 }
 
@@ -217,6 +219,10 @@ func (r *reader) reconnect(ctx context.Context) error {
 			continue
 		}
 	}
+}
+
+func (r *reader) Ack(tag uint64) error {
+	return r.Channel.Ack(tag, false)
 }
 
 func (r *reader) Packets() <-chan service.Packet {
@@ -258,26 +264,22 @@ func (r *reader) Consume(ctx context.Context) {
 
 			switch packet.Type {
 			case "packets.tick":
-				tick := service.NewTick(func() {
-					r.Channel.Ack(packet.DeliveryTag, false)
-				})
+				tick := service.NewTick(packet.DeliveryTag)
 				err := json.Unmarshal(packet.Body, &tick)
 				if err != nil {
 					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
 					continue
 				}
-				r.ch <- &tick
+				r.ch <- tick
 
 			case "packets.message":
-				message := service.NewMessage(func() {
-					r.Channel.Ack(packet.DeliveryTag, false)
-				})
+				message := service.NewMessage(packet.DeliveryTag)
 				err := json.Unmarshal(packet.Body, &message)
 				if err != nil {
 					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
 					continue
 				}
-				r.ch <- &message
+				r.ch <- message
 			}
 		}
 	}

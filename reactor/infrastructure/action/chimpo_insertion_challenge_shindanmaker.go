@@ -3,7 +3,9 @@ package action
 import (
 	"context"
 	"fmt"
+	"io"
 	"regexp"
+	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
@@ -54,9 +56,9 @@ func (cs *chimpoInsertionChallengeShindanmaker) Event(ctx context.Context, messa
 	event := service.ReplyEvent{
 		InReplyToID: message.ID,
 		Acct:        message.Account.Acct,
-		Body:        result,
+		Body:        io.NopCloser(strings.NewReader(result)),
 		Visibility:  message.Visibility,
 	}
 
-	return &event, index[0], nil
+	return event, index[0], nil
 }

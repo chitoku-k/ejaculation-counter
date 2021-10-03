@@ -2,10 +2,12 @@ package action
 
 import (
 	"context"
+	"io"
 	"regexp"
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
+	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -46,18 +48,21 @@ func (oc *ofutonChallenge) Target(message service.Message) bool {
 
 func (oc *ofutonChallenge) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := OfutonRegex.FindStringIndex(message.Content)
-	ofuton := make([]string, len(Ofuton))
-
-	for i := 0; i < len(Ofuton); i++ {
-		ofuton = append(ofuton, Ofuton[oc.Random.Intn(len(Ofuton))])
+	generator := func() string {
+		return Ofuton[oc.Random.Intn(len(Ofuton))]
 	}
 
 	event := service.ReplyEvent{
 		InReplyToID: message.ID,
 		Acct:        message.Account.Acct,
-		Body:        strings.Join(ofuton, "") + "\n#おふとんチャレンジ",
-		Visibility:  message.Visibility,
+		Body: io.NopCloser(
+			io.MultiReader(
+				reader.NewStringFuncReader("", len(Ofuton), generator),
+				strings.NewReader("\n#おふとんチャレンジ"),
+			),
+		),
+		Visibility: message.Visibility,
 	}
 
-	return &event, index[0], nil
+	return event, index[0], nil
 }

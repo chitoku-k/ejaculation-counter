@@ -52,9 +52,15 @@ func (a *administration) Do(ctx context.Context, event service.AdministrationEve
 		return fmt.Errorf("failed to run query: %w", err)
 	}
 
+	status, n, err := pack(strings.NewReader(fmt.Sprintf("@%s\n%s", event.Acct, strings.Join(result, "\n"))))
+	if err != nil {
+		ExecutedAdministrationEventsErrorsTotal.Inc()
+		return fmt.Errorf("failed to prepare reply (%v bytes): %w", n, err)
+	}
+
 	_, err = a.Client.PostStatus(ctx, &mastodon.Toot{
 		InReplyToID: mastodon.ID(event.InReplyToID),
-		Status:      pack(fmt.Sprintf("@%s\n%s", event.Acct, strings.Join(result, "\n"))),
+		Status:      status,
 		Visibility:  event.Visibility,
 	})
 	if err != nil {

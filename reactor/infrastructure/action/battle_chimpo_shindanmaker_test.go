@@ -3,6 +3,8 @@ package action_test
 import (
 	"context"
 	"errors"
+	"io"
+	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
@@ -482,10 +484,10 @@ var _ = Describe("BattleChimpoShindanmaker", func() {
 					Content:    "絶対おちんぽなんかに負けない！",
 					Visibility: "private",
 				})
-				Expect(event).To(Equal(&service.ReplyEvent{
+				Expect(event).To(Equal(service.ReplyEvent{
 					InReplyToID: "1",
 					Acct:        "@test",
-					Body:        "診断結果",
+					Body:        io.NopCloser(strings.NewReader("診断結果")),
 					Visibility:  "private",
 				}))
 				Expect(index).To(Equal(9))

@@ -103,7 +103,7 @@ var _ = Describe("DB", func() {
 				Content:    "SQL: SELECT 1",
 				Visibility: "private",
 			})
-			Expect(actual).To(Equal(&service.AdministrationEvent{
+			Expect(actual).To(Equal(service.AdministrationEvent{
 				InReplyToID: "1",
 				Acct:        "@test",
 				Type:        "DB",

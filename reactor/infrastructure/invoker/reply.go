@@ -3,9 +3,12 @@ package invoker
 import (
 	"context"
 	"fmt"
+	"io"
+	"regexp"
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
+	"github.com/kylemcc/twitter-text-go/validate"
 	"github.com/mattn/go-mastodon"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -13,6 +16,10 @@ import (
 
 const (
 	MaxTootLength = 500
+)
+
+var (
+	MentionRegexp = regexp.MustCompile(`(@[a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)@[[:word:].-]+[a-z0-9]+`)
 )
 
 var (
@@ -38,23 +45,44 @@ func NewReply(client *mastodon.Client) service.Reply {
 	}
 }
 
-func pack(s string) string {
-	var builder strings.Builder
+func getTootLength(s string) int {
+	s = MentionRegexp.ReplaceAllString(s, "$1")
+	return validate.TweetLength(s)
+}
 
-	for _, r := range []rune(s) {
-		if builder.Len() >= MaxTootLength {
+func pack(r io.Reader) (string, int, error) {
+	var builder strings.Builder
+	buf := make([]byte, 512)
+
+	for {
+		n, err := r.Read(buf)
+		if err == io.EOF {
 			break
 		}
-		builder.WriteRune(r)
+		if err != nil {
+			return builder.String(), builder.Len(), err
+		}
+		if getTootLength(builder.String()+string(buf[:n])) > MaxTootLength {
+			break
+		}
+		builder.Write(buf[:n])
 	}
 
-	return builder.String()
+	io.Copy(io.Discard, r)
+	return builder.String(), builder.Len(), nil
 }
 
 func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
-	_, err := r.Client.PostStatus(ctx, &mastodon.Toot{
+	status, n, err := pack(io.MultiReader(strings.NewReader(fmt.Sprintf("@%s ", event.Acct)), event.Body))
+	if err != nil {
+		RepliedEventsErrorTotal.Inc()
+		return fmt.Errorf("failed to prepare reply (%v bytes): %w", n, err)
+	}
+	event.Body.Close()
+
+	_, err = r.Client.PostStatus(ctx, &mastodon.Toot{
 		InReplyToID: mastodon.ID(event.InReplyToID),
-		Status:      pack(fmt.Sprintf("@%s %s", event.Acct, event.Body)),
+		Status:      status,
 		Visibility:  event.Visibility,
 	})
 	if err != nil {
@@ -69,7 +97,7 @@ func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
 func (r *reply) SendError(ctx context.Context, event service.ReplyErrorEvent) error {
 	_, err := r.Client.PostStatus(ctx, &mastodon.Toot{
 		InReplyToID: mastodon.ID(event.InReplyToID),
-		Status:      pack(fmt.Sprintf("@%s 何かがおかしいよ（%s）", event.Acct, event.ActionName)),
+		Status:      fmt.Sprintf("@%s 何かがおかしいよ（%s）", event.Acct, event.ActionName),
 		Visibility:  event.Visibility,
 	})
 	if err != nil {

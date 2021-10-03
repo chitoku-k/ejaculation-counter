@@ -107,7 +107,7 @@ var _ = Describe("PyuUpdate", func() {
 				},
 				Content: "ぴゅっ♡",
 			})
-			Expect(actual).To(Equal(&service.IncrementEvent{
+			Expect(actual).To(Equal(service.IncrementEvent{
 				Year:  2006,
 				Month: 1,
 				Day:   2,

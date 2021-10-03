@@ -5,17 +5,18 @@ import (
 )
 
 type Packet interface {
-	Ack()
+	Tag() uint64
 }
 
-func NewTick(ack func()) Tick {
+func NewTick(tag uint64) Tick {
 	return Tick{
-		ack: ack,
+		tag: tag,
 	}
 }
 
 type Tick struct {
-	ack   func()
+	tag uint64
+
 	Year  int `json:"year"`
 	Month int `json:"month"`
 	Day   int `json:"day"`
@@ -25,18 +26,19 @@ func (t Tick) Name() string {
 	return "packets.tick"
 }
 
-func (t Tick) Ack() {
-	t.ack()
+func (t Tick) Tag() uint64 {
+	return t.tag
 }
 
-func NewMessage(ack func()) Message {
+func NewMessage(tag uint64) Message {
 	return Message{
-		ack: ack,
+		tag: tag,
 	}
 }
 
 type Message struct {
-	ack         func()
+	tag uint64
+
 	ID          string    `json:"id"`
 	Account     Account   `json:"account"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -67,6 +69,6 @@ func (m Message) Name() string {
 	return "packets.message"
 }
 
-func (m Message) Ack() {
-	m.ack()
+func (m Message) Tag() uint64 {
+	return m.tag
 }

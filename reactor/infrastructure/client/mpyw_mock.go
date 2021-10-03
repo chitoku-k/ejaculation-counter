@@ -6,6 +6,7 @@ package client
 
 import (
 	context "context"
+	io "io"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,10 +36,10 @@ func (m *MockMpyw) EXPECT() *MockMpywMockRecorder {
 }
 
 // Do mocks base method.
-func (m *MockMpyw) Do(ctx context.Context, targetURL string, count int) (MpywChallengeResult, error) {
+func (m *MockMpyw) Do(ctx context.Context, targetURL string, count int) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Do", ctx, targetURL, count)
-	ret0, _ := ret[0].(MpywChallengeResult)
+	ret0, _ := ret[0].(io.ReadCloser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -12,6 +12,7 @@ import (
 
 const (
 	separator = "--------"
+	layout    = "2006-01-02"
 )
 
 type Column struct {
@@ -111,7 +112,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 		&current,
 		`SELECT COUNT(*) FROM "counts" WHERE "user" = $1 AND "date" = $2`,
 		userID,
-		date.Format("2006-01-02"),
+		date.Format(layout),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to get current count: %w", err)
@@ -123,14 +124,14 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 			`UPDATE "counts" SET "count" = $1 WHERE "user" = $2 AND "date" = $3`,
 			count,
 			userID,
-			date.Format("2006-01-02"),
+			date.Format(layout),
 		)
 	} else {
 		_, err = d.Connection.ExecContext(
 			ctx,
 			`INSERT INTO "counts" ("user", "date", "count") VALUES ($1, $2, $3)`,
 			userID,
-			date.Format("2006-01-02"),
+			date.Format(layout),
 			count,
 		)
 	}

@@ -1,5 +1,9 @@
 package service
 
+import (
+	"io"
+)
+
 type Event interface {
 	Name() string
 }
@@ -7,11 +11,11 @@ type Event interface {
 type ReplyEvent struct {
 	InReplyToID string
 	Acct        string
-	Body        string
+	Body        io.ReadCloser
 	Visibility  string
 }
 
-func (*ReplyEvent) Name() string {
+func (ReplyEvent) Name() string {
 	return "events.reply"
 }
 
@@ -22,7 +26,7 @@ type ReplyErrorEvent struct {
 	Visibility  string
 }
 
-func (*ReplyErrorEvent) Name() string {
+func (ReplyErrorEvent) Name() string {
 	return "events.reply_error"
 }
 
@@ -32,7 +36,7 @@ type UpdateEvent struct {
 	Day   int
 }
 
-func (*UpdateEvent) Name() string {
+func (UpdateEvent) Name() string {
 	return "events.update"
 }
 
@@ -42,7 +46,7 @@ type IncrementEvent struct {
 	Day   int
 }
 
-func (*IncrementEvent) Name() string {
+func (IncrementEvent) Name() string {
 	return "events.increment"
 }
 
@@ -54,6 +58,6 @@ type AdministrationEvent struct {
 	Visibility  string
 }
 
-func (*AdministrationEvent) Name() string {
+func (AdministrationEvent) Name() string {
 	return "events.administration"
 }
