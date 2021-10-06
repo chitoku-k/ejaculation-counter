@@ -70,7 +70,7 @@ services:
         target: /etc/nginx/templates
 
   grafana:
-    image: grafana/grafana:7.5.10
+    image: grafana/grafana:7.5.11
     environment:
       TZ:
       GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
@@ -105,7 +105,7 @@ services:
         target: /var/lib/rabbitmq
 
   database:
-    image: postgres:13.3
+    image: postgres:14.0
     volumes:
       - type: bind
         source: ./database
