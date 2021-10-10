@@ -100,10 +100,7 @@ nginx + RabbitMQ + PostgreSQL + Go App で構成されています。
 ### ビルド
 
 ```sh
-$ docker buildx build .
-$ docker buildx build ./reactor
-$ docker buildx build ./supplier
-$ docker buildx build ./mq
+$ docker buildx bake -f ./docker-bake.hcl
 ```
 
 ## 開発環境

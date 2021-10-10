@@ -3,6 +3,7 @@ LICENSE
 README.md
 database
 doc
+docker-bake.hcl
 docker-compose.yml
 grafana.json
 mq
