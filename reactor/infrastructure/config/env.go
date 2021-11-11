@@ -31,6 +31,9 @@ type DB struct {
 	Username    string
 	Password    string
 	SSLMode     string
+	SSLCert     string
+	SSLKey      string
+	SSLRootCert string
 	MaxLifetime time.Duration
 }
 
@@ -59,7 +62,6 @@ func Get() (Environment, error) {
 		"DB_HOST":               &env.DB.Host,
 		"DB_DATABASE":           &env.DB.Database,
 		"DB_USERNAME":           &env.DB.Username,
-		"DB_PASSWORD":           &env.DB.Password,
 		"DB_SSL_MODE":           &env.DB.SSLMode,
 		"MASTODON_USER_ID":      &env.Mastodon.UserID,
 		"MASTODON_SERVER_URL":   &env.Mastodon.ServerURL,
@@ -78,7 +80,11 @@ func Get() (Environment, error) {
 	}
 
 	for k, v := range map[string]*string{
-		"LOG_LEVEL": &logLevel,
+		"DB_PASSWORD":      &env.DB.Password,
+		"DB_SSL_CERT":      &env.DB.SSLCert,
+		"DB_SSL_KEY":       &env.DB.SSLKey,
+		"DB_SSL_ROOT_CERT": &env.DB.SSLRootCert,
+		"LOG_LEVEL":        &logLevel,
 	} {
 		*v = os.Getenv(k)
 	}
