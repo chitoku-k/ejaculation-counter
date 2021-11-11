@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/application/server"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
@@ -43,7 +44,7 @@ func main() {
 		logrus.Fatalf("Failed to initialize DB: %v", err)
 	}
 
-	reader, err := queue.NewReader("packets_topic", "packets", "packets", env)
+	reader, err := queue.NewReader("ejaculation-counter.packets", "ejaculation-counter.packets.queue", "packets", env)
 	if err != nil {
 		logrus.Fatalf("Failed to initialize reader: %v", err)
 	}
@@ -100,6 +101,7 @@ func main() {
 				action.NewThrough(through, env),
 				action.NewDoublet(doublet, env),
 			},
+			time.Now,
 		)
 		ps.Execute(ctx, reader.Packets())
 

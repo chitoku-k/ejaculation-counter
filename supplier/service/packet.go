@@ -7,6 +7,7 @@ import (
 
 type Packet interface {
 	Name() string
+	Timestamp() time.Time
 	HashCode() int64
 }
 
@@ -20,6 +21,10 @@ func (t Tick) status() {}
 
 func (t Tick) Name() string {
 	return "packets.tick"
+}
+
+func (t Tick) Timestamp() time.Time {
+	return time.Date(t.Year, time.Month(t.Month), t.Day, 0, 0, 0, 0, time.Local)
 }
 
 func (t Tick) HashCode() int64 {
@@ -61,6 +66,10 @@ func (m Message) status() {}
 
 func (m Message) Name() string {
 	return "packets.message"
+}
+
+func (m Message) Timestamp() time.Time {
+	return m.CreatedAt
 }
 
 func (m Message) HashCode() int64 {
