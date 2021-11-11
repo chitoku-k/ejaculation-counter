@@ -78,6 +78,9 @@ DB_PASSWORD=
 
 # データベース SSL モード（disable/require/verify-ca/verify-full）
 DB_SSL_MODE=
+DB_SSL_CERT=/path/to/sslcert
+DB_SSL_KEY=/path/to/sslkey
+DB_SSL_ROOT_CERT=/path/to/sslrootcert
 
 # メッセージキュー 接続情報
 MQ_HOST=

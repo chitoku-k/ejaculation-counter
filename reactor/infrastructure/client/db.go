@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
@@ -42,14 +43,23 @@ type DB interface {
 }
 
 func NewDB(environment config.Environment) (DB, error) {
-	dsn := fmt.Sprintf(
-		"user=%s password=%s host=%s dbname=%s sslmode=%s",
-		environment.DB.Username,
-		environment.DB.Password,
-		environment.DB.Host,
-		environment.DB.Database,
-		environment.DB.SSLMode,
-	)
+	var params []string
+	for k, v := range map[string]string{
+		"user":        environment.DB.Username,
+		"password":    environment.DB.Password,
+		"host":        environment.DB.Host,
+		"dbname":      environment.DB.Database,
+		"sslmode":     environment.DB.SSLMode,
+		"sslcert":     environment.DB.SSLCert,
+		"sslkey":      environment.DB.SSLKey,
+		"sslrootcert": environment.DB.SSLRootCert,
+	} {
+		if v != "" {
+			params = append(params, fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+
+	dsn := strings.Join(params, " ")
 	conn, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to DB: %w", err)
