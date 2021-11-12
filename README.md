@@ -86,6 +86,9 @@ DB_SSL_ROOT_CERT=/path/to/sslrootcert
 MQ_HOST=
 MQ_USERNAME=
 MQ_PASSWORD=
+MQ_SSL_CERT=/path/to/sslcert
+MQ_SSL_KEY=/path/to/sslkey
+MQ_SSL_ROOT_CERT=/path/to/sslrootcert
 
 # 外部 API
 EXT_MPYW_API_URL=https://mpyw.hinanawi.net/api

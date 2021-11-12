@@ -2,11 +2,14 @@ package queue
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"net"
+	"os"
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
@@ -69,14 +72,36 @@ func NewWriter(
 }
 
 func (w *writer) dial(url string) (*amqp.Connection, net.Conn, error) {
+	tlsConfig := &tls.Config{}
+
+	if w.Environment.Queue.SSLCert != "" && w.Environment.Queue.SSLKey != "" {
+		cert, err := tls.LoadX509KeyPair(w.Environment.Queue.SSLCert, w.Environment.Queue.SSLKey)
+		if err != nil {
+			return nil, nil, err
+		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	if w.Environment.Queue.SSLRootCert != "" {
+		ca, err := os.ReadFile(w.Environment.Queue.SSLRootCert)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to read CA file for queue: %w", err)
+		}
+
+		tlsConfig.RootCAs = x509.NewCertPool()
+		tlsConfig.RootCAs.AppendCertsFromPEM(ca)
+	}
+
 	var nc net.Conn
 	conn, err := amqp.DialConfig(url, amqp.Config{
+		TLSClientConfig: tlsConfig,
 		Dial: func(network, addr string) (net.Conn, error) {
 			var err error
 			nc, err = amqp.DefaultDial(ConnectionTimeout)(network, addr)
 			return nc, err
 		},
 	})
+
 	return conn, nc, err
 }
 

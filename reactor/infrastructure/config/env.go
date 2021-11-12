@@ -44,9 +44,12 @@ type Mastodon struct {
 }
 
 type Queue struct {
-	Host     string
-	Username string
-	Password string
+	Host        string
+	Username    string
+	Password    string
+	SSLCert     string
+	SSLKey      string
+	SSLRootCert string
 }
 
 type External struct {
@@ -84,6 +87,9 @@ func Get() (Environment, error) {
 		"DB_SSL_CERT":      &env.DB.SSLCert,
 		"DB_SSL_KEY":       &env.DB.SSLKey,
 		"DB_SSL_ROOT_CERT": &env.DB.SSLRootCert,
+		"MQ_SSL_CERT":      &env.Queue.SSLCert,
+		"MQ_SSL_KEY":       &env.Queue.SSLKey,
+		"MQ_SSL_ROOT_CERT": &env.Queue.SSLRootCert,
 		"LOG_LEVEL":        &logLevel,
 	} {
 		*v = os.Getenv(k)
