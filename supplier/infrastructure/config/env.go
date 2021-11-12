@@ -24,9 +24,12 @@ type Mastodon struct {
 }
 
 type Queue struct {
-	Host     string
-	Username string
-	Password string
+	Host        string
+	Username    string
+	Password    string
+	SSLCert     string
+	SSLKey      string
+	SSLRootCert string
 }
 
 func Get() (Environment, error) {
@@ -51,7 +54,10 @@ func Get() (Environment, error) {
 	}
 
 	for k, v := range map[string]*string{
-		"LOG_LEVEL": &logLevel,
+		"MQ_SSL_CERT":      &env.Queue.SSLCert,
+		"MQ_SSL_KEY":       &env.Queue.SSLKey,
+		"MQ_SSL_ROOT_CERT": &env.Queue.SSLRootCert,
+		"LOG_LEVEL":        &logLevel,
 	} {
 		*v = os.Getenv(k)
 	}
