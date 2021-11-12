@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.5-0.20200302023913-3e91c76504df
 	github.com/microcosm-cc/bluemonday v1.0.16
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.16.0
+	github.com/onsi/gomega v1.17.0
 	github.com/prometheus/client_golang v1.11.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.8.1
