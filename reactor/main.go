@@ -112,7 +112,7 @@ func main() {
 	go func() {
 		through := service.NewThrough(hardcoding.NewThroughRepository())
 		doublet := service.NewDoublet(hardcoding.NewDoubletRepository())
-		engine := server.NewEngine(env.Port, through, doublet)
+		engine := server.NewEngine(env.Port, env.TLSCert, env.TLSKey, through, doublet)
 		err = engine.Start(ctx)
 		if err != nil {
 			logrus.Fatalf("Failed to start web server: %v", err)

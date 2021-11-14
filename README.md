@@ -54,6 +54,10 @@ MQ から取得したトゥートに対し、Mastodon でのリプライ送信�
 # ログレベル（trace/debug/info/warn/error/fatal/panic）
 LOG_LEVEL=
 
+# Web TLS 証明書（指定した場合は Web サーバーは HTTPS）
+TLS_CERT=/path/to/tls/cert
+TLS_KEY=/path/to/tls/key
+
 # DB ユーザー ID（数値）
 USER_ID=
 

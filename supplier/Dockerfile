@@ -10,10 +10,11 @@ RUN --mount=type=cache,target=/go \
     CGO_ENABLED=0 go build -ldflags='-s -w'
 
 FROM scratch AS production
-ENV GIN_MODE release
-ENV PORT 80
+ARG PORT=80
+ENV PORT=$PORT
+ENV GIN_MODE=release
 COPY --from=build /usr/src/supplier /supplier
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
-EXPOSE 80
+EXPOSE $PORT
 CMD ["/supplier"]
