@@ -31,6 +31,8 @@ jobs:
           files: docker-bake.hcl
           push: true
           set: |
+            supplier.args.PORT=443
+            reactor.args.PORT=443
             *.cache-from=type=local,src=/tmp/buildx-cache
             *.cache-to=type=local,mode=max,dest=/tmp/buildx-cache.new
       - name: Move cache

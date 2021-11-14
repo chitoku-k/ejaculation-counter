@@ -89,7 +89,7 @@ func main() {
 
 	wg.Add(1)
 	go func() {
-		engine := server.NewEngine(env.Port)
+		engine := server.NewEngine(env.Port, env.TLSCert, env.TLSKey)
 		err := engine.Start(ctx)
 		if err != nil {
 			logrus.Fatalf("Failed to start web server: %v", err)

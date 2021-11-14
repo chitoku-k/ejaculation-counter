@@ -15,6 +15,8 @@ type Environment struct {
 
 	LogLevel logrus.Level
 	Port     string
+	TLSCert  string
+	TLSKey   string
 }
 
 type Mastodon struct {
@@ -54,6 +56,8 @@ func Get() (Environment, error) {
 	}
 
 	for k, v := range map[string]*string{
+		"TLS_CERT":         &env.TLSCert,
+		"TLS_KEY":          &env.TLSKey,
 		"MQ_SSL_CERT":      &env.Queue.SSLCert,
 		"MQ_SSL_KEY":       &env.Queue.SSLKey,
 		"MQ_SSL_ROOT_CERT": &env.Queue.SSLRootCert,

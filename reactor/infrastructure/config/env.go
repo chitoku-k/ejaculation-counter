@@ -22,6 +22,8 @@ type Environment struct {
 
 	LogLevel logrus.Level
 	Port     string
+	TLSCert  string
+	TLSKey   string
 	UserID   int64
 }
 
@@ -83,6 +85,8 @@ func Get() (Environment, error) {
 	}
 
 	for k, v := range map[string]*string{
+		"TLS_CERT":         &env.TLSCert,
+		"TLS_KEY":          &env.TLSKey,
 		"DB_PASSWORD":      &env.DB.Password,
 		"DB_SSL_CERT":      &env.DB.SSLCert,
 		"DB_SSL_KEY":       &env.DB.SSLKey,
