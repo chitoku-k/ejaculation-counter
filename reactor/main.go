@@ -70,8 +70,8 @@ func main() {
 		}
 		rand.Seed(time.Now().Unix())
 		shindan := client.NewShindanmaker(c)
-		through := client.NewThrough(c)
-		doublet := client.NewDoublet(c)
+		through := hardcoding.NewThroughRepository()
+		doublet := hardcoding.NewDoubletRepository()
 		mpyw := client.NewMpyw(c)
 
 		mc := client.NewMastodon(env)

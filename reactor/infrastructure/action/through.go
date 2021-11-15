@@ -2,17 +2,14 @@ package action
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"math/rand"
-	"net"
-	"net/url"
 	"regexp"
 	"strconv"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
+	"github.com/chitoku-k/ejaculation-counter/reactor/repository"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -21,13 +18,13 @@ var (
 )
 
 type through struct {
-	Client      client.Through
+	Repository  repository.ThroughRepository
 	Environment config.Environment
 }
 
-func NewThrough(c client.Through, environment config.Environment) service.Action {
+func NewThrough(repository repository.ThroughRepository, environment config.Environment) service.Action {
 	return &through{
-		Client:      c,
+		Repository:  repository,
 		Environment: environment,
 	}
 }
@@ -51,17 +48,7 @@ func (t *through) Event(ctx context.Context, message service.Message) (service.E
 		count = 1
 	}
 
-	u := url.URL{
-		Scheme: "http",
-		Host:   net.JoinHostPort("localhost", t.Environment.Port),
-		Path:   "/through",
-	}
-
-	items, err := t.Client.Do(ctx, u.String())
-	if err != nil {
-		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
-	}
-
+	items := t.Repository.Get()
 	generator := func() string {
 		return items[rand.Intn(len(items))]
 	}

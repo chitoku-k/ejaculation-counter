@@ -2,13 +2,12 @@ package action_test
 
 import (
 	"context"
-	"errors"
 	"io"
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
+	"github.com/chitoku-k/ejaculation-counter/reactor/repository"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -18,21 +17,21 @@ import (
 var _ = Describe("Through", func() {
 	var (
 		ctrl    *gomock.Controller
-		c       *client.MockThrough
+		repo    *repository.MockThroughRepository
 		env     config.Environment
 		through service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		c = client.NewMockThrough(ctrl)
+		repo = repository.NewMockThroughRepository(ctrl)
 		env = config.Environment{
 			Port: "80",
 			Mastodon: config.Mastodon{
 				UserID: "1",
 			},
 		}
-		through = action.NewThrough(c, env)
+		through = action.NewThrough(repo, env)
 	})
 
 	AfterEach(func() {
@@ -173,136 +172,110 @@ var _ = Describe("Through", func() {
 	})
 
 	Describe("Event()", func() {
-		Context("fetching fails", func() {
+		Context("with count", func() {
 			BeforeEach(func() {
-				c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
-					client.ThroughResult{},
-					errors.New(`failed to fetch challenge result: Get "http://localhost:80/through": dial tcp [::1]:80: connect: connection refused`),
+				repo.EXPECT().Get().Return(
+					[]string{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
 				)
 			})
 
-			It("returns an error", func() {
-				_, index, err := through.Event(context.Background(), service.Message{
-					IsReblog: false,
-					Account: service.Account{
-						DisplayName: "テスト",
+			Context("toot does not start with name", func() {
+				It("returns an event", func() {
+					event, index, err := through.Event(context.Background(), service.Message{
+						ID:       "1",
+						IsReblog: false,
+						Account: service.Account{
+							DisplayName: "テスト",
+							Acct:        "@test",
+						},
+						Content:    "テスト。10 連駿河茶。",
+						Visibility: "private",
+					})
+					Expect(event).To(ReplyEventEqual(service.ReplyEvent{
+						InReplyToID: "1",
 						Acct:        "@test",
-					},
-					Content: "駿河茶",
+						Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
+						Visibility:  "private",
+					}))
+					Expect(index).To(Equal(12))
+					Expect(err).NotTo(HaveOccurred())
 				})
-				Expect(index).To(Equal(0))
-				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "http://localhost:80/through": dial tcp [::1]:80: connect: connection refused`))
+			})
+
+			Context("toot starts with name", func() {
+				It("returns an event", func() {
+					event, index, err := through.Event(context.Background(), service.Message{
+						ID:       "1",
+						IsReblog: false,
+						Account: service.Account{
+							DisplayName: "テスト",
+							Acct:        "@test",
+						},
+						Content:    "10 連駿河茶",
+						Visibility: "private",
+					})
+					Expect(event).To(ReplyEventEqual(service.ReplyEvent{
+						InReplyToID: "1",
+						Acct:        "@test",
+						Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
+						Visibility:  "private",
+					}))
+					Expect(index).To(Equal(0))
+					Expect(err).NotTo(HaveOccurred())
+				})
 			})
 		})
 
-		Context("fetching succeeds", func() {
-			Context("with count", func() {
-				BeforeEach(func() {
-					c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
-						client.ThroughResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
-						nil,
-					)
-				})
+		Context("without count", func() {
+			BeforeEach(func() {
+				repo.EXPECT().Get().Return(
+					[]string{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
+				)
+			})
 
-				Context("toot does not start with name", func() {
-					It("returns an event", func() {
-						event, index, err := through.Event(context.Background(), service.Message{
-							ID:       "1",
-							IsReblog: false,
-							Account: service.Account{
-								DisplayName: "テスト",
-								Acct:        "@test",
-							},
-							Content:    "テスト。10 連駿河茶。",
-							Visibility: "private",
-						})
-						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
-							InReplyToID: "1",
+			Context("toot does not start with name", func() {
+				It("returns an event", func() {
+					event, index, err := through.Event(context.Background(), service.Message{
+						ID:       "1",
+						IsReblog: false,
+						Account: service.Account{
+							DisplayName: "テスト",
 							Acct:        "@test",
-							Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
-							Visibility:  "private",
-						}))
-						Expect(index).To(Equal(12))
-						Expect(err).NotTo(HaveOccurred())
+						},
+						Content:    "テスト。10 連駿河茶。",
+						Visibility: "private",
 					})
-				})
-
-				Context("toot starts with name", func() {
-					It("returns an event", func() {
-						event, index, err := through.Event(context.Background(), service.Message{
-							ID:       "1",
-							IsReblog: false,
-							Account: service.Account{
-								DisplayName: "テスト",
-								Acct:        "@test",
-							},
-							Content:    "10 連駿河茶",
-							Visibility: "private",
-						})
-						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
-							InReplyToID: "1",
-							Acct:        "@test",
-							Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
-							Visibility:  "private",
-						}))
-						Expect(index).To(Equal(0))
-						Expect(err).NotTo(HaveOccurred())
-					})
+					Expect(event).To(ReplyEventEqual(service.ReplyEvent{
+						InReplyToID: "1",
+						Acct:        "@test",
+						Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
+						Visibility:  "private",
+					}))
+					Expect(index).To(Equal(12))
+					Expect(err).NotTo(HaveOccurred())
 				})
 			})
 
-			Context("without count", func() {
-				BeforeEach(func() {
-					c.EXPECT().Do(context.Background(), "http://localhost:80/through").Return(
-						client.ThroughResult{"診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果", "診断結果"},
-						nil,
-					)
-				})
-
-				Context("toot does not start with name", func() {
-					It("returns an event", func() {
-						event, index, err := through.Event(context.Background(), service.Message{
-							ID:       "1",
-							IsReblog: false,
-							Account: service.Account{
-								DisplayName: "テスト",
-								Acct:        "@test",
-							},
-							Content:    "テスト。10 連駿河茶。",
-							Visibility: "private",
-						})
-						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
-							InReplyToID: "1",
+			Context("toot starts with name", func() {
+				It("returns an event", func() {
+					event, index, err := through.Event(context.Background(), service.Message{
+						ID:       "1",
+						IsReblog: false,
+						Account: service.Account{
+							DisplayName: "テスト",
 							Acct:        "@test",
-							Body:        io.NopCloser(strings.NewReader("診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果\n診断結果")),
-							Visibility:  "private",
-						}))
-						Expect(index).To(Equal(12))
-						Expect(err).NotTo(HaveOccurred())
+						},
+						Content:    "駿河茶",
+						Visibility: "private",
 					})
-				})
-
-				Context("toot starts with name", func() {
-					It("returns an event", func() {
-						event, index, err := through.Event(context.Background(), service.Message{
-							ID:       "1",
-							IsReblog: false,
-							Account: service.Account{
-								DisplayName: "テスト",
-								Acct:        "@test",
-							},
-							Content:    "駿河茶",
-							Visibility: "private",
-						})
-						Expect(event).To(ReplyEventEqual(service.ReplyEvent{
-							InReplyToID: "1",
-							Acct:        "@test",
-							Body:        io.NopCloser(strings.NewReader("診断結果")),
-							Visibility:  "private",
-						}))
-						Expect(index).To(Equal(0))
-						Expect(err).NotTo(HaveOccurred())
-					})
+					Expect(event).To(ReplyEventEqual(service.ReplyEvent{
+						InReplyToID: "1",
+						Acct:        "@test",
+						Body:        io.NopCloser(strings.NewReader("診断結果")),
+						Visibility:  "private",
+					}))
+					Expect(index).To(Equal(0))
+					Expect(err).NotTo(HaveOccurred())
 				})
 			})
 		})
