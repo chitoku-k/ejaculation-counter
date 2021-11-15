@@ -2,17 +2,14 @@ package action
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"math/rand"
-	"net"
-	"net/url"
 	"regexp"
 	"strconv"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
+	"github.com/chitoku-k/ejaculation-counter/reactor/repository"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -21,28 +18,28 @@ var (
 )
 
 type doublet struct {
-	Client      client.Doublet
+	Repository  repository.DoubletRepository
 	Environment config.Environment
 }
 
-func NewDoublet(c client.Doublet, environment config.Environment) service.Action {
+func NewDoublet(repository repository.DoubletRepository, environment config.Environment) service.Action {
 	return &doublet{
-		Client:      c,
+		Repository:  repository,
 		Environment: environment,
 	}
 }
 
-func (t *doublet) Name() string {
+func (d *doublet) Name() string {
 	return "二重語ガチャ"
 }
 
-func (t *doublet) Target(message service.Message) bool {
+func (d *doublet) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		(message.Account.ID != t.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		(message.Account.ID != d.Environment.Mastodon.UserID || message.InReplyToID == "") &&
 		DoubletRegex.MatchString(message.Content)
 }
 
-func (t *doublet) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
+func (d *doublet) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := DoubletRegex.FindStringIndex(message.Content)
 	matches := DoubletRegex.FindStringSubmatch(message.Content)
 
@@ -51,17 +48,7 @@ func (t *doublet) Event(ctx context.Context, message service.Message) (service.E
 		count = 1
 	}
 
-	u := url.URL{
-		Scheme: "http",
-		Host:   net.JoinHostPort("localhost", t.Environment.Port),
-		Path:   "/doublet",
-	}
-
-	items, err := t.Client.Do(ctx, u.String())
-	if err != nil {
-		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
-	}
-
+	items := d.Repository.Get()
 	generator := func() string {
 		return items[rand.Intn(len(items))]
 	}
