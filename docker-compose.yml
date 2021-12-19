@@ -70,12 +70,11 @@ services:
         target: /etc/nginx/templates
 
   grafana:
-    image: grafana/grafana:7.5.11
+    build:
+      context: ./grafana
     environment:
       TZ:
-      GF_INSTALL_PLUGINS: neocat-cal-heatmap-panel
       GF_AUTH_ANONYMOUS_ENABLED: 1
-      GF_PATHS_PROVISIONING: conf/provisioning
       GF_SECURITY_ALLOW_EMBEDDING: 1
       GF_SERVER_ENABLE_GZIP: 1
       GF_SERVER_SERVE_FROM_SUB_PATH: 1
@@ -88,10 +87,10 @@ services:
     volumes:
       - type: bind
         source: ./grafana/dashboards
-        target: /usr/share/grafana/conf/provisioning/dashboards
+        target: /etc/grafana/provisioning/dashboards
       - type: bind
         source: ./grafana/datasources
-        target: /usr/share/grafana/conf/provisioning/datasources
+        target: /etc/grafana/provisioning/datasources
 
   mq:
     build:

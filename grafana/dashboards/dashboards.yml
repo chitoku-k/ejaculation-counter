@@ -5,4 +5,4 @@ providers:
     type: file
     allowUiUpdates: true
     options:
-      path: conf/provisioning/dashboards
+      path: /etc/grafana/provisioning/dashboards/dashboards
