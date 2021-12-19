@@ -12,6 +12,11 @@ target "reactor" {
     tags = ["container.chitoku.jp/chitoku-k/ejaculation-counter/reactor"]
 }
 
+target "grafana" {
+    context = "./grafana"
+    tags = ["container.chitoku.jp/chitoku-k/ejaculation-counter/grafana"]
+}
+
 target "mq" {
     context = "./mq"
     tags = ["container.chitoku.jp/chitoku-k/ejaculation-counter/mq"]
