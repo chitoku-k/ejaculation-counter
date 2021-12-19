@@ -50,8 +50,8 @@ updates:
   open-pull-requests-limit: 99
   ignore:
   - dependency-name: grafana/grafana
-    versions:
-    - "~> 8.0.0"
+    update-types:
+    - version-update:semver-major
 - package-ecosystem: docker
   directory: "/mq"
   schedule:
