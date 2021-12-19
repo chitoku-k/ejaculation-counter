@@ -1,5 +1,5 @@
 group "default" {
-    targets = ["supplier", "reactor", "mq", "web"]
+    targets = ["supplier", "reactor", "grafana", "mq", "web"]
 }
 
 target "supplier" {
