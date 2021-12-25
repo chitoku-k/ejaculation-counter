@@ -16,6 +16,10 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
+const (
+	UserAgent = "Mozilla/5.0 (compatible)"
+)
+
 var (
 	NameRegex          = regexp.MustCompile(`[$\\]{?\d+`)
 	ShindanNameRegex   = regexp.MustCompile(`[@＠].+|[\(（].+[\)）]`)
@@ -51,6 +55,8 @@ func (s *shindanmaker) token(ctx context.Context, targetURL string) (string, err
 	if err != nil {
 		return "", fmt.Errorf("failed to create sindan page request: %w", err)
 	}
+
+	req.Header.Set("User-Agent", UserAgent)
 
 	res, err := s.Client.Do(req)
 	if err != nil {
@@ -93,6 +99,7 @@ func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (s
 		return "", fmt.Errorf("failed to create shindan result request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", UserAgent)
 
 	res, err := s.Client.Do(req)
 	if err != nil {
