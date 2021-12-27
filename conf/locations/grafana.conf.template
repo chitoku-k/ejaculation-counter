@@ -1,0 +1,5 @@
+# vim: set ft=nginx sw=4:
+
+location /grafana {
+    proxy_pass http://$GF_HOST:3000;
+}

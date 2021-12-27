@@ -1,0 +1,9 @@
+# vim: set ft=nginx sw=4:
+
+location /through {
+    proxy_pass http://$REACTOR_HOST:80;
+}
+
+location /doublet {
+    proxy_pass http://$REACTOR_HOST:80;
+}
