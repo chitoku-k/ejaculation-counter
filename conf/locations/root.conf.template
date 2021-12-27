@@ -1,0 +1,11 @@
+# vim: set ft=nginx sw=4:
+
+location / {
+    try_files $uri $uri/index.html =404;
+}
+
+location /healthz {
+    default_type text/plain;
+    access_log off;
+    return 200 "OK";
+}

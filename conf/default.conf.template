@@ -19,25 +19,5 @@ server {
     gzip_vary on;
     gzip_types text/css application/javascript application/json text/plain font/woff font/woff2 image/svg+xml application/octet-stream;
 
-    location / {
-        try_files $uri $uri/index.html =404;
-    }
-
-    location /through {
-        proxy_pass http://$REACTOR_HOST:80;
-    }
-
-    location /doublet {
-        proxy_pass http://$REACTOR_HOST:80;
-    }
-
-    location /grafana {
-        proxy_pass http://$GF_HOST:3000;
-    }
-
-    location /healthz {
-        default_type text/plain;
-        access_log off;
-        return 200 "OK";
-    }
+    include /etc/nginx/conf.d/locations/*.conf;
 }
