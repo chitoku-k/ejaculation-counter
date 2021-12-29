@@ -80,6 +80,7 @@ services:
       GF_SERVER_SERVE_FROM_SUB_PATH: 1
       GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       GF_SERVER_DOMAIN: grafana
+      POSTGRES_URL: database
       POSTGRES_DB: ejaculation
       POSTGRES_USER: shiko
       POSTGRES_PASSWORD: shiko
