@@ -7,7 +7,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/mattn/go-mastodon v0.0.5-0.20200302023913-3e91c76504df
-	github.com/microcosm-cc/bluemonday v1.0.16
+	github.com/microcosm-cc/bluemonday v1.0.17
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
 	github.com/prometheus/client_golang v1.11.0
