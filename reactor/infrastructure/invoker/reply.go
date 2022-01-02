@@ -51,8 +51,10 @@ func getTootLength(s string) int {
 }
 
 func pack(r io.Reader) (string, int, error) {
-	var builder strings.Builder
 	buf := make([]byte, 512)
+
+	var builder strings.Builder
+	builder.Grow(1024)
 
 	for {
 		n, err := r.Read(buf)
@@ -68,17 +70,20 @@ func pack(r io.Reader) (string, int, error) {
 		builder.Write(buf[:n])
 	}
 
-	io.Copy(io.Discard, r)
 	return builder.String(), builder.Len(), nil
 }
 
 func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
+	defer func() {
+		io.Copy(io.Discard, event.Body)
+		event.Body.Close()
+	}()
+
 	status, n, err := pack(io.MultiReader(strings.NewReader(fmt.Sprintf("@%s ", event.Acct)), event.Body))
 	if err != nil {
 		RepliedEventsErrorTotal.Inc()
 		return fmt.Errorf("failed to prepare reply (%v bytes): %w", n, err)
 	}
-	event.Body.Close()
 
 	_, err = r.Client.PostStatus(ctx, &mastodon.Toot{
 		InReplyToID: mastodon.ID(event.InReplyToID),
