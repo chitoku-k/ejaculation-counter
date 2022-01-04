@@ -50,6 +50,10 @@ func (as *avShindanmaker) Event(ctx context.Context, message service.Message) (s
 	index := AVRegex.FindStringSubmatchIndex(message.Content)
 	matches := AVRegex.FindStringSubmatch(message.Content)
 
+	if index == nil || matches == nil {
+		return nil, 0, service.NoMatchError
+	}
+
 	result, err := as.Client.Do(ctx, matches[1], "https://shindanmaker.com/a/794363")
 	if err != nil {
 		return nil, index[4], fmt.Errorf("failed to create event: %w", err)
