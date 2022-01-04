@@ -55,12 +55,15 @@ func NewUpdate(
 
 func parse(account mastodon.Account) summary {
 	matches := DisplayNameRegex.FindStringSubmatch(account.DisplayName)
-
-	name := matches[1]
-	if name == "" {
-		name = account.DisplayName
+	if matches == nil || matches[1] == "" {
+		return summary{
+			Name:      account.DisplayName,
+			Yesterday: 0,
+			Today:     0,
+		}
 	}
 
+	name := matches[1]
 	yesterday, _ := strconv.Atoi(matches[2])
 	today, _ := strconv.Atoi(matches[3])
 

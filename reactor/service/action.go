@@ -2,7 +2,14 @@
 
 package service
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
+
+var (
+	NoMatchError = fmt.Errorf("no matches found")
+)
 
 type actionResult struct {
 	Event Event

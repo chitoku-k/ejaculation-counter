@@ -36,6 +36,10 @@ func (d *db) Event(ctx context.Context, message service.Message) (service.Event,
 	index := DBRegex.FindStringIndex(message.Content)
 	matches := DBRegex.FindStringSubmatch(message.Content)
 
+	if index == nil || matches == nil {
+		return nil, 0, service.NoMatchError
+	}
+
 	event := service.AdministrationEvent{
 		InReplyToID: message.ID,
 		Acct:        message.Account.Acct,

@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	AVRegex = regexp.MustCompile(`([^,.、。，．]+?)\s*(?:くん|ちゃん)?の\s*(AV)`)
+	AVRegex = regexp.MustCompile(`([\p{L}\p{N}\p{Zs}]+?)\s*(?:くん|ちゃん)?の\s*(AV)\b`)
 )
 
 type avShindanmaker struct {
@@ -49,6 +49,10 @@ func (as *avShindanmaker) Target(message service.Message) bool {
 func (as *avShindanmaker) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := AVRegex.FindStringSubmatchIndex(message.Content)
 	matches := AVRegex.FindStringSubmatch(message.Content)
+
+	if index == nil || matches == nil {
+		return nil, 0, service.NoMatchError
+	}
 
 	result, err := as.Client.Do(ctx, matches[1], "https://shindanmaker.com/a/794363")
 	if err != nil {
