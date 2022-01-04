@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	AVRegex = regexp.MustCompile(`([^,.、。，．]+?)\s*(?:くん|ちゃん)?の\s*(AV)`)
+	AVRegex = regexp.MustCompile(`([\p{L}\p{N}\p{Zs}]+?)\s*(?:くん|ちゃん)?の\s*(AV)\b`)
 )
 
 type avShindanmaker struct {
