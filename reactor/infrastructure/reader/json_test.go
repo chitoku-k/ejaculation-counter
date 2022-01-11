@@ -6,7 +6,7 @@ import (
 	"testing/iotest"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

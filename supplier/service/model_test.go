@@ -2,7 +2,7 @@ package service_test
 
 import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

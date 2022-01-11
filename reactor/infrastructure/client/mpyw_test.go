@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 )
