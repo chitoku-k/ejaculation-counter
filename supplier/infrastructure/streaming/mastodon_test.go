@@ -14,8 +14,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
 	mast "github.com/mattn/go-mastodon"
-	"github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -115,7 +114,7 @@ var _ = Describe("Mastodon", func() {
 					It("eventually exits", func() {
 						actual := mastodon.Statuses()
 						go func() {
-							defer ginkgo.GinkgoRecover()
+							defer GinkgoRecover()
 
 							err := mastodon.Run(ctx)
 							Expect(err).To(Equal(context.Canceled))
@@ -169,7 +168,7 @@ var _ = Describe("Mastodon", func() {
 					It("eventually exits", func() {
 						actual := mastodon.Statuses()
 						go func() {
-							defer ginkgo.GinkgoRecover()
+							defer GinkgoRecover()
 
 							err := mastodon.Run(ctx)
 							Expect(err).To(Equal(context.Canceled))
@@ -228,7 +227,7 @@ var _ = Describe("Mastodon", func() {
 						It("sends disconnection and eventually exits", func() {
 							actual := mastodon.Statuses()
 							go func() {
-								defer ginkgo.GinkgoRecover()
+								defer GinkgoRecover()
 
 								err := mastodon.Run(ctx)
 								Expect(err).To(Equal(context.Canceled))
@@ -287,7 +286,7 @@ var _ = Describe("Mastodon", func() {
 						It("sends disconnection and eventually exits", func() {
 							actual := mastodon.Statuses()
 							go func() {
-								defer ginkgo.GinkgoRecover()
+								defer GinkgoRecover()
 
 								err := mastodon.Run(ctx)
 								Expect(err).To(Equal(context.Canceled))
@@ -339,7 +338,7 @@ var _ = Describe("Mastodon", func() {
 						It("eventually exits", func() {
 							actual := mastodon.Statuses()
 							go func() {
-								defer ginkgo.GinkgoRecover()
+								defer GinkgoRecover()
 
 								err := mastodon.Run(ctx)
 								Expect(err).To(Equal(context.Canceled))
@@ -387,7 +386,7 @@ var _ = Describe("Mastodon", func() {
 							It("sends error and eventually exits", func() {
 								actual := mastodon.Statuses()
 								go func() {
-									defer ginkgo.GinkgoRecover()
+									defer GinkgoRecover()
 
 									err := mastodon.Run(ctx)
 									Expect(err).To(Equal(context.Canceled))
@@ -470,7 +469,7 @@ var _ = Describe("Mastodon", func() {
 							It("sends status and eventually exits", func() {
 								actual := mastodon.Statuses()
 								go func() {
-									defer ginkgo.GinkgoRecover()
+									defer GinkgoRecover()
 
 									err := mastodon.Run(ctx)
 									Expect(err).To(Equal(context.Canceled))
@@ -541,7 +540,7 @@ var _ = Describe("Mastodon", func() {
 							It("sends error and eventually exits", func() {
 								actual := mastodon.Statuses()
 								go func() {
-									defer ginkgo.GinkgoRecover()
+									defer GinkgoRecover()
 
 									err := mastodon.Run(ctx)
 									Expect(err).To(Equal(context.Canceled))
@@ -626,7 +625,7 @@ var _ = Describe("Mastodon", func() {
 							It("sends status and eventually exits", func() {
 								actual := mastodon.Statuses()
 								go func() {
-									defer ginkgo.GinkgoRecover()
+									defer GinkgoRecover()
 
 									err := mastodon.Run(ctx)
 									Expect(err).To(Equal(context.Canceled))
@@ -707,7 +706,7 @@ var _ = Describe("Mastodon", func() {
 					It("eventually exits", func() {
 						actual := mastodon.Statuses()
 						go func() {
-							defer ginkgo.GinkgoRecover()
+							defer GinkgoRecover()
 
 							err := mastodon.Run(ctx)
 							Expect(err).To(Equal(context.Canceled))
@@ -782,7 +781,7 @@ var _ = Describe("Mastodon", func() {
 					It("eventually exits", func() {
 						actual := mastodon.Statuses()
 						go func() {
-							defer ginkgo.GinkgoRecover()
+							defer GinkgoRecover()
 
 							err := mastodon.Run(ctx)
 							Expect(err).To(Equal(context.Canceled))
@@ -875,7 +874,7 @@ var _ = Describe("Mastodon", func() {
 					It("eventually exits", func() {
 						actual := mastodon.Statuses()
 						go func() {
-							defer ginkgo.GinkgoRecover()
+							defer GinkgoRecover()
 
 							err := mastodon.Run(ctx)
 							Expect(err).To(Equal(context.Canceled))
