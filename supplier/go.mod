@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.5-0.20200302023913-3e91c76504df
 	github.com/microcosm-cc/bluemonday v1.0.17
 	github.com/onsi/ginkgo/v2 v2.1.1
-	github.com/onsi/gomega v1.17.0
+	github.com/onsi/gomega v1.18.1
 	github.com/prometheus/client_golang v1.12.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.8.1
@@ -34,7 +34,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
