@@ -1,6 +1,6 @@
 module github.com/chitoku-k/ejaculation-counter/reactor
 
-go 1.17
+go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.7.7
@@ -14,6 +14,7 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
+	golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 )

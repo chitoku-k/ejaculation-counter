@@ -18,7 +18,7 @@ const (
 
 type Column struct {
 	Name  string
-	Value interface{}
+	Value any
 }
 
 func NewColumn(name string) *Column {
@@ -95,7 +95,7 @@ func (d *db) Query(ctx context.Context, q string) ([]string, error) {
 		}
 
 		var row []*Column
-		var values []interface{}
+		var values []any
 		for _, column := range columns {
 			c := NewColumn(column)
 			row = append(row, c)
