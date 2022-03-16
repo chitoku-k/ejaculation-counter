@@ -23,7 +23,7 @@ type ReplyEventEqualMatcher struct {
 	Expected service.ReplyEvent
 }
 
-func (matcher *ReplyEventEqualMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *ReplyEventEqualMatcher) Match(actual any) (success bool, err error) {
 	actualReplyEvent, ok := actual.(service.ReplyEvent)
 	if !ok {
 		return false, fmt.Errorf("ReplyEventEqual matcher expects a reply event.  Got:\n%s", format.Object(actual, 1))
@@ -43,11 +43,11 @@ func (matcher *ReplyEventEqualMatcher) Match(actual interface{}) (success bool, 
 	return reflect.DeepEqual(actualReplyEvent, matcher.Expected), nil
 }
 
-func (matcher *ReplyEventEqualMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *ReplyEventEqualMatcher) FailureMessage(actual any) (message string) {
 	return format.Message(actual, "to equal", matcher.Expected)
 }
 
-func (matcher *ReplyEventEqualMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *ReplyEventEqualMatcher) NegatedFailureMessage(actual any) (message string) {
 	return format.Message(actual, "not to equal", matcher.Expected)
 }
 
