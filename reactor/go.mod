@@ -9,14 +9,14 @@ require (
 	github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
 	github.com/lib/pq v1.10.5
 	github.com/mattn/go-mastodon v0.0.4
-	github.com/onsi/ginkgo/v2 v2.1.3
+	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
 	golang.org/x/exp v0.0.0-20220314205449-43aec2f8a4e7
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
+	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8
 )
 
 require (
