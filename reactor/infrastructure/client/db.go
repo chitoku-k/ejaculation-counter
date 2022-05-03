@@ -120,7 +120,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 	err := d.Connection.GetContext(
 		ctx,
 		&current,
-		`SELECT COUNT(*) FROM "counts" WHERE "user" = $1 AND "date" = $2`,
+		`SELECT COUNT(*) FROM "counts" WHERE "user_id" = $1 AND "date" = $2`,
 		userID,
 		date.Format(layout),
 	)
@@ -131,7 +131,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 	if current > 0 {
 		_, err = d.Connection.ExecContext(
 			ctx,
-			`UPDATE "counts" SET "count" = $1 WHERE "user" = $2 AND "date" = $3`,
+			`UPDATE "counts" SET "count" = $1 WHERE "user_id" = $2 AND "date" = $3`,
 			count,
 			userID,
 			date.Format(layout),
@@ -139,7 +139,7 @@ func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, coun
 	} else {
 		_, err = d.Connection.ExecContext(
 			ctx,
-			`INSERT INTO "counts" ("user", "date", "count") VALUES ($1, $2, $3)`,
+			`INSERT INTO "counts" ("user_id", "date", "count") VALUES ($1, $2, $3)`,
 			userID,
 			date.Format(layout),
 			count,
