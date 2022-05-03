@@ -89,7 +89,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": false,
-          "rawSql": "SELECT\n  count AS \"time\",\n  count\nFROM counts\nWHERE\n  \"user\" = 1\nORDER BY 1",
+          "rawSql": "SELECT\n  count AS \"time\",\n  count\nFROM counts\nWHERE\n  \"user_id\" = 1\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -109,7 +109,7 @@
               "datatype": "int4",
               "name": "",
               "params": [
-                "\"user\"",
+                "\"user_id\"",
                 "=",
                 "1"
               ],
@@ -192,7 +192,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": false,
-          "rawSql": "SELECT\n  date AS \"time\",\n  count\nFROM counts\nWHERE\n  $__timeFilter(date) AND\n  \"user\" = 1\nORDER BY 1",
+          "rawSql": "SELECT\n  date AS \"time\",\n  count\nFROM counts\nWHERE\n  $__timeFilter(date) AND\n  \"user_id\" = 1\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -217,7 +217,7 @@
               "datatype": "int4",
               "name": "",
               "params": [
-                "\"user\"",
+                "\"user_id\"",
                 "=",
                 "1"
               ],
@@ -285,7 +285,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  SUM(\"count\") AS \"count\",\n  NOW() AS \"time\"\nFROM \"counts\"\nWHERE $__timeFilter(\"date\") AND \"user\" = 1\n",
+          "rawSql": "SELECT\n  SUM(\"count\") AS \"count\",\n  NOW() AS \"time\"\nFROM \"counts\"\nWHERE $__timeFilter(\"date\") AND \"user_id\" = 1\n",
           "refId": "A",
           "select": [
             [
@@ -393,7 +393,7 @@
               "datatype": "int",
               "name": "",
               "params": [
-                "user",
+                "user_id",
                 "=",
                 "1"
               ],
