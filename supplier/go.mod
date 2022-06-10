@@ -3,7 +3,7 @@ module github.com/chitoku-k/ejaculation-counter/supplier
 go 1.18
 
 require (
-	github.com/gin-gonic/gin v1.8.0
+	github.com/gin-gonic/gin v1.8.1
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/mattn/go-mastodon v0.0.5-0.20200302023913-3e91c76504df
