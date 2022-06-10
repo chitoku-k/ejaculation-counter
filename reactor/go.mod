@@ -3,7 +3,7 @@ module github.com/chitoku-k/ejaculation-counter/reactor
 go 1.18
 
 require (
-	github.com/gin-gonic/gin v1.8.0
+	github.com/gin-gonic/gin v1.8.1
 	github.com/golang/mock v1.6.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
