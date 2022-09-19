@@ -88,6 +88,7 @@ func main() {
 				action.NewMpyw(mpyw, env),
 				action.NewAVShindanmaker(shindan, env),
 				action.NewBattleChimpoShindanmaker(shindan, env),
+				action.NewBlueArchiveEcchiGameShindanmaker(shindan, env),
 				action.NewChimpoChallengeShindanmaker(shindan, env),
 				action.NewChimpoInsertionChallengeShindanmaker(shindan, env),
 				action.NewChimpoMatchingShindanmaker(shindan, env),
