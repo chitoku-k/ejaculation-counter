@@ -9,7 +9,7 @@ require (
 	github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-mastodon v0.0.5
-	github.com/onsi/ginkgo/v2 v2.4.0
+	github.com/onsi/ginkgo/v2 v2.5.0
 	github.com/onsi/gomega v1.24.0
 	github.com/prometheus/client_golang v1.13.1
 	github.com/sirupsen/logrus v1.9.0
