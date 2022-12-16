@@ -139,4 +139,4 @@ $ COMPOSE_DOCKER_CLI_BUILD=1 \
 `GET /metrics`
 
 [workflow-link]:    https://github.com/chitoku-k/ejaculation-counter/actions?query=branch:master
-[workflow-badge]:   https://img.shields.io/github/workflow/status/chitoku-k/ejaculation-counter/CI%20Workflow/master.svg?style=flat-square
+[workflow-badge]:   https://img.shields.io/github/actions/workflow/status/chitoku-k/ejaculation-counter/ci.yml?branch=master&style=flat-square
