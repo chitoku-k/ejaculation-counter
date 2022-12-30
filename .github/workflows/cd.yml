@@ -48,7 +48,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
       - name: Set context
-        uses: azure/k8s-set-context@v1
+        uses: azure/k8s-set-context@v3
         with:
           method: service-account
           k8s-url: https://k8s.chitoku.jp
