@@ -55,7 +55,7 @@ services:
         target: /usr/src/app
 
   web:
-    image: nginx:1.21
+    image: nginx:1.23
     ports:
       - "${COUNTER_PORT-8080}:80"
     environment:
@@ -105,7 +105,7 @@ services:
         target: /var/lib/rabbitmq
 
   database:
-    image: postgres:14.2
+    image: postgres:15.1
     volumes:
       - type: bind
         source: ./database
