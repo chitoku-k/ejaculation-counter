@@ -286,7 +286,7 @@ func (w *writer) Publish(ctx context.Context, packet service.Packet) error {
 		QueuedMessageErrorTotal.Inc()
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("failed to publish message (%v): %w", ctx.Err(), err)
+			return fmt.Errorf("failed to publish message (%w): %w", ctx.Err(), err)
 
 		case w.Queue <- packet:
 			return fmt.Errorf("failed to publish message (requeued): %w", err)
