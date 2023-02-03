@@ -75,7 +75,7 @@ func parse(account mastodon.Account) summary {
 }
 
 func message(date time.Time, summary summary) string {
-	status := date.Format("2006/01/02 ")
+	status := date.Format(time.DateOnly + " ")
 
 	if summary.Yesterday == summary.Today {
 		status += "も"
