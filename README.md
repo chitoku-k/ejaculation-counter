@@ -111,19 +111,15 @@ nginx + RabbitMQ + PostgreSQL + Go App で構成されています。
 ### ビルド
 
 ```sh
-$ docker buildx bake -f ./docker-bake.hcl
+$ docker buildx bake
 ```
 
 ## 開発環境
 
-Docker Compose のインストールが必要です。
-
 ### 実行
 
 ```sh
-$ COMPOSE_DOCKER_CLI_BUILD=1 \
-  DOCKER_BUILDKIT=1 \
-  docker-compose up -d --build
+$ docker compose up -d --build
 ```
 
 ## メトリクス
