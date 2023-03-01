@@ -4,7 +4,7 @@ README.md
 database
 doc
 docker-bake.hcl
-docker-compose.yml
+compose.yaml
 grafana.json
 mq
 reactor
