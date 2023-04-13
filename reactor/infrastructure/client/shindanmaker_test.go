@@ -135,6 +135,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -173,6 +174,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -207,6 +209,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"@test"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -241,6 +244,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"＠テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -275,6 +279,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"(テスト)"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -309,6 +314,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"（テスト）"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -343,6 +349,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -377,6 +384,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -411,6 +419,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -445,6 +454,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -481,6 +491,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -515,6 +526,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -549,6 +561,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -583,6 +596,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -617,6 +631,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"\\$1\\\\1\\${10}\\\\{10}"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -688,6 +703,7 @@ var _ = Describe("Shindanmaker", func() {
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.VerifyForm(url.Values{
+									"type":        []string{"name"},
 									"shindanName": []string{"テスト"},
 									"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 								}),
@@ -740,6 +756,7 @@ var _ = Describe("Shindanmaker", func() {
 										ghttp.VerifyRequest(http.MethodPost, "/855159"),
 										ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 										ghttp.VerifyForm(url.Values{
+											"type":        []string{"name"},
 											"shindanName": []string{"テスト"},
 											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 										}),
@@ -812,6 +829,7 @@ https://shindanmaker.com/855159`))
 										ghttp.VerifyRequest(http.MethodPost, "/855159"),
 										ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 										ghttp.VerifyForm(url.Values{
+											"type":        []string{"name"},
 											"shindanName": []string{"テスト"},
 											"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 										}),
@@ -887,6 +905,7 @@ https://shindanmaker.com/855159`))
 									ghttp.VerifyRequest(http.MethodPost, "/855159"),
 									ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 									ghttp.VerifyForm(url.Values{
+										"type":        []string{"name"},
 										"shindanName": []string{`<>"'&`},
 										"_token":      []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
 									}),
