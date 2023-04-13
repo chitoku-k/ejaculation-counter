@@ -89,9 +89,11 @@ func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (s
 		name = ShindanNameRegex.ReplaceAllString(name, "")
 	}
 
-	values := url.Values{}
-	values.Add("shindanName", name)
-	values.Add("_token", token)
+	values := url.Values{
+		"type":        []string{"name"},
+		"shindanName": []string{name},
+		"_token":      []string{token},
+	}
 	body := strings.NewReader(values.Encode())
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.ReplaceAll(targetURL, "/a/", "/"), body)
