@@ -11,7 +11,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.6
 	github.com/onsi/ginkgo/v2 v2.9.4
 	github.com/onsi/gomega v1.27.6
-	github.com/prometheus/client_golang v1.15.0
+	github.com/prometheus/client_golang v1.15.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/streadway/amqp v1.0.0
 	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
