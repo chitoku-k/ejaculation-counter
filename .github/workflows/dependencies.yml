@@ -1,0 +1,50 @@
+name: Dependencies Workflow
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 15 * * 5'
+
+jobs:
+  rabbitmq-message-deduplication:
+    name: Bump rabbitmq-message-deduplication
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GIT_AUTHOR_NAME: 'github-actions[bot]'
+      GIT_AUTHOR_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
+      GIT_COMMITTER_NAME: 'github-actions[bot]'
+      GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
+      - name: Get current version
+        id: current-version
+        run: |
+          sed -n -E 's/^ARG\s+//; /RABBITMQ_MESSAGE_DEDUPLICATION.*_VERSION=/p' mq/Dockerfile >> "$GITHUB_OUTPUT"
+      - name: Get new version
+        id: new-version
+        run: |
+          releases=$(gh api repos/noxdafox/rabbitmq-message-deduplication/releases/latest)
+          jq -r '.assets[].name | select(test("rabbitmq_message_deduplication")) | "RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=\(gsub("(.+)-|\\.ez"; ""))"' <<< "$releases" >> "$GITHUB_OUTPUT"
+          jq -r '.assets[].name | select(test("elixir")) | "RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION=\(gsub("(.+)-|\\.ez"; ""))"' <<< "$releases" >> "$GITHUB_OUTPUT"
+      - name: Update version
+        if: ${{ steps.current-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION != steps.new-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION }}
+        run: |
+          current_version=${{ steps.current-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION }}
+          new_version=${{ steps.new-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION }}
+          new_elixir_version=${{ steps.new-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION }}
+
+          title="Bump rabbitmq-message-deduplication from $current_version to $new_version in /mq"
+          body="Bumps rabbitmq-message-deduplication from $current_version to $new_version."
+
+          sed -i -E "s/(RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=).+/\\1$new_version/" mq/Dockerfile
+          sed -i -E "s/(RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION=).+/\\1$new_elixir_version/" mq/Dockerfile
+
+          git checkout -b "dependencies/docker/mq/rabbitmq-message-deduplication-$new_version"
+          git add --all
+          git commit --message="$title"
+          git push origin HEAD
+
+          gh pr create --base=master --title="$title" --body="$body"
