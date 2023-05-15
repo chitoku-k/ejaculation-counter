@@ -28,3 +28,31 @@ jobs:
         run: |
           rm -rf /tmp/buildx-cache
           mv /tmp/buildx-cache{.new,}
+  test-supplier:
+    name: Test Supplier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: supplier/go.mod
+          cache-dependency-path: supplier/go.sum
+      - name: Run tests
+        working-directory: supplier
+        run: go test ./...
+  test-reactor:
+    name: Test Reactor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: reactor/go.mod
+          cache-dependency-path: reactor/go.sum
+      - name: Run tests
+        working-directory: reactor
+        run: go test ./...
