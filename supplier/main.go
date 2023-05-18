@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 	"os/signal"
 	"sync"
 
@@ -16,8 +17,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sys/unix"
 )
+
+var signals = []os.Signal{os.Interrupt}
 
 func init() {
 	prometheus.DefaultRegisterer.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
@@ -26,7 +28,7 @@ func init() {
 
 func main() {
 	var wg sync.WaitGroup
-	ctx, stop := signal.NotifyContext(context.Background(), unix.SIGINT, unix.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), signals...)
 	defer stop()
 
 	env, err := config.Get()
