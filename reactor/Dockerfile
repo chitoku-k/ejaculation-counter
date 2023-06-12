@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:experimental
+# syntax = docker/dockerfile:1
 FROM golang:1.20.5-buster AS build
 WORKDIR /usr/src
 COPY go.mod go.sum ./
