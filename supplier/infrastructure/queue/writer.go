@@ -16,8 +16,8 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
 )
 
 const (
