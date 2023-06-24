@@ -44,8 +44,6 @@ func Get() (Environment, error) {
 		"MASTODON_STREAM":       &env.Mastodon.Stream,
 		"MASTODON_ACCESS_TOKEN": &env.Mastodon.AccessToken,
 		"MQ_HOST":               &env.Queue.Host,
-		"MQ_USERNAME":           &env.Queue.Username,
-		"MQ_PASSWORD":           &env.Queue.Password,
 		"PORT":                  &env.Port,
 	} {
 		*v = os.Getenv(k)
@@ -61,6 +59,8 @@ func Get() (Environment, error) {
 		"MQ_SSL_CERT":      &env.Queue.SSLCert,
 		"MQ_SSL_KEY":       &env.Queue.SSLKey,
 		"MQ_SSL_ROOT_CERT": &env.Queue.SSLRootCert,
+		"MQ_USERNAME":      &env.Queue.Username,
+		"MQ_PASSWORD":      &env.Queue.Password,
 		"LOG_LEVEL":        &logLevel,
 	} {
 		*v = os.Getenv(k)

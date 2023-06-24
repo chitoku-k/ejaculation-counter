@@ -74,6 +74,11 @@ func NewWriter(
 func (w *writer) dial(url string) (*amqp.Connection, net.Conn, error) {
 	tlsConfig := &tls.Config{}
 
+	var sasl []amqp.Authentication
+	if w.Environment.Queue.Username == "" && w.Environment.Queue.Password == "" {
+		sasl = append(sasl, &amqp.ExternalAuth{})
+	}
+
 	if w.Environment.Queue.SSLCert != "" && w.Environment.Queue.SSLKey != "" {
 		cert, err := tls.LoadX509KeyPair(w.Environment.Queue.SSLCert, w.Environment.Queue.SSLKey)
 		if err != nil {
@@ -95,6 +100,7 @@ func (w *writer) dial(url string) (*amqp.Connection, net.Conn, error) {
 	var nc net.Conn
 	conn, err := amqp.DialConfig(url, amqp.Config{
 		TLSClientConfig: tlsConfig,
+		SASL:            sasl,
 		Dial: func(network, addr string) (net.Conn, error) {
 			var err error
 			nc, err = amqp.DefaultDial(ConnectionTimeout)(network, addr)
@@ -265,7 +271,8 @@ func (w *writer) Publish(ctx context.Context, packet service.Packet) error {
 		return fmt.Errorf("failed to marshal packet: %w", err)
 	}
 
-	err = w.Channel.Publish(
+	err = w.Channel.PublishWithContext(
+		ctx,
 		w.Exchange,
 		w.RoutingKey,
 		false,
