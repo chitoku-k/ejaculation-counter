@@ -73,6 +73,11 @@ func NewReader(
 func (r *reader) dial(url string) (*amqp.Connection, net.Conn, error) {
 	tlsConfig := &tls.Config{}
 
+	var sasl []amqp.Authentication
+	if r.Environment.Queue.Username == "" && r.Environment.Queue.Password == "" {
+		sasl = append(sasl, &amqp.ExternalAuth{})
+	}
+
 	if r.Environment.Queue.SSLCert != "" && r.Environment.Queue.SSLKey != "" {
 		cert, err := tls.LoadX509KeyPair(r.Environment.Queue.SSLCert, r.Environment.Queue.SSLKey)
 		if err != nil {
@@ -94,6 +99,7 @@ func (r *reader) dial(url string) (*amqp.Connection, net.Conn, error) {
 	var nc net.Conn
 	conn, err := amqp.DialConfig(url, amqp.Config{
 		TLSClientConfig: tlsConfig,
+		SASL:            sasl,
 		Dial: func(network, addr string) (net.Conn, error) {
 			var err error
 			nc, err = amqp.DefaultDial(ConnectionTimeout)(network, addr)
