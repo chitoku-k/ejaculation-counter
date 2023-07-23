@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	service "github.com/chitoku-k/ejaculation-counter/reactor/service"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockShindanmaker is a mock of Shindanmaker interface.
