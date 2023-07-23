@@ -7,7 +7,7 @@ package repository
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockDoubletRepository is a mock of DoubletRepository interface.

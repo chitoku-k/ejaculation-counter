@@ -11,7 +11,7 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/streaming"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	"github.com/gorilla/websocket"
 	mast "github.com/mattn/go-mastodon"
 	. "github.com/onsi/ginkgo/v2"
