@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1
-FROM golang:1.20.6 AS build
+FROM golang:1.20.7 AS build
 WORKDIR /usr/src
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go \
