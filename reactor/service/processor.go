@@ -1,13 +1,14 @@
 package service
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -98,8 +99,8 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 					EventsTotal.WithLabelValues(event.Name(), action.Name()).Inc()
 				}
 
-				slices.SortFunc(result, func(a, b actionResult) bool {
-					return a.Index < b.Index
+				slices.SortFunc(result, func(a, b actionResult) int {
+					return cmp.Compare(a.Index, b.Index)
 				})
 
 				err := ps.doEvents(ctx, result)
