@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"math"
 	"net/http"
 	"net/url"
 	"path"
@@ -128,12 +127,12 @@ func (m *mastodon) reconnect(ctx context.Context, current time.Duration, err err
 	}
 
 	reconnect = time.Duration(
-		math.Min(
-			math.Max(
-				float64(current*2),
-				float64(ReconnectInitial),
+		min(
+			max(
+				current*2,
+				ReconnectInitial,
 			),
-			float64(ReconnectMax),
+			ReconnectMax,
 		),
 	)
 	StreamingRetryTotal.Inc()

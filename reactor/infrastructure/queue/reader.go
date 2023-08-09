@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"net"
 	"os"
 	"time"
@@ -231,12 +230,12 @@ func (r *reader) reconnect(ctx context.Context) error {
 		logrus.Errorf("Error from MQ: %v", err)
 
 		reconnect = time.Duration(
-			math.Min(
-				math.Max(
-					float64(reconnect*2),
-					float64(ReconnectInitial),
+			min(
+				max(
+					reconnect*2,
+					ReconnectInitial,
 				),
-				float64(ReconnectMax),
+				ReconnectMax,
 			),
 		)
 
