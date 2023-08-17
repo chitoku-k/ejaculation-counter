@@ -16,14 +16,15 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/sirupsen/logrus"
 )
 
 var signals = []os.Signal{os.Interrupt}
 
 func init() {
-	prometheus.DefaultRegisterer.Unregister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
-	prometheus.DefaultRegisterer.Unregister(prometheus.NewGoCollector())
+	prometheus.DefaultRegisterer.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	prometheus.DefaultRegisterer.Unregister(collectors.NewGoCollector())
 }
 
 func main() {
