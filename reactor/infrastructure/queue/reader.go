@@ -25,6 +25,9 @@ const (
 	ReconnectNone     = 0 * time.Second
 	ReconnectInitial  = 5 * time.Second
 	ReconnectMax      = 320 * time.Second
+
+	DeadLetterSuffix = ".dl"
+	DeadLetterTTL    = 5 * time.Minute
 )
 
 var (
@@ -133,29 +136,7 @@ func (r *reader) connect() error {
 
 	r.Closes = r.Connection.NotifyClose(make(chan *amqp.Error, 1))
 
-	logrus.Debugf("Declaring exchange in MQ...")
-
-	err = r.Channel.ExchangeDeclare(
-		r.Exchange,
-		"x-message-deduplication",
-		true,
-		false,
-		false,
-		false,
-		amqp.Table{
-			"x-cache-size": QueueSize,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare exchange in MQ channel: %w", err)
-	}
-
-	err = r.Channel.Confirm(false)
-	if err != nil {
-		return fmt.Errorf("failed to put channel into confirm mode: %w", err)
-	}
-
-	logrus.Debugf("Declaring queue in MQ...")
+	logrus.Debugf("Declaring queues in MQ...")
 
 	q, err := r.Channel.QueueDeclare(
 		r.QueueName,
@@ -164,14 +145,33 @@ func (r *reader) connect() error {
 		false,
 		false,
 		amqp.Table{
-			"x-queue-type": "quorum",
+			"x-queue-type":              "quorum",
+			"x-dead-letter-exchange":    r.Exchange + DeadLetterSuffix,
+			"x-dead-letter-routing-key": r.RoutingKey,
 		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare queue in MQ channel: %w", err)
 	}
 
-	logrus.Debugf("Binding queue in MQ...")
+	dlq, err := r.Channel.QueueDeclare(
+		r.QueueName+DeadLetterSuffix,
+		true,
+		false,
+		false,
+		false,
+		amqp.Table{
+			"x-queue-type":              "quorum",
+			"x-dead-letter-exchange":    r.Exchange,
+			"x-dead-letter-routing-key": r.RoutingKey,
+			"x-message-ttl":             DeadLetterTTL.Milliseconds(),
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare queue for dead letters in MQ channel: %w", err)
+	}
+
+	logrus.Debugf("Binding queues in MQ...")
 
 	err = r.Channel.QueueBind(
 		q.Name,
@@ -182,6 +182,17 @@ func (r *reader) connect() error {
 	)
 	if err != nil {
 		return fmt.Errorf("failed to bind queue for MQ channel: %w", err)
+	}
+
+	err = r.Channel.QueueBind(
+		dlq.Name,
+		r.RoutingKey,
+		r.Exchange+DeadLetterSuffix,
+		false,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to bind queue for dead letters in MQ channel: %w", err)
 	}
 
 	logrus.Debugf("Consuming from MQ...")
@@ -255,6 +266,10 @@ func (r *reader) Ack(tag uint64) error {
 	return r.Channel.Ack(tag, false)
 }
 
+func (r *reader) Reject(tag uint64) error {
+	return r.Channel.Reject(tag, false)
+}
+
 func (r *reader) Packets() <-chan service.Packet {
 	return r.ch
 }
@@ -294,7 +309,7 @@ func (r *reader) Consume(ctx context.Context) {
 
 			switch packet.Type {
 			case "packets.tick":
-				tick := service.NewTick(packet.DeliveryTag)
+				tick := service.NewTick(packet.DeliveryTag, packet.Timestamp)
 				err := json.Unmarshal(packet.Body, &tick)
 				if err != nil {
 					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
@@ -303,7 +318,7 @@ func (r *reader) Consume(ctx context.Context) {
 				r.ch <- tick
 
 			case "packets.message":
-				message := service.NewMessage(packet.DeliveryTag)
+				message := service.NewMessage(packet.DeliveryTag, packet.Timestamp)
 				err := json.Unmarshal(packet.Body, &message)
 				if err != nil {
 					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)

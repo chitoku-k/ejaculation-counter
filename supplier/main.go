@@ -51,7 +51,7 @@ func main() {
 		wg.Done()
 	}()
 
-	writer, err := queue.NewWriter(ctx, "packets_topic", "packets", "packets", env)
+	writer, err := queue.NewWriter(ctx, "ejaculation-counter.packets", "packets", env)
 	if err != nil {
 		logrus.Fatalf("Failed to initialize writer: %v", err)
 	}

@@ -6,16 +6,19 @@ import (
 
 type Packet interface {
 	Tag() uint64
+	Timestamp() time.Time
 }
 
-func NewTick(tag uint64) Tick {
+func NewTick(tag uint64, timestamp time.Time) Tick {
 	return Tick{
-		tag: tag,
+		tag:       tag,
+		timestamp: timestamp,
 	}
 }
 
 type Tick struct {
-	tag uint64
+	tag       uint64
+	timestamp time.Time
 
 	Year  int `json:"year"`
 	Month int `json:"month"`
@@ -30,14 +33,20 @@ func (t Tick) Tag() uint64 {
 	return t.tag
 }
 
-func NewMessage(tag uint64) Message {
+func (t Tick) Timestamp() time.Time {
+	return t.timestamp
+}
+
+func NewMessage(tag uint64, timestamp time.Time) Message {
 	return Message{
-		tag: tag,
+		tag:       tag,
+		timestamp: timestamp,
 	}
 }
 
 type Message struct {
-	tag uint64
+	tag       uint64
+	timestamp time.Time
 
 	ID          string    `json:"id"`
 	Account     Account   `json:"account"`
@@ -71,4 +80,8 @@ func (m Message) Name() string {
 
 func (m Message) Tag() uint64 {
 	return m.tag
+}
+
+func (m Message) Timestamp() time.Time {
+	return m.timestamp
 }

@@ -25,6 +25,11 @@ const (
 	ReconnectNone     = 0 * time.Second
 	ReconnectInitial  = 5 * time.Second
 	ReconnectMax      = 320 * time.Second
+
+	DeadLetterSuffix = ".dl"
+
+	CacheSize = 1024
+	CacheTTL  = 1 * time.Minute
 )
 
 var (
@@ -55,13 +60,11 @@ type writer struct {
 func NewWriter(
 	ctx context.Context,
 	exchange string,
-	queue string,
 	routingKey string,
 	environment config.Environment,
 ) (service.QueueWriter, error) {
 	w := &writer{
 		Exchange:    exchange,
-		QueueName:   queue,
 		RoutingKey:  routingKey,
 		Environment: environment,
 		Queue:       make(chan service.Packet, QueueSize),
@@ -135,7 +138,7 @@ func (w *writer) connect(ctx context.Context) error {
 	w.Closes = w.Connection.NotifyClose(make(chan *amqp.Error, 1))
 	w.Confirmations = w.Channel.NotifyPublish(make(chan amqp.Confirmation, 1))
 
-	logrus.Debugf("Declaring exchange in MQ...")
+	logrus.Debugf("Declaring exchanges in MQ...")
 
 	err = w.Channel.ExchangeDeclare(
 		w.Exchange,
@@ -145,45 +148,30 @@ func (w *writer) connect(ctx context.Context) error {
 		false,
 		false,
 		amqp.Table{
-			"x-cache-size": QueueSize,
+			"x-cache-size": CacheSize,
+			"x-cache-ttl":  CacheTTL.Milliseconds(),
 		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare exchange in MQ channel: %w", err)
 	}
 
-	err = w.Channel.Confirm(false)
-	if err != nil {
-		return fmt.Errorf("failed to put channel into confirm mode: %w", err)
-	}
-
-	logrus.Debugf("Declaring queue in MQ...")
-
-	q, err := w.Channel.QueueDeclare(
-		w.QueueName,
+	err = w.Channel.ExchangeDeclare(
+		w.Exchange+DeadLetterSuffix,
+		"direct",
 		true,
 		false,
 		false,
 		false,
-		amqp.Table{
-			"x-queue-type": "quorum",
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare queue in MQ channel: %w", err)
-	}
-
-	logrus.Debugf("Binding queue in MQ...")
-
-	err = w.Channel.QueueBind(
-		q.Name,
-		w.RoutingKey,
-		w.Exchange,
-		false,
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to bind queue for MQ channel: %w", err)
+		return fmt.Errorf("failed to declare exchange for dead letters in MQ channel: %w", err)
+	}
+
+	err = w.Channel.Confirm(false)
+	if err != nil {
+		return fmt.Errorf("failed to put channel into confirm mode: %w", err)
 	}
 
 	go func() {
@@ -278,6 +266,7 @@ func (w *writer) Publish(ctx context.Context, packet service.Packet) error {
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
+			Timestamp:   packet.Timestamp(),
 			Type:        packet.Name(),
 			Headers: amqp.Table{
 				"x-deduplication-header": fmt.Sprintf("%v-%v", packet.Name(), packet.HashCode()),

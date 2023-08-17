@@ -3,12 +3,18 @@ package service
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	PacketTTL = 30 * time.Minute
 )
 
 var (
@@ -31,6 +37,7 @@ type processor struct {
 	Update         Update
 	Administration Administration
 	Actions        []Action
+	Clock          func() time.Time
 }
 
 type Processor interface {
@@ -44,6 +51,7 @@ func NewProcessor(
 	update Update,
 	administration Administration,
 	actions []Action,
+	clock func() time.Time,
 ) Processor {
 	return &processor{
 		Queue:          queue,
@@ -52,11 +60,18 @@ func NewProcessor(
 		Update:         update,
 		Administration: administration,
 		Actions:        actions,
+		Clock:          clock,
 	}
 }
 
 func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 	for packet := range packets {
+		if ps.Clock().Sub(packet.Timestamp()) > PacketTTL {
+			logrus.WithFields(logrus.Fields{"message-timestamp": packet.Timestamp()}).Warnln("A message has been discarded as it is too old.")
+			ps.Queue.Ack(packet.Tag())
+			continue
+		}
+
 		switch p := packet.(type) {
 		case Tick:
 			go func() {
@@ -67,6 +82,7 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 				})
 				if err != nil {
 					logrus.Errorf("Failed to update: %v", err)
+					ps.Queue.Reject(p.Tag())
 					return
 				}
 				ps.Queue.Ack(p.Tag())
@@ -104,37 +120,37 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 				})
 
 				err := ps.doEvents(ctx, result)
-				if err == nil {
-					ps.Queue.Ack(p.Tag())
+				if err != nil {
+					logrus.Errorf("Failed to process: %v", err)
+					ps.Queue.Reject(p.Tag())
+					return
 				}
+				ps.Queue.Ack(p.Tag())
 			}()
 		}
 	}
 }
 
 func (ps *processor) doEvents(ctx context.Context, result []actionResult) error {
-	var requeue bool
+	var errs error
 	for _, r := range result {
 		switch event := r.Event.(type) {
 		case ReplyEvent:
 			err := ps.Reply.Send(ctx, event)
 			if err != nil {
-				requeue = true
-				logrus.Errorf("Failed to send reply: %v", err)
+				errs = errors.Join(errs, err)
 			}
 
 		case ReplyErrorEvent:
 			err := ps.Reply.SendError(ctx, event)
 			if err != nil {
-				requeue = true
-				logrus.Errorf("Failed to send reply: %v", err)
+				errs = errors.Join(errs, err)
 			}
 
 		case IncrementEvent:
 			err := ps.Increment.Do(ctx, event)
 			if err != nil {
-				requeue = true
-				logrus.Errorf("Failed to increment: %v", err)
+				errs = errors.Join(errs, err)
 			}
 
 		case AdministrationEvent:
@@ -144,13 +160,9 @@ func (ps *processor) doEvents(ctx context.Context, result []actionResult) error 
 			}
 
 		default:
-			requeue = true
-			logrus.Warnf("Failed to process unknown event: %v", event.Name())
+			errs = errors.Join(errs, fmt.Errorf("failed to process unknown event: %v", event.Name()))
 		}
 	}
 
-	if requeue {
-		return fmt.Errorf("failed to process event(s)")
-	}
-	return nil
+	return errs
 }
