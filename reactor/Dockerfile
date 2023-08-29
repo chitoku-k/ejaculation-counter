@@ -7,14 +7,18 @@ RUN --mount=type=cache,target=/go \
 COPY . ./
 RUN --mount=type=cache,target=/go \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 go build -ldflags='-s -w'
+    go build -ldflags='-s -w'
 
 FROM scratch AS production
 ARG PORT=80
 ENV PORT=$PORT
 ENV GIN_MODE=release
-COPY --from=build /usr/src/reactor /reactor
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
-EXPOSE 80
+COPY --link --from=build /lib/x86_64-linux-gnu/ld-linux-x86-64.* /lib/x86_64-linux-gnu/
+COPY --link --from=build /lib/x86_64-linux-gnu/libc.so* /lib/x86_64-linux-gnu/
+COPY --link --from=build /lib/x86_64-linux-gnu/libresolv.so* /lib/x86_64-linux-gnu/
+COPY --link --from=build /lib64 /lib64
+COPY --link --from=build /usr/src/reactor /reactor
+COPY --link --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --link --from=build /usr/share/zoneinfo /usr/share/zoneinfo
+EXPOSE $PORT
 CMD ["/reactor"]
