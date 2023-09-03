@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -18,7 +19,6 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
-	"github.com/sirupsen/logrus"
 )
 
 var signals = []os.Signal{os.Interrupt}
@@ -35,18 +35,23 @@ func main() {
 
 	env, err := config.Get()
 	if err != nil {
-		logrus.Fatalf("Failed to initialize config: %v", err)
+		slog.Error("Failed to initialize config", slog.Any("err", err))
+		os.Exit(1)
 	}
-	logrus.SetLevel(env.LogLevel)
+
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: env.LogLevel})
+	slog.SetDefault(slog.New(handler))
 
 	db, err := client.NewDB(env)
 	if err != nil {
-		logrus.Fatalf("Failed to initialize DB: %v", err)
+		slog.Error("Failed to initialize DB", slog.Any("err", err))
+		os.Exit(1)
 	}
 
 	reader, err := queue.NewReader("ejaculation-counter.packets", "ejaculation-counter.packets.queue", "packets", env)
 	if err != nil {
-		logrus.Fatalf("Failed to initialize reader: %v", err)
+		slog.Error("Failed to initialize reader", slog.Any("err", err))
+		os.Exit(1)
 	}
 
 	wg.Add(1)
@@ -60,7 +65,7 @@ func main() {
 		<-ctx.Done()
 		err := reader.Close(true)
 		if err != nil {
-			logrus.Errorf("Failed to close reader: %v", err)
+			slog.Error("Failed to close reader", slog.Any("err", err))
 		}
 		wg.Done()
 	}()
@@ -69,7 +74,8 @@ func main() {
 	go func() {
 		c, err := client.NewHttpClient()
 		if err != nil {
-			logrus.Fatalf("Failed to initialize Cookie Jar: %v", err)
+			slog.Error("Failed to initialize Cookie Jar", slog.Any("err", err))
+			os.Exit(1)
 		}
 		shindan := client.NewShindanmaker(c)
 		through := hardcoding.NewThroughRepository()
@@ -107,7 +113,7 @@ func main() {
 
 		err = db.Close()
 		if err != nil {
-			logrus.Errorf("Failed to close connection to DB: %v", err)
+			slog.Error("Failed to close connection to DB", slog.Any("err", err))
 		}
 		wg.Done()
 	}()
@@ -119,7 +125,8 @@ func main() {
 		engine := server.NewEngine(env.Port, env.TLSCert, env.TLSKey, through, doublet)
 		err = engine.Start(ctx)
 		if err != nil {
-			logrus.Fatalf("Failed to start web server: %v", err)
+			slog.Error("Failed to start web server", slog.Any("err", err))
+			os.Exit(1)
 		}
 		wg.Done()
 	}()

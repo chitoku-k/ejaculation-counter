@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -17,7 +18,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
-	"github.com/sirupsen/logrus"
 )
 
 var signals = []os.Signal{os.Interrupt}
@@ -34,13 +34,17 @@ func main() {
 
 	env, err := config.Get()
 	if err != nil {
-		logrus.Fatalf("Failed to initialize config: %v", err)
+		slog.Error("Failed to initialize config", slog.Any("err", err))
+		os.Exit(1)
 	}
-	logrus.SetLevel(env.LogLevel)
+
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: env.LogLevel})
+	slog.SetDefault(slog.New(handler))
 
 	s, err := scheduler.New(env)
 	if err != nil {
-		logrus.Fatalf("Failed to initialize scheduler: %v", err)
+		slog.Error("Failed to initialize scheduler", slog.Any("err", err))
+		os.Exit(1)
 	}
 	tick := s.Start()
 
@@ -53,7 +57,8 @@ func main() {
 
 	writer, err := queue.NewWriter(ctx, "ejaculation-counter.packets", "packets", env)
 	if err != nil {
-		logrus.Fatalf("Failed to initialize writer: %v", err)
+		slog.Error("Failed to initialize writer", slog.Any("err", err))
+		os.Exit(1)
 	}
 
 	mastodon := streaming.NewMastodon(
@@ -66,7 +71,8 @@ func main() {
 	go func() {
 		err := mastodon.Run(ctx)
 		if err != nil && !errors.Is(err, context.Canceled) {
-			logrus.Fatalf("Error in starting streaming: %v", err)
+			slog.Error("Error in starting streaming", slog.Any("err", err))
+			os.Exit(1)
 		}
 		wg.Done()
 	}()
@@ -85,7 +91,7 @@ func main() {
 
 		err := writer.Close()
 		if err != nil {
-			logrus.Errorf("Failed to close writer: %v", err)
+			slog.Error("Failed to close writer", slog.Any("err", err))
 		}
 		wg.Done()
 	}()
@@ -95,7 +101,8 @@ func main() {
 		engine := server.NewEngine(env.Port, env.TLSCert, env.TLSKey)
 		err := engine.Start(ctx)
 		if err != nil {
-			logrus.Fatalf("Failed to start web server: %v", err)
+			slog.Error("Failed to start web server", slog.Any("err", err))
+			os.Exit(1)
 		}
 		wg.Done()
 	}()

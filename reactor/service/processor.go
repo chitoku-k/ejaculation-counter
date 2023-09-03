@@ -5,12 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"slices"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -67,7 +67,7 @@ func NewProcessor(
 func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 	for packet := range packets {
 		if ps.Clock().Sub(packet.Timestamp()) > PacketTTL {
-			logrus.WithFields(logrus.Fields{"message-timestamp": packet.Timestamp()}).Warnln("A message has been discarded as it is too old.")
+			slog.Warn("A message has been discarded as it is too old", slog.Any("message-timestamp", packet.Timestamp()))
 			ps.Queue.Ack(packet.Tag())
 			continue
 		}
@@ -81,7 +81,7 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 					Day:   p.Day,
 				})
 				if err != nil {
-					logrus.Errorf("Failed to update: %v", err)
+					slog.Error("Failed to update", slog.Any("err", err))
 					ps.Queue.Reject(p.Tag())
 					return
 				}
@@ -98,7 +98,7 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 
 					event, index, err := action.Event(ctx, p)
 					if err != nil {
-						logrus.Errorf("Error in processing %v: %v", action.Name(), err)
+						slog.Error("Error in processing", slog.String("action", action.Name()), slog.Any("err", err))
 						EventsErrorTotal.WithLabelValues(action.Name()).Inc()
 						result = append(result, actionResult{
 							Event: ReplyErrorEvent{
@@ -121,7 +121,7 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 
 				err := ps.doEvents(ctx, result)
 				if err != nil {
-					logrus.Errorf("Failed to process: %v", err)
+					slog.Error("Failed to process", slog.Any("err", err))
 					ps.Queue.Reject(p.Tag())
 					return
 				}
@@ -156,7 +156,7 @@ func (ps *processor) doEvents(ctx context.Context, result []actionResult) error 
 		case AdministrationEvent:
 			err := ps.Administration.Do(ctx, event)
 			if err != nil {
-				logrus.Errorf("Failed to execute administrative operation: %v", err)
+				slog.Error("Failed to execute administrative operation", slog.Any("err", err))
 			}
 
 		default:

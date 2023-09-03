@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"log/slog"
 )
 
 type processor struct {
@@ -32,7 +32,7 @@ func (ps *processor) Execute(ctx context.Context, scheduler <-chan Tick, stream 
 			}
 			err := ps.Writer.Publish(ctx, tick)
 			if err != nil {
-				logrus.Errorf("Error in queueing: %v", err)
+				slog.Error("Error in queueing", slog.Any("err", err))
 			}
 
 		case status, ok := <-stream:
@@ -42,21 +42,21 @@ func (ps *processor) Execute(ctx context.Context, scheduler <-chan Tick, stream 
 			}
 			switch status := status.(type) {
 			case Error:
-				logrus.Errorf("Error in streaming: %v", status.Err)
+				slog.Error("Error in streaming", slog.Any("err", status.Err))
 
 			case Connection:
-				logrus.Infof("Connected to streaming: %v", status.Server)
+				slog.Info("Connected to streaming", slog.String("server", status.Server))
 
 			case Disconnection:
-				logrus.Infof("Disconnected from streaming: %v", status.Err)
+				slog.Info("Disconnected from streaming", slog.Any("err", status.Err))
 
 			case Reconnection:
-				logrus.Infof("Reconnecting to streaming in %v...", status.In)
+				slog.Info(fmt.Sprintf("Reconnecting to streaming in %v...", status.In))
 
 			case Message:
 				err := ps.Writer.Publish(ctx, status)
 				if err != nil {
-					logrus.Errorf("Error in publishing: %v", err)
+					slog.Error("Error in publishing", slog.Any("err", err))
 				}
 			}
 		}

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"os"
 	"time"
@@ -16,7 +17,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -113,7 +113,7 @@ func (r *reader) dial(url string) (*amqp.Connection, net.Conn, error) {
 }
 
 func (r *reader) connect() error {
-	logrus.Debugf("Connecting to MQ broker...")
+	slog.Debug("Connecting to MQ broker...")
 
 	uri, err := amqp.ParseURI(r.Environment.Queue.Host)
 	if err != nil {
@@ -136,7 +136,7 @@ func (r *reader) connect() error {
 
 	r.Closes = r.Connection.NotifyClose(make(chan *amqp.Error, 1))
 
-	logrus.Debugf("Declaring queues in MQ...")
+	slog.Debug("Declaring queues in MQ...")
 
 	q, err := r.Channel.QueueDeclare(
 		r.QueueName,
@@ -171,7 +171,7 @@ func (r *reader) connect() error {
 		return fmt.Errorf("failed to declare queue for dead letters in MQ channel: %w", err)
 	}
 
-	logrus.Debugf("Binding queues in MQ...")
+	slog.Debug("Binding queues in MQ...")
 
 	err = r.Channel.QueueBind(
 		q.Name,
@@ -195,7 +195,7 @@ func (r *reader) connect() error {
 		return fmt.Errorf("failed to bind queue for dead letters in MQ channel: %w", err)
 	}
 
-	logrus.Debugf("Consuming from MQ...")
+	slog.Debug("Consuming from MQ...")
 
 	r.Delivery, err = r.Channel.Consume(
 		q.Name,
@@ -210,7 +210,7 @@ func (r *reader) connect() error {
 		return fmt.Errorf("failed to consume from MQ: %w", err)
 	}
 
-	logrus.Infof("Connected to MQ: %v", nc.RemoteAddr())
+	slog.Info("Connected to MQ", slog.Any("remote", nc.RemoteAddr()))
 	return nil
 }
 
@@ -238,7 +238,7 @@ func (r *reader) reconnect(ctx context.Context) error {
 			return nil
 		}
 
-		logrus.Errorf("Error from MQ: %v", err)
+		slog.Error("Error from MQ", slog.Any("err", err))
 
 		reconnect = time.Duration(
 			min(
@@ -250,7 +250,7 @@ func (r *reader) reconnect(ctx context.Context) error {
 			),
 		)
 
-		logrus.Infof("Reconnecting in %v...", reconnect)
+		slog.Info(fmt.Sprintf("Reconnecting in %v...", reconnect))
 
 		select {
 		case <-ctx.Done():
@@ -294,7 +294,7 @@ func (r *reader) Consume(ctx context.Context) {
 				r.Closes = nil
 				continue
 			}
-			logrus.Infof("Disconnected from MQ: %v", amqperr)
+			slog.Info("Disconnected from MQ", slog.Any("err", amqperr))
 			err := r.reconnect(ctx)
 			if err != nil {
 				continue
@@ -312,7 +312,7 @@ func (r *reader) Consume(ctx context.Context) {
 				tick := service.NewTick(packet.DeliveryTag, packet.Timestamp)
 				err := json.Unmarshal(packet.Body, &tick)
 				if err != nil {
-					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
+					slog.Error("Failed to decode message", slog.String("packet-type", packet.Type), slog.Any("err", err))
 					continue
 				}
 				r.ch <- tick
@@ -321,7 +321,7 @@ func (r *reader) Consume(ctx context.Context) {
 				message := service.NewMessage(packet.DeliveryTag, packet.Timestamp)
 				err := json.Unmarshal(packet.Body, &message)
 				if err != nil {
-					logrus.Errorf("Failed to decode message (%v): %v", packet.Type, err)
+					slog.Error("Failed to decode message", slog.String("packet-type", packet.Type), slog.Any("err", err))
 					continue
 				}
 				r.ch <- message

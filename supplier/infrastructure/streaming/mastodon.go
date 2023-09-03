@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"path"
@@ -19,7 +20,6 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -192,7 +192,7 @@ func (m *mastodon) Run(ctx context.Context) error {
 	u.RawQuery = params.Encode()
 
 	for {
-		logrus.Debugf("Connecting to streaming...")
+		slog.Debug("Connecting to streaming...")
 
 		var res *http.Response
 		m.conn, res, err = m.Dialer.DialContext(ctx, u.String(), nil)
