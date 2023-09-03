@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"os"
 	"time"
@@ -16,7 +17,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -114,7 +114,7 @@ func (w *writer) dial(url string) (*amqp.Connection, net.Conn, error) {
 }
 
 func (w *writer) connect(ctx context.Context) error {
-	logrus.Debugf("Connecting to MQ broker...")
+	slog.Debug("Connecting to MQ broker...")
 
 	uri, err := amqp.ParseURI(w.Environment.Queue.Host)
 	if err != nil {
@@ -138,7 +138,7 @@ func (w *writer) connect(ctx context.Context) error {
 	w.Closes = w.Connection.NotifyClose(make(chan *amqp.Error, 1))
 	w.Confirmations = w.Channel.NotifyPublish(make(chan amqp.Confirmation, 1))
 
-	logrus.Debugf("Declaring exchanges in MQ...")
+	slog.Debug("Declaring exchanges in MQ...")
 
 	err = w.Channel.ExchangeDeclare(
 		w.Exchange,
@@ -181,20 +181,20 @@ func (w *writer) connect(ctx context.Context) error {
 				return
 
 			case err := <-w.Closes:
-				logrus.Infof("Disconnected from MQ: %v", err)
+				slog.Info("Disconnected from MQ", slog.Any("err", err))
 				w.reconnect(ctx)
 				return
 
 			case packet := <-w.Queue:
 				err := w.Publish(ctx, packet)
 				if err != nil {
-					logrus.Errorf("Error in publishing from queue: %v", err)
+					slog.Error("Error in publishing from queue", slog.Any("err", err))
 				}
 			}
 		}
 	}()
 
-	logrus.Infof("Connected to MQ: %v", nc.RemoteAddr())
+	slog.Error("Connected to MQ", slog.Any("remote", nc.RemoteAddr()))
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (w *writer) reconnect(ctx context.Context) {
 			return
 		}
 
-		logrus.Errorf("Error from MQ: %v", err)
+		slog.Error("Error from MQ", slog.Any("err", err))
 
 		reconnect = time.Duration(
 			min(
@@ -232,7 +232,7 @@ func (w *writer) reconnect(ctx context.Context) {
 			),
 		)
 
-		logrus.Infof("Reconnecting in %v...", reconnect)
+		slog.Info(fmt.Sprintf("Reconnecting in %v...", reconnect))
 
 		select {
 		case <-ctx.Done():

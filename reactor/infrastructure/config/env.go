@@ -3,12 +3,11 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 type Environment struct {
@@ -20,7 +19,7 @@ type Environment struct {
 
 	External External
 
-	LogLevel logrus.Level
+	LogLevel slog.Level
 	Port     string
 	TLSCert  string
 	TLSKey   string
@@ -127,10 +126,9 @@ func Get() (Environment, error) {
 		fmt.Sscanf(s, "%d", v)
 	}
 
-	env.LogLevel = logrus.InfoLevel
 	if logLevel != "" {
 		var err error
-		env.LogLevel, err = logrus.ParseLevel(logLevel)
+		env.LogLevel, err = parseLogLevel(logLevel)
 		if err != nil {
 			return env, fmt.Errorf("failed to parse log level: %w", err)
 		}
@@ -141,4 +139,20 @@ func Get() (Environment, error) {
 	}
 
 	return env, nil
+}
+
+func parseLogLevel(lvl string) (slog.Level, error) {
+	switch strings.ToLower(lvl) {
+	case "error":
+		return slog.LevelError, nil
+	case "warn", "warning":
+		return slog.LevelWarn, nil
+	case "info":
+		return slog.LevelInfo, nil
+	case "debug":
+		return slog.LevelDebug, nil
+	}
+
+	var l slog.Level
+	return l, fmt.Errorf("not a valid log level: %q", lvl)
 }

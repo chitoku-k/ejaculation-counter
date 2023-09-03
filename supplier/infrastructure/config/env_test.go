@@ -1,12 +1,12 @@
 package config_test
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Environment", func() {
@@ -47,7 +47,7 @@ var _ = Describe("Environment", func() {
 						Password: "shiko",
 					},
 					Port:     "8080",
-					LogLevel: logrus.InfoLevel,
+					LogLevel: slog.LevelInfo,
 				}))
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -98,7 +98,7 @@ var _ = Describe("Environment", func() {
 							Password: "shiko",
 						},
 						Port:     "8080",
-						LogLevel: logrus.DebugLevel,
+						LogLevel: slog.LevelDebug,
 					}))
 					Expect(err).NotTo(HaveOccurred())
 				})
