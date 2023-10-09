@@ -194,7 +194,7 @@ func (w *writer) connect(ctx context.Context) error {
 		}
 	}()
 
-	slog.Error("Connected to MQ", slog.Any("remote", nc.RemoteAddr()))
+	slog.Info("Connected to MQ", slog.Any("remote", nc.RemoteAddr()))
 	return nil
 }
 
