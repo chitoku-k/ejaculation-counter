@@ -14,7 +14,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.9.0
 	go.uber.org/mock v0.3.0
 	golang.org/x/sync v0.5.0
-	golang.org/x/sys v0.13.0
+	golang.org/x/sys v0.14.0
 )
 
 require (
