@@ -6,7 +6,8 @@ datasources:
     url: database
     database: $POSTGRES_DB
     user: $POSTGRES_USER
-    password: $POSTGRES_PASSWORD
     isDefault: true
+    secureJsonData:
+      password: $POSTGRES_PASSWORD
     jsonData:
       sslmode: $POSTGRES_SSLMODE
