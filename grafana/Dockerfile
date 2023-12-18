@@ -1,3 +1,2 @@
-FROM grafana/grafana:7.5.17
+FROM grafana/grafana:10.2.2
 COPY . /etc/grafana/provisioning/
-RUN grafana-cli --pluginsDir="$GF_PATHS_PLUGINS" plugins install neocat-cal-heatmap-panel

@@ -9,6 +9,7 @@
       "pluginName": "PostgreSQL"
     }
   ],
+  "__elements": {},
   "__requires": [
     {
       "type": "panel",
@@ -20,19 +21,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.5.17"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "neocat-cal-heatmap-panel",
-      "name": "Cal-HeatMap",
-      "version": "0.0.4"
+      "version": "10.2.2"
     },
     {
       "type": "datasource",
@@ -51,13 +40,22 @@
       "id": "table",
       "name": "Table",
       "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
     }
   ],
   "annotations": {
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -67,14 +65,17 @@
     ]
   },
   "editable": true,
-  "gnetId": null,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
-      "cacheTimeout": null,
-      "datasource": "${DS_DATABASE}",
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_DATABASE}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -82,11 +83,13 @@
           },
           "mappings": [
             {
-              "id": 0,
-              "op": "=",
-              "text": "N/A",
-              "type": 1,
-              "value": "null"
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
             }
           ],
           "thresholds": {
@@ -104,12 +107,11 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 5,
+        "w": 7,
         "x": 0,
         "y": 0
       },
       "id": 4,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -125,11 +127,16 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "7.5.17",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_DATABASE}"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -163,111 +170,14 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Total",
       "type": "stat"
     },
     {
-      "config": {
-        "animationDuration": 0,
-        "cellPadding": "2",
-        "cellRadius": 0,
-        "cellSize": 10,
-        "colLimit": null,
-        "displayLegend": true,
-        "domain": "auto",
-        "domainGutter": 2,
-        "hoverDecimals": 0,
-        "hoverUnitFormat": "short",
-        "itemName": [
-          "short",
-          "short"
-        ],
-        "label": {
-          "position": "bottom",
-          "rotate": "null",
-          "width": 60
-        },
-        "legendColors": {
-          "base": "transparent",
-          "empty": "rgb(41, 41, 41)",
-          "max": "#56A64B",
-          "min": "#666"
-        },
-        "legendStr": "",
-        "legendTitleFormat": {
-          "inner": {},
-          "lower": {},
-          "upper": {}
-        },
-        "rowLimit": null,
-        "subDomain": "auto",
-        "subDomainTitleFormat": {
-          "empty": "{date}",
-          "filled": {}
-        },
-        "verticalOrientation": false
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_DATABASE}"
       },
-      "datasource": "${DS_DATABASE}",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 11,
-        "x": 5,
-        "y": 0
-      },
-      "id": 2,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  date AS \"time\",\n  count\nFROM counts\nWHERE\n  $__timeFilter(date) AND\n  \"user_id\" = 1\nORDER BY 1",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "count"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "counts",
-          "timeColumn": "date",
-          "timeColumnType": "date",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "int4",
-              "name": "",
-              "params": [
-                "\"user_id\"",
-                "=",
-                "1"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "timeFrom": "6M",
-      "timeShift": null,
-      "title": "Contribution",
-      "type": "neocat-cal-heatmap-panel"
-    },
-    {
-      "datasource": "${DS_DATABASE}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -294,12 +204,14 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 8,
-        "x": 16,
+        "w": 9,
+        "x": 7,
         "y": 0
       },
       "id": 6,
       "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -312,9 +224,13 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "7.5.17",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_DATABASE}"
+          },
           "format": "time_series",
           "group": [],
           "hide": false,
@@ -345,60 +261,248 @@
         }
       ],
       "timeFrom": "30d",
-      "timeShift": null,
       "title": "Monthly Total",
       "type": "gauge"
     },
     {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_DATABASE}",
-      "decimals": 0,
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_DATABASE}"
+      },
+      "description": "",
       "fieldConfig": {
         "defaults": {
-          "links": []
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Count"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "orange",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Date"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "time: YYYY/MM/DD"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_DATABASE}"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  \"date\" AS \"time\",\n  \"count\"\nFROM \"counts\"\nWHERE\n  $__timeFilter(\"date\")\nORDER BY \"date\" DESC",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "counts",
+          "timeColumn": "date",
+          "timeColumnType": "date",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Metrics",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "count": "Count",
+              "time": "Date"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_DATABASE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "links": [],
+          "mappings": [],
+          "max": 5,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
         },
         "overrides": []
       },
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 10,
         "w": 16,
         "x": 0,
         "y": 6
       },
-      "hiddenSeries": false,
       "hideTimeOverride": false,
       "id": 8,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 1,
-      "nullPointMode": "null",
       "options": {
-        "alertThreshold": true
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
       },
-      "percentage": false,
-      "pluginVersion": "7.5.17",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "pluginVersion": "10.2.2",
       "targets": [
         {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_DATABASE}"
+          },
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
@@ -437,180 +541,12 @@
           ]
         }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
       "title": "Daily",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": 0,
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": "5",
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "datasource": "${DS_DATABASE}",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "left",
-            "displayMode": "auto",
-            "filterable": false
-          },
-          "decimals": 0,
-          "displayName": "",
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Count"
-            },
-            "properties": [
-              {
-                "id": "custom.displayMode",
-                "value": "color-text"
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "orange",
-                      "value": null
-                    },
-                    {
-                      "color": "green",
-                      "value": 1
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Date"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "time: YYYY/MM/DD"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 8,
-        "x": 16,
-        "y": 6
-      },
-      "id": 10,
-      "options": {
-        "showHeader": true
-      },
-      "pluginVersion": "7.5.17",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  \"date\" AS \"time\",\n  \"count\"\nFROM \"counts\"\nWHERE\n  $__timeFilter(\"date\")\nORDER BY \"date\" DESC",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "count"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "counts",
-          "timeColumn": "date",
-          "timeColumnType": "date",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Metrics",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {},
-            "indexByName": {},
-            "renameByName": {
-              "count": "Count",
-              "time": "Date"
-            }
-          }
-        }
-      ],
-      "type": "table"
+      "type": "timeseries"
     }
   ],
-  "schemaVersion": 27,
-  "style": "dark",
+  "refresh": "",
+  "schemaVersion": 38,
   "tags": [],
   "templating": {
     "list": [
@@ -620,11 +556,8 @@
           "text": "Database",
           "value": "Database"
         },
-        "description": null,
-        "error": null,
         "hide": 2,
         "includeAll": false,
-        "label": null,
         "multi": false,
         "name": "DS_DATABASE",
         "options": [],
@@ -657,5 +590,6 @@
   "timezone": "",
   "title": "ぴゅっぴゅカウンター",
   "uid": "ejaculation-counter",
-  "version": 3
+  "version": 1,
+  "weekStart": ""
 }
