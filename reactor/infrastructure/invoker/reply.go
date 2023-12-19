@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
-	"github.com/kylemcc/twitter-text-go/validate"
 	"github.com/mattn/go-mastodon"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/rivo/uniseg"
 )
 
 const (
@@ -47,7 +47,7 @@ func NewReply(client *mastodon.Client) service.Reply {
 
 func getTootLength(s string) int {
 	s = MentionRegexp.ReplaceAllString(s, "$1")
-	return validate.TweetLength(s)
+	return uniseg.GraphemeClusterCount(s)
 }
 
 func pack(r io.Reader) (string, int, error) {
