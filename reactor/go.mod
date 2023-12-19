@@ -5,13 +5,13 @@ go 1.21
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/kylemcc/twitter-text-go v0.0.0-20180726194232-7f582f6736ec
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-mastodon v0.0.6
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rabbitmq/amqp091-go v1.9.0
+	github.com/rivo/uniseg v0.4.4
 	go.uber.org/mock v0.3.0
 	golang.org/x/sync v0.5.0
 	golang.org/x/sys v0.15.0
@@ -56,6 +56,5 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
-	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
