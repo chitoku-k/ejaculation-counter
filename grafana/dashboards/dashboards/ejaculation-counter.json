@@ -5,7 +5,7 @@
       "label": "Database",
       "description": "",
       "type": "datasource",
-      "pluginId": "postgres",
+      "pluginId": "grafana-postgresql-datasource",
       "pluginName": "PostgreSQL"
     }
   ],
@@ -21,11 +21,11 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.2.3"
+      "version": "10.3.1"
     },
     {
       "type": "datasource",
-      "id": "postgres",
+      "id": "grafana-postgresql-datasource",
       "name": "PostgreSQL",
       "version": "1.0.0"
     },
@@ -73,7 +73,7 @@
   "panels": [
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "${DS_DATABASE}"
       },
       "fieldConfig": {
@@ -101,7 +101,8 @@
               }
             ]
           },
-          "unit": "locale"
+          "unit": "locale",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -126,15 +127,16 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "10.3.1",
       "targets": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
           "format": "time_series",
@@ -175,7 +177,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "${DS_DATABASE}"
       },
       "fieldConfig": {
@@ -198,7 +200,8 @@
                 "value": 21
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -222,13 +225,14 @@
         },
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
+        "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "10.3.1",
       "targets": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
           "format": "time_series",
@@ -266,7 +270,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "${DS_DATABASE}"
       },
       "description": "",
@@ -295,7 +299,8 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "short",
+          "unitScale": true
         },
         "overrides": [
           {
@@ -361,11 +366,11 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "10.3.1",
       "targets": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
           "format": "table",
@@ -414,7 +419,7 @@
     },
     {
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "${DS_DATABASE}"
       },
       "fieldConfig": {
@@ -472,7 +477,8 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "short",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -500,7 +506,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
           "format": "time_series",
@@ -546,7 +552,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 38,
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": [
