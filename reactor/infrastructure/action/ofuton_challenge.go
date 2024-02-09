@@ -49,7 +49,7 @@ func (oc *ofutonChallenge) Target(message service.Message) bool {
 func (oc *ofutonChallenge) Event(ctx context.Context, message service.Message) (service.Event, int, error) {
 	index := OfutonRegex.FindStringIndex(message.Content)
 	generator := func() string {
-		return Ofuton[oc.Random.Intn(len(Ofuton))]
+		return Ofuton[oc.Random.IntN(len(Ofuton))]
 	}
 
 	event := service.ReplyEvent{

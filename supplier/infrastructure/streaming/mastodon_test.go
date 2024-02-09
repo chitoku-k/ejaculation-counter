@@ -11,11 +11,11 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/streaming"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
-	"go.uber.org/mock/gomock"
 	"github.com/gorilla/websocket"
 	mast "github.com/mattn/go-mastodon"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("Mastodon", func() {

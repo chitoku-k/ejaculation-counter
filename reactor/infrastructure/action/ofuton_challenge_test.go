@@ -8,9 +8,9 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
-	"go.uber.org/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("OfutonChallenge", func() {
@@ -137,10 +137,10 @@ var _ = Describe("OfutonChallenge", func() {
 	Describe("Event()", func() {
 		BeforeEach(func() {
 			gomock.InOrder(
-				r.EXPECT().Intn(4).Return(2),
-				r.EXPECT().Intn(4).Return(0),
-				r.EXPECT().Intn(4).Return(1),
-				r.EXPECT().Intn(4).Return(0),
+				r.EXPECT().IntN(4).Return(2),
+				r.EXPECT().IntN(4).Return(0),
+				r.EXPECT().IntN(4).Return(1),
+				r.EXPECT().IntN(4).Return(0),
 			)
 		})
 
