@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/signal"
 	"sync"
@@ -90,7 +90,7 @@ func main() {
 			invoker.NewUpdate(env, mc, db),
 			invoker.NewAdministration(mc, db),
 			[]service.Action{
-				action.NewOfufutonChallenge(rand.New(rand.NewSource(1)), env),
+				action.NewOfufutonChallenge(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64())), env),
 				action.NewDB(env),
 				action.NewPyuUpdate(env),
 				action.NewMpyw(mpyw, env),

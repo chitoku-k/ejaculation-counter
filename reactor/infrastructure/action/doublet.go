@@ -3,7 +3,7 @@ package action
 import (
 	"context"
 	"io"
-	"math/rand"
+	"math/rand/v2"
 	"regexp"
 	"strconv"
 
@@ -54,7 +54,7 @@ func (d *doublet) Event(ctx context.Context, message service.Message) (service.E
 
 	items := d.Repository.Get()
 	generator := func() string {
-		return items[rand.Intn(len(items))]
+		return items[rand.IntN(len(items))]
 	}
 
 	event := service.ReplyEvent{

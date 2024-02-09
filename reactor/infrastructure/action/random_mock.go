@@ -38,16 +38,16 @@ func (m *MockRandom) EXPECT() *MockRandomMockRecorder {
 	return m.recorder
 }
 
-// Intn mocks base method.
-func (m *MockRandom) Intn(n int) int {
+// IntN mocks base method.
+func (m *MockRandom) IntN(n int) int {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Intn", n)
+	ret := m.ctrl.Call(m, "IntN", n)
 	ret0, _ := ret[0].(int)
 	return ret0
 }
 
-// Intn indicates an expected call of Intn.
-func (mr *MockRandomMockRecorder) Intn(n any) *gomock.Call {
+// IntN indicates an expected call of IntN.
+func (mr *MockRandomMockRecorder) IntN(n any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intn", reflect.TypeOf((*MockRandom)(nil).Intn), n)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IntN", reflect.TypeOf((*MockRandom)(nil).IntN), n)
 }

@@ -3,5 +3,5 @@
 package action
 
 type Random interface {
-	Intn(n int) int
+	IntN(n int) int
 }
