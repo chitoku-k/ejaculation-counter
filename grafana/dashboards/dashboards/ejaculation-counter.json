@@ -21,7 +21,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.3.1"
+      "version": "10.3.3"
     },
     {
       "type": "datasource",
@@ -132,7 +132,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.3.1",
+      "pluginVersion": "10.3.3",
       "targets": [
         {
           "datasource": {
@@ -228,7 +228,7 @@
         "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "10.3.1",
+      "pluginVersion": "10.3.3",
       "targets": [
         {
           "datasource": {
@@ -366,7 +366,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "10.3.1",
+      "pluginVersion": "10.3.3",
       "targets": [
         {
           "datasource": {
@@ -560,7 +560,7 @@
         "current": {
           "selected": false,
           "text": "Database",
-          "value": "Database"
+          "value": "database"
         },
         "hide": 2,
         "includeAll": false,
