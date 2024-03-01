@@ -1,4 +1,4 @@
-FROM rabbitmq:3.12.13-management
+FROM rabbitmq:3.13.0-management
 ARG RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=0.6.2
 ARG RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION=1.14.0
 ADD https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/$RABBITMQ_MESSAGE_DEDUPLICATION_VERSION/elixir-$RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION.ez /opt/rabbitmq/plugins/
