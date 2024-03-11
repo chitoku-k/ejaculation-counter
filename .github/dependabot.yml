@@ -63,3 +63,8 @@ updates:
     time: "00:00"
     timezone: Asia/Tokyo
   open-pull-requests-limit: 99
+  ignore:
+  - dependency-name: rabbitmq
+    update-types:
+    - version-update:semver-major
+    - version-update:semver-minor
