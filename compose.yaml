@@ -103,7 +103,7 @@ services:
         target: /var/lib/rabbitmq
 
   database:
-    image: postgres:15.5
+    image: postgres:16.2
     volumes:
       - type: bind
         source: ./database
