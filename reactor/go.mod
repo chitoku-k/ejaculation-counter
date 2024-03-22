@@ -8,7 +8,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-mastodon v0.0.6
 	github.com/onsi/ginkgo/v2 v2.17.0
-	github.com/onsi/gomega v1.31.1
+	github.com/onsi/gomega v1.32.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rabbitmq/amqp091-go v1.9.0
 	github.com/rivo/uniseg v0.4.7
@@ -31,7 +31,6 @@ require (
 	github.com/go-playground/validator/v10 v10.15.3 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
