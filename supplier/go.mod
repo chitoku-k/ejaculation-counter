@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gorilla/websocket v1.5.1
-	github.com/mattn/go-mastodon v0.0.6
+	github.com/mattn/go-mastodon v0.0.8
 	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/onsi/ginkgo/v2 v2.17.3
 	github.com/onsi/gomega v1.33.1
