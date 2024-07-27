@@ -144,7 +144,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes token", func() {
-						shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
 					})
 				})
 			})
@@ -183,7 +183,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name", func() {
-						shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
 					})
 				})
 
@@ -218,7 +218,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name", func() {
-						shindanmaker.Do(context.Background(), "@test", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "@test", serverURL+"/a/855159")
 					})
 				})
 
@@ -253,7 +253,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name", func() {
-						shindanmaker.Do(context.Background(), "＠テスト", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "＠テスト", serverURL+"/a/855159")
 					})
 				})
 
@@ -288,7 +288,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name", func() {
-						shindanmaker.Do(context.Background(), "(テスト)", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "(テスト)", serverURL+"/a/855159")
 					})
 				})
 
@@ -323,7 +323,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name", func() {
-						shindanmaker.Do(context.Background(), "（テスト）", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "（テスト）", serverURL+"/a/855159")
 					})
 				})
 
@@ -358,7 +358,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before half-width at-sign", func() {
-						shindanmaker.Do(context.Background(), "テスト@がんばらない", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "テスト@がんばらない", serverURL+"/a/855159")
 					})
 				})
 
@@ -393,7 +393,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before full-width at-sign", func() {
-						shindanmaker.Do(context.Background(), "テスト＠がんばらない", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "テスト＠がんばらない", serverURL+"/a/855159")
 					})
 				})
 
@@ -428,7 +428,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before half-width parentheses", func() {
-						shindanmaker.Do(context.Background(), "テスト(昨日: 1 / 今日: 1)", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "テスト(昨日: 1 / 今日: 1)", serverURL+"/a/855159")
 					})
 				})
 
@@ -463,7 +463,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before full-width parentheses", func() {
-						shindanmaker.Do(context.Background(), "テスト（昨日: 1 / 今日: 1）", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "テスト（昨日: 1 / 今日: 1）", serverURL+"/a/855159")
 					})
 				})
 			})
@@ -500,7 +500,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name", func() {
-						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}", serverURL+"/a/855159")
 					})
 				})
 
@@ -535,7 +535,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before half-width at-sign", func() {
-						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}@がんばらない", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}@がんばらない", serverURL+"/a/855159")
 					})
 				})
 
@@ -570,7 +570,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before full-width at-sign", func() {
-						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}＠がんばらない", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}＠がんばらない", serverURL+"/a/855159")
 					})
 				})
 
@@ -605,7 +605,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before half-width parentheses", func() {
-						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}(昨日: 1 / 今日: 1)", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}(昨日: 1 / 今日: 1)", serverURL+"/a/855159")
 					})
 				})
 
@@ -640,7 +640,7 @@ var _ = Describe("Shindanmaker", func() {
 					})
 
 					It("passes name before full-width parentheses", func() {
-						shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}（昨日: 1 / 今日: 1）", serverURL+"/a/855159")
+						_, _ = shindanmaker.Do(context.Background(), "$1\\1${10}\\{10}（昨日: 1 / 今日: 1）", serverURL+"/a/855159")
 					})
 				})
 			})

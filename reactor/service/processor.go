@@ -68,7 +68,7 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 	for packet := range packets {
 		if ps.Clock().Sub(packet.Timestamp()) > PacketTTL {
 			slog.Warn("A message has been discarded as it is too old", slog.Any("message-timestamp", packet.Timestamp()))
-			ps.Queue.Ack(packet.Tag())
+			_ = ps.Queue.Ack(packet.Tag())
 			continue
 		}
 
@@ -82,10 +82,18 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 				})
 				if err != nil {
 					slog.Error("Failed to update", slog.Any("err", err))
-					ps.Queue.Reject(p.Tag())
+
+					err := ps.Queue.Reject(p.Tag())
+					if err != nil {
+						slog.Warn("The message could not be rejected", slog.Any("err", err))
+					}
 					return
 				}
-				ps.Queue.Ack(p.Tag())
+
+				err = ps.Queue.Ack(p.Tag())
+				if err != nil {
+					slog.Warn("The message could not be acknowledged", slog.Any("err", err))
+				}
 			}()
 
 		case Message:
@@ -122,10 +130,18 @@ func (ps *processor) Execute(ctx context.Context, packets <-chan Packet) {
 				err := ps.doEvents(ctx, result)
 				if err != nil {
 					slog.Error("Failed to process", slog.Any("err", err))
-					ps.Queue.Reject(p.Tag())
+
+					err := ps.Queue.Reject(p.Tag())
+					if err != nil {
+						slog.Warn("The message could not be rejected", slog.Any("err", err))
+					}
 					return
 				}
-				ps.Queue.Ack(p.Tag())
+
+				err = ps.Queue.Ack(p.Tag())
+				if err != nil {
+					slog.Warn("The message could not be acknowledged", slog.Any("err", err))
+				}
 			}()
 		}
 	}

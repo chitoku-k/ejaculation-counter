@@ -110,7 +110,7 @@ func (m *mastodon) Close(exit bool) error {
 		m.ch = nil
 	}
 	if m.conn != nil {
-		m.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Shutdown"))
+		_ = m.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Shutdown"))
 		return m.conn.Close()
 	}
 	return nil
