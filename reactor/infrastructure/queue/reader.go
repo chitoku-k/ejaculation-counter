@@ -232,7 +232,7 @@ func (r *reader) reconnect(ctx context.Context) error {
 	reconnect := ReconnectNone
 
 	for {
-		r.disconnect()
+		_ = r.disconnect()
 		err := r.connect()
 		if err == nil {
 			return nil

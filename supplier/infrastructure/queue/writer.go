@@ -214,7 +214,7 @@ func (w *writer) reconnect(ctx context.Context) {
 	reconnect := ReconnectNone
 
 	for {
-		w.disconnect()
+		_ = w.disconnect()
 		err := w.connect(ctx)
 		if err == nil {
 			return

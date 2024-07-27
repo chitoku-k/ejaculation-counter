@@ -123,7 +123,12 @@ func Get() (Environment, error) {
 			continue
 		}
 
-		fmt.Sscanf(s, "%d", v)
+		n, err := strconv.ParseInt(s, 10, 0)
+		if err != nil {
+			return env, fmt.Errorf("%s is invalid: %w", k, err)
+		}
+
+		*v = n
 	}
 
 	if logLevel != "" {
