@@ -8,23 +8,9 @@ updates:
     time: "00:00"
     timezone: Asia/Tokyo
 - package-ecosystem: gomod
-  directory: "/supplier"
-  schedule:
-    interval: weekly
-    day: saturday
-    time: "00:00"
-    timezone: Asia/Tokyo
-  open-pull-requests-limit: 99
-- package-ecosystem: gomod
-  directory: "/reactor"
-  schedule:
-    interval: weekly
-    day: saturday
-    time: "00:00"
-    timezone: Asia/Tokyo
-  open-pull-requests-limit: 99
-- package-ecosystem: docker
-  directory: "/"
+  directories:
+  - "/reactor"
+  - "/supplier"
   schedule:
     interval: weekly
     day: saturday
@@ -32,31 +18,12 @@ updates:
     timezone: Asia/Tokyo
   open-pull-requests-limit: 99
 - package-ecosystem: docker
-  directory: "/supplier"
-  schedule:
-    interval: weekly
-    day: saturday
-    time: "00:00"
-    timezone: Asia/Tokyo
-  open-pull-requests-limit: 99
-- package-ecosystem: docker
-  directory: "/reactor"
-  schedule:
-    interval: weekly
-    day: saturday
-    time: "00:00"
-    timezone: Asia/Tokyo
-  open-pull-requests-limit: 99
-- package-ecosystem: docker
-  directory: "/grafana"
-  schedule:
-    interval: weekly
-    day: saturday
-    time: "00:00"
-    timezone: Asia/Tokyo
-  open-pull-requests-limit: 99
-- package-ecosystem: docker
-  directory: "/mq"
+  directories:
+  - "/"
+  - "/grafana"
+  - "/mq"
+  - "/reactor"
+  - "/supplier"
   schedule:
     interval: weekly
     day: saturday
