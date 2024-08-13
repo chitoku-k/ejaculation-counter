@@ -9,6 +9,9 @@ RUN --mount=type=cache,target=/go \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -ldflags='-s -w'
 
+FROM build AS dev
+COPY --from=golangci/golangci-lint /usr/bin/golangci-lint /usr/bin
+
 FROM scratch AS production
 ARG PORT=80
 ENV PORT=$PORT
