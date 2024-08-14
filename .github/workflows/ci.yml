@@ -1,8 +1,47 @@
 name: CI Workflow
 on:
-  - push
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        context:
+          - reactor
+          - supplier
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up reviewdog
+        uses: reviewdog/action-setup@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: ${{ matrix.context }}
+          target: dev
+          cache-from: type=gha,scope=${{ github.ref_name }}-${{ matrix.context }}test
+          cache-to: type=gha,scope=${{ github.ref_name }}-${{ matrix.context }}test,mode=max
+          load: true
+      - name: Run tests
+        run: |
+          docker run --rm ${{ steps.build.outputs.imageid }} go test ./...
+      - name: Run golangci-lint
+        if: ${{ always() && steps.build.conclusion == 'success' }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker run --rm ${{ steps.build.outputs.imageid }} golangci-lint run --out-format=line-number --path-prefix=${{ matrix.context }} |
+            reviewdog -f=golangci-lint -reporter=github-pr-annotations -filter-mode=nofilter -fail-on-error -tee
+
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -18,31 +57,3 @@ jobs:
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
-  test-supplier:
-    name: Test Supplier
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: supplier/go.mod
-          cache-dependency-path: supplier/go.sum
-      - name: Run tests
-        working-directory: supplier
-        run: go test ./...
-  test-reactor:
-    name: Test Reactor
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: reactor/go.mod
-          cache-dependency-path: reactor/go.sum
-      - name: Run tests
-        working-directory: reactor
-        run: go test ./...
