@@ -1,15 +1,17 @@
 # syntax = docker/dockerfile:1
-FROM golang:1.22.6 AS build
+FROM golang:1.22.6 AS base
 WORKDIR /usr/src
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go \
     go mod download
 COPY . ./
+
+FROM base AS build
 RUN --mount=type=cache,target=/go \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -ldflags='-s -w'
 
-FROM build AS dev
+FROM base AS dev
 COPY --from=golangci/golangci-lint /usr/bin/golangci-lint /usr/bin
 
 FROM scratch AS production
