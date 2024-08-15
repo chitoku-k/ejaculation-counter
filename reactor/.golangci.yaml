@@ -1,0 +1,4 @@
+run:
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  timeout: 5m
