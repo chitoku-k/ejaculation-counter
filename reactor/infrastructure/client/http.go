@@ -11,10 +11,11 @@ func NewHttpClient() (*http.Client, error) {
 		return nil, err
 	}
 
+	transport := http.DefaultTransport.(*http.Transport)
+	transport.MaxIdleConnsPerHost = 16
+
 	return &http.Client{
-		Jar: jar,
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: 16,
-		},
+		Jar:       jar,
+		Transport: transport,
 	}, nil
 }
