@@ -12,6 +12,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
+const (
+	separator = "\n--------\n"
+)
+
 var (
 	ExecutedAdministrationEventsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: "ejaculation_counter",
@@ -52,7 +56,7 @@ func (a *administration) Do(ctx context.Context, event service.AdministrationEve
 		return fmt.Errorf("failed to run query: %w", err)
 	}
 
-	status, n, err := pack(strings.NewReader(fmt.Sprintf("@%s\n%s", event.Acct, strings.Join(result, "\n"))))
+	status, n, err := pack(strings.NewReader(fmt.Sprintf("@%s\n%s", event.Acct, strings.Join(result, separator))))
 	if err != nil {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
 		return fmt.Errorf("failed to prepare reply (%v bytes): %w", n, err)

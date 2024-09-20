@@ -10,10 +10,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	separator = "--------"
-)
-
 type Column struct {
 	Name  string
 	Value any
@@ -80,10 +76,6 @@ func (d *db) Query(ctx context.Context, q string) ([]string, error) {
 
 	var result []string
 	for rows.Next() {
-		if len(result) > 0 {
-			result = append(result, separator)
-		}
-
 		var row []*Column
 		var values []any
 		for _, column := range columns {
@@ -97,9 +89,15 @@ func (d *db) Query(ctx context.Context, q string) ([]string, error) {
 			return nil, fmt.Errorf("failed to scan: %w", err)
 		}
 
-		for _, v := range row {
-			result = append(result, v.String())
+		var sb strings.Builder
+		for i, v := range row {
+			if i > 0 {
+				sb.WriteString("\n")
+			}
+			sb.WriteString(v.String())
 		}
+
+		result = append(result, sb.String())
 	}
 
 	return result, nil
