@@ -11,12 +11,9 @@ import (
 )
 
 type Environment struct {
-	DB DB
-
+	DB       DB
 	Mastodon Mastodon
-
-	Queue Queue
-
+	Queue    Queue
 	External External
 
 	LogLevel slog.Level
@@ -57,93 +54,76 @@ type External struct {
 	MpywAPIURL string
 }
 
-func Get() (Environment, error) {
-	var missing []string
-	var env Environment
-	var logLevel string
-
-	for k, v := range map[string]*string{
-		"DB_HOST":               &env.DB.Host,
-		"DB_DATABASE":           &env.DB.Database,
-		"DB_USERNAME":           &env.DB.Username,
-		"DB_SSL_MODE":           &env.DB.SSLMode,
-		"MASTODON_USER_ID":      &env.Mastodon.UserID,
-		"MASTODON_SERVER_URL":   &env.Mastodon.ServerURL,
-		"MASTODON_ACCESS_TOKEN": &env.Mastodon.AccessToken,
-		"MQ_HOST":               &env.Queue.Host,
-		"EXT_MPYW_API_URL":      &env.External.MpywAPIURL,
-		"PORT":                  &env.Port,
+func Get() (env Environment, errs error) {
+	for _, entry := range []struct {
+		name     string
+		field    any
+		optional bool
+	}{
+		{name: "DB_HOST", field: &env.DB.Host},
+		{name: "DB_DATABASE", field: &env.DB.Database},
+		{name: "DB_USERNAME", field: &env.DB.Username},
+		{name: "DB_PASSWORD", field: &env.DB.Password, optional: true},
+		{name: "DB_SSL_MODE", field: &env.DB.SSLMode},
+		{name: "DB_SSL_CERT", field: &env.DB.SSLCert, optional: true},
+		{name: "DB_SSL_KEY", field: &env.DB.SSLKey, optional: true},
+		{name: "DB_SSL_ROOT_CERT", field: &env.DB.SSLRootCert, optional: true},
+		{name: "DB_MAX_LIFETIME_SEC", field: &env.DB.MaxLifetime, optional: true},
+		{name: "MASTODON_USER_ID", field: &env.Mastodon.UserID},
+		{name: "MASTODON_SERVER_URL", field: &env.Mastodon.ServerURL},
+		{name: "MASTODON_ACCESS_TOKEN", field: &env.Mastodon.AccessToken},
+		{name: "MQ_HOST", field: &env.Queue.Host},
+		{name: "MQ_USERNAME", field: &env.Queue.Username, optional: true},
+		{name: "MQ_PASSWORD", field: &env.Queue.Password, optional: true},
+		{name: "MQ_SSL_CERT", field: &env.Queue.SSLCert, optional: true},
+		{name: "MQ_SSL_KEY", field: &env.Queue.SSLKey, optional: true},
+		{name: "MQ_SSL_ROOT_CERT", field: &env.Queue.SSLRootCert, optional: true},
+		{name: "EXT_MPYW_API_URL", field: &env.External.MpywAPIURL},
+		{name: "LOG_LEVEL", field: &env.External, optional: true},
+		{name: "PORT", field: &env.Port},
+		{name: "TLS_CERT", field: &env.TLSCert, optional: true},
+		{name: "TLS_KEY", field: &env.TLSKey, optional: true},
+		{name: "USER_ID", field: &env.UserID},
 	} {
-		*v = os.Getenv(k)
-
-		if *v == "" {
-			missing = append(missing, k)
-		}
-	}
-
-	for k, v := range map[string]*string{
-		"TLS_CERT":         &env.TLSCert,
-		"TLS_KEY":          &env.TLSKey,
-		"DB_PASSWORD":      &env.DB.Password,
-		"DB_SSL_CERT":      &env.DB.SSLCert,
-		"DB_SSL_KEY":       &env.DB.SSLKey,
-		"DB_SSL_ROOT_CERT": &env.DB.SSLRootCert,
-		"MQ_SSL_CERT":      &env.Queue.SSLCert,
-		"MQ_SSL_KEY":       &env.Queue.SSLKey,
-		"MQ_SSL_ROOT_CERT": &env.Queue.SSLRootCert,
-		"MQ_USERNAME":      &env.Queue.Username,
-		"MQ_PASSWORD":      &env.Queue.Password,
-		"LOG_LEVEL":        &logLevel,
-	} {
-		*v = os.Getenv(k)
-	}
-
-	for k, v := range map[string]*time.Duration{
-		"DB_MAX_LIFETIME_SEC": &env.DB.MaxLifetime,
-	} {
-		s := os.Getenv(k)
-		if s == "" {
+		v := os.Getenv(entry.name)
+		if v == "" {
+			if !entry.optional {
+				errs = errors.Join(errs, fmt.Errorf("missing: %v", entry.name))
+			}
 			continue
 		}
 
-		t, err := strconv.Atoi(s)
-		if err != nil {
-			return env, fmt.Errorf("%s is invalid: %w", k, err)
-		}
+		switch field := entry.field.(type) {
+		case *string:
+			*field = v
 
-		*v = time.Duration(t) * time.Second
-	}
+		case *int64:
+			v, err := strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("%s is invalid: %w", entry.name, err))
+				continue
+			}
+			*field = v
 
-	for k, v := range map[string]*int64{
-		"USER_ID": &env.UserID,
-	} {
-		s := os.Getenv(k)
-		if s == "" {
-			missing = append(missing, k)
-			continue
-		}
+		case *time.Duration:
+			v, err := strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("%s is invalid: %w", entry.name, err))
+				continue
+			}
+			*field = time.Duration(v) * time.Second
 
-		n, err := strconv.ParseInt(s, 10, 0)
-		if err != nil {
-			return env, fmt.Errorf("%s is invalid: %w", k, err)
-		}
-
-		*v = n
-	}
-
-	if logLevel != "" {
-		var err error
-		env.LogLevel, err = parseLogLevel(logLevel)
-		if err != nil {
-			return env, fmt.Errorf("failed to parse log level: %w", err)
+		case *slog.Level:
+			v, err := parseLogLevel(v)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("%s is invalid: %w", entry.name, err))
+				continue
+			}
+			*field = v
 		}
 	}
 
-	if len(missing) > 0 {
-		return env, errors.New("missing env(s): " + strings.Join(missing, ", "))
-	}
-
-	return env, nil
+	return
 }
 
 func parseLogLevel(lvl string) (slog.Level, error) {
