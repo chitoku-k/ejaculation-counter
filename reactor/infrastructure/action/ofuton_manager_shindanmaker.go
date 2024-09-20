@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -35,14 +34,14 @@ type OfutonRule struct {
 }
 
 type ofutonManagerShindanmaker struct {
-	Client      client.Shindanmaker
-	Environment config.Environment
+	Client         client.Shindanmaker
+	MastodonUserID string
 }
 
-func NewOfutonManagerShindanmaker(c client.Shindanmaker, environment config.Environment) service.Action {
+func NewOfutonManagerShindanmaker(c client.Shindanmaker, mastodonUserID string) service.Action {
 	return &ofutonManagerShindanmaker{
-		Client:      c,
-		Environment: environment,
+		Client:         c,
+		MastodonUserID: mastodonUserID,
 	}
 }
 
@@ -52,7 +51,7 @@ func (os *ofutonManagerShindanmaker) Name() string {
 
 func (os *ofutonManagerShindanmaker) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		(message.Account.ID != os.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		(message.Account.ID != os.MastodonUserID || message.InReplyToID == "") &&
 		OfutonManagerRegex.MatchString(message.Content)
 }
 

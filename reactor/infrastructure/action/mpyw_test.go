@@ -8,7 +8,6 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -17,24 +16,19 @@ import (
 
 var _ = Describe("Mpyw", func() {
 	var (
-		ctrl *gomock.Controller
-		c    *client.MockMpyw
-		env  config.Environment
-		mpyw service.Action
+		ctrl           *gomock.Controller
+		c              *client.MockMpyw
+		mastodonUserID string
+		mpywAPIURL     string
+		mpyw           service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockMpyw(ctrl)
-		env = config.Environment{
-			Mastodon: config.Mastodon{
-				UserID: "1",
-			},
-			External: config.External{
-				MpywAPIURL: "https://mpyw.hinanawi.net/api",
-			},
-		}
-		mpyw = action.NewMpyw(c, env)
+		mastodonUserID = "1"
+		mpywAPIURL = "https://mpyw.hinanawi.net/api"
+		mpyw = action.NewMpyw(c, mastodonUserID, mpywAPIURL)
 	})
 
 	AfterEach(func() {

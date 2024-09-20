@@ -12,7 +12,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -48,7 +47,12 @@ type reader struct {
 	Exchange    string
 	QueueName   string
 	RoutingKey  string
-	Environment config.Environment
+	Host        string
+	Username    string
+	Password    string
+	SSLCert     string
+	SSLKey      string
+	SSLRootCert string
 	Connection  *amqp.Connection
 	Channel     *amqp.Channel
 	Delivery    <-chan amqp.Delivery
@@ -56,17 +60,21 @@ type reader struct {
 }
 
 func NewReader(
-	exchange string,
-	queueName string,
-	routingKey string,
-	environment config.Environment,
+	exchange, queueName, routingKey string,
+	host, username, password string,
+	sslCert, sslKey, sslRootCert string,
 ) (service.QueueReader, error) {
 	r := &reader{
 		ch:          make(chan service.Packet, QueueSize),
 		Exchange:    exchange,
 		QueueName:   queueName,
 		RoutingKey:  routingKey,
-		Environment: environment,
+		Host:        host,
+		Username:    username,
+		Password:    password,
+		SSLCert:     sslCert,
+		SSLKey:      sslKey,
+		SSLRootCert: sslRootCert,
 	}
 
 	return r, r.connect()
@@ -76,20 +84,20 @@ func (r *reader) dial(url string) (*amqp.Connection, net.Conn, error) {
 	tlsConfig := &tls.Config{}
 
 	var sasl []amqp.Authentication
-	if r.Environment.Queue.Username == "" && r.Environment.Queue.Password == "" {
+	if r.Username == "" && r.Password == "" {
 		sasl = append(sasl, &amqp.ExternalAuth{})
 	}
 
-	if r.Environment.Queue.SSLCert != "" && r.Environment.Queue.SSLKey != "" {
-		cert, err := tls.LoadX509KeyPair(r.Environment.Queue.SSLCert, r.Environment.Queue.SSLKey)
+	if r.SSLCert != "" && r.SSLKey != "" {
+		cert, err := tls.LoadX509KeyPair(r.SSLCert, r.SSLKey)
 		if err != nil {
 			return nil, nil, err
 		}
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
 
-	if r.Environment.Queue.SSLRootCert != "" {
-		ca, err := os.ReadFile(r.Environment.Queue.SSLRootCert)
+	if r.SSLRootCert != "" {
+		ca, err := os.ReadFile(r.SSLRootCert)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to read CA file for queue: %w", err)
 		}
@@ -115,13 +123,13 @@ func (r *reader) dial(url string) (*amqp.Connection, net.Conn, error) {
 func (r *reader) connect() error {
 	slog.Debug("Connecting to MQ broker...")
 
-	uri, err := amqp.ParseURI(r.Environment.Queue.Host)
+	uri, err := amqp.ParseURI(r.Host)
 	if err != nil {
 		return fmt.Errorf("failed to parse MQ URI: %w", err)
 	}
 
-	uri.Username = r.Environment.Queue.Username
-	uri.Password = r.Environment.Queue.Password
+	uri.Username = r.Username
+	uri.Password = r.Password
 
 	var nc net.Conn
 	r.Connection, nc, err = r.dial(uri.String())

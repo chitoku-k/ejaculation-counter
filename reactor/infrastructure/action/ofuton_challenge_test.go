@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -17,19 +16,15 @@ var _ = Describe("OfutonChallenge", func() {
 	var (
 		ctrl            *gomock.Controller
 		r               *action.MockRandom
-		env             config.Environment
+		mastodonUserID  string
 		ofutonChallenge service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		r = action.NewMockRandom(ctrl)
-		env = config.Environment{
-			Mastodon: config.Mastodon{
-				UserID: "1",
-			},
-		}
-		ofutonChallenge = action.NewOfufutonChallenge(r, env)
+		mastodonUserID = "1"
+		ofutonChallenge = action.NewOfufutonChallenge(r, mastodonUserID)
 	})
 
 	AfterEach(func() {

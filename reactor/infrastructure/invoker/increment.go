@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/mattn/go-mastodon"
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,20 +26,20 @@ var (
 )
 
 type increment struct {
-	Environment config.Environment
-	Client      *mastodon.Client
-	DB          client.DB
+	Client *mastodon.Client
+	DB     client.DB
+	UserID int64
 }
 
 func NewIncrement(
-	environment config.Environment,
 	client *mastodon.Client,
 	db client.DB,
+	userID int64,
 ) service.Increment {
 	return &increment{
-		Environment: environment,
-		Client:      client,
-		DB:          db,
+		Client: client,
+		DB:     db,
+		UserID: userID,
 	}
 }
 
@@ -67,7 +66,7 @@ func (i *increment) Do(ctx context.Context, event service.IncrementEvent) error 
 		return fmt.Errorf("failed to update current user: %w", err)
 	}
 
-	err = i.DB.UpdateCount(ctx, i.Environment.UserID, time.Now(), summary.Today+1)
+	err = i.DB.UpdateCount(ctx, i.UserID, time.Now(), summary.Today+1)
 	if err != nil {
 		IncrementErrorTotal.WithLabelValues("db").Inc()
 		return fmt.Errorf("failed to update DB: %w", err)

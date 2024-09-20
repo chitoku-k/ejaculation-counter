@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
@@ -17,14 +16,16 @@ var (
 )
 
 type mpyw struct {
-	Client      client.Mpyw
-	Environment config.Environment
+	Client         client.Mpyw
+	MastodonUserID string
+	MpywAPIURL     string
 }
 
-func NewMpyw(c client.Mpyw, environment config.Environment) service.Action {
+func NewMpyw(c client.Mpyw, mastodonUserID, mpywAPIURL string) service.Action {
 	return &mpyw{
-		Client:      c,
-		Environment: environment,
+		Client:         c,
+		MastodonUserID: mastodonUserID,
+		MpywAPIURL:     mpywAPIURL,
 	}
 }
 
@@ -34,7 +35,7 @@ func (m *mpyw) Name() string {
 
 func (m *mpyw) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		(message.Account.ID != m.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		(message.Account.ID != m.MastodonUserID || message.InReplyToID == "") &&
 		MpywRegex.MatchString(message.Content)
 }
 
@@ -47,7 +48,7 @@ func (m *mpyw) Event(ctx context.Context, message service.Message) (service.Even
 		count = 1
 	}
 
-	result, err := m.Client.Do(ctx, m.Environment.External.MpywAPIURL, count)
+	result, err := m.Client.Do(ctx, m.MpywAPIURL, count)
 	if err != nil {
 		return nil, index[0], fmt.Errorf("failed to create event: %w", err)
 	}

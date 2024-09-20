@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
 	"github.com/chitoku-k/ejaculation-counter/reactor/repository"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
@@ -18,14 +17,14 @@ var (
 )
 
 type through struct {
-	Repository  repository.ThroughRepository
-	Environment config.Environment
+	Repository     repository.ThroughRepository
+	MastodonUserID string
 }
 
-func NewThrough(repository repository.ThroughRepository, environment config.Environment) service.Action {
+func NewThrough(repository repository.ThroughRepository, mastodonUserID string) service.Action {
 	return &through{
-		Repository:  repository,
-		Environment: environment,
+		Repository:     repository,
+		MastodonUserID: mastodonUserID,
 	}
 }
 
@@ -35,7 +34,7 @@ func (t *through) Name() string {
 
 func (t *through) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		(message.Account.ID != t.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		(message.Account.ID != t.MastodonUserID || message.InReplyToID == "") &&
 		ThroughRegex.MatchString(message.Content)
 }
 

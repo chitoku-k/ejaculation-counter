@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,19 +12,15 @@ import (
 
 var _ = Describe("DB", func() {
 	var (
-		ctrl *gomock.Controller
-		env  config.Environment
-		db   service.Action
+		ctrl           *gomock.Controller
+		mastodonUserID string
+		db             service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		env = config.Environment{
-			Mastodon: config.Mastodon{
-				UserID: "1",
-			},
-		}
-		db = action.NewDB(env)
+		mastodonUserID = "1"
+		db = action.NewDB(mastodonUserID)
 	})
 
 	AfterEach(func() {
