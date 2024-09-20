@@ -51,7 +51,7 @@ func (as *avShindanmaker) Event(ctx context.Context, message service.Message) (s
 	matches := AVRegex.FindStringSubmatch(message.Content)
 
 	if index == nil || matches == nil {
-		return nil, 0, service.NoMatchError
+		return nil, 0, service.ErrNoMatch
 	}
 
 	result, err := as.Client.Do(ctx, matches[1], "https://shindanmaker.com/a/794363")

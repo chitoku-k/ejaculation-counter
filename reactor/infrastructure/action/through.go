@@ -44,7 +44,7 @@ func (t *through) Event(ctx context.Context, message service.Message) (service.E
 	matches := ThroughRegex.FindStringSubmatch(message.Content)
 
 	if index == nil || matches == nil {
-		return nil, 0, service.NoMatchError
+		return nil, 0, service.ErrNoMatch
 	}
 
 	count, err := strconv.Atoi(matches[1])

@@ -37,7 +37,7 @@ func (d *db) Event(ctx context.Context, message service.Message) (service.Event,
 	matches := DBRegex.FindStringSubmatch(message.Content)
 
 	if index == nil || matches == nil {
-		return nil, 0, service.NoMatchError
+		return nil, 0, service.ErrNoMatch
 	}
 
 	event := service.AdministrationEvent{
