@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/mattn/go-mastodon"
 	"github.com/prometheus/client_golang/prometheus"
@@ -30,9 +29,9 @@ var (
 )
 
 type update struct {
-	Environment config.Environment
-	Client      *mastodon.Client
-	DB          client.DB
+	Client *mastodon.Client
+	DB     client.DB
+	UserID int64
 }
 
 type summary struct {
@@ -42,14 +41,14 @@ type summary struct {
 }
 
 func NewUpdate(
-	environment config.Environment,
 	client *mastodon.Client,
 	db client.DB,
+	userID int64,
 ) service.Update {
 	return &update{
-		Environment: environment,
-		Client:      client,
-		DB:          db,
+		Client: client,
+		DB:     db,
+		UserID: userID,
 	}
 }
 
@@ -124,7 +123,7 @@ func (u *update) Do(ctx context.Context, event service.UpdateEvent) error {
 		return fmt.Errorf("failed to send update: %w", err)
 	}
 
-	err = u.DB.UpdateCount(ctx, u.Environment.UserID, yesterday, summary.Today)
+	err = u.DB.UpdateCount(ctx, u.UserID, yesterday, summary.Today)
 	if err != nil {
 		UpdatesErrorTotal.WithLabelValues("db").Inc()
 		return fmt.Errorf("failed to update DB: %w", err)

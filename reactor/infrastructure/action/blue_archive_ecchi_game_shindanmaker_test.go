@@ -8,7 +8,6 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -19,19 +18,15 @@ var _ = Describe("BlueArchiveEcchiGameShindanmaker", func() {
 	var (
 		ctrl                             *gomock.Controller
 		c                                *client.MockShindanmaker
-		env                              config.Environment
+		mastodonUserID                   string
 		blueArchiveEcchiGameShindanmaker service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockShindanmaker(ctrl)
-		env = config.Environment{
-			Mastodon: config.Mastodon{
-				UserID: "1",
-			},
-		}
-		blueArchiveEcchiGameShindanmaker = action.NewBlueArchiveEcchiGameShindanmaker(c, env)
+		mastodonUserID = "1"
+		blueArchiveEcchiGameShindanmaker = action.NewBlueArchiveEcchiGameShindanmaker(c, mastodonUserID)
 	})
 
 	AfterEach(func() {

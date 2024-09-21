@@ -4,7 +4,6 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -13,12 +12,12 @@ var (
 )
 
 type pyuUpdate struct {
-	Environment config.Environment
+	MastodonUserID string
 }
 
-func NewPyuUpdate(environment config.Environment) service.Action {
+func NewPyuUpdate(mastodonUserID string) service.Action {
 	return &pyuUpdate{
-		Environment: environment,
+		MastodonUserID: mastodonUserID,
 	}
 }
 
@@ -28,7 +27,7 @@ func (pu *pyuUpdate) Name() string {
 
 func (pu *pyuUpdate) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		message.Account.ID == pu.Environment.Mastodon.UserID &&
+		message.Account.ID == pu.MastodonUserID &&
 		PyuUpdateRegex.MatchString(message.Content)
 }
 

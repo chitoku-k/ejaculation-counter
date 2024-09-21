@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader"
 	"github.com/chitoku-k/ejaculation-counter/reactor/repository"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
@@ -18,14 +17,14 @@ var (
 )
 
 type doublet struct {
-	Repository  repository.DoubletRepository
-	Environment config.Environment
+	Repository     repository.DoubletRepository
+	MastodonUserID string
 }
 
-func NewDoublet(repository repository.DoubletRepository, environment config.Environment) service.Action {
+func NewDoublet(repository repository.DoubletRepository, mastodonUserID string) service.Action {
 	return &doublet{
-		Repository:  repository,
-		Environment: environment,
+		Repository:     repository,
+		MastodonUserID: mastodonUserID,
 	}
 }
 
@@ -35,7 +34,7 @@ func (d *doublet) Name() string {
 
 func (d *doublet) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		(message.Account.ID != d.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		(message.Account.ID != d.MastodonUserID || message.InReplyToID == "") &&
 		DoubletRegex.MatchString(message.Content)
 }
 
@@ -44,7 +43,7 @@ func (d *doublet) Event(ctx context.Context, message service.Message) (service.E
 	matches := DoubletRegex.FindStringSubmatch(message.Content)
 
 	if index == nil || matches == nil {
-		return nil, 0, service.NoMatchError
+		return nil, 0, service.ErrNoMatch
 	}
 
 	count, err := strconv.Atoi(matches[1])

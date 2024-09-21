@@ -14,11 +14,11 @@ import (
 )
 
 type engine struct {
+	Through  service.Through
+	Doublet  service.Doublet
 	Port     string
 	CertFile string
 	KeyFile  string
-	Through  service.Through
-	Doublet  service.Doublet
 }
 
 type Engine interface {
@@ -26,18 +26,18 @@ type Engine interface {
 }
 
 func NewEngine(
+	through service.Through,
+	doublet service.Doublet,
 	port string,
 	certFile string,
 	keyFile string,
-	through service.Through,
-	doublet service.Doublet,
 ) Engine {
 	return &engine{
+		Through:  through,
+		Doublet:  doublet,
 		Port:     port,
 		CertFile: certFile,
 		KeyFile:  keyFile,
-		Through:  through,
-		Doublet:  doublet,
 	}
 }
 

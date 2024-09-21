@@ -38,17 +38,28 @@ func main() {
 		slog.Error("Failed to initialize config", slog.Any("err", err))
 		os.Exit(1)
 	}
+	slog.SetLogLoggerLevel(env.LogLevel)
 
-	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: env.LogLevel})
-	slog.SetDefault(slog.New(handler))
-
-	db, err := client.NewDB(env)
+	db, err := client.NewDB(map[string]string{
+		"user":        env.DB.Username,
+		"password":    env.DB.Password,
+		"host":        env.DB.Host,
+		"dbname":      env.DB.Database,
+		"sslmode":     env.DB.SSLMode,
+		"sslcert":     env.DB.SSLCert,
+		"sslkey":      env.DB.SSLKey,
+		"sslrootcert": env.DB.SSLRootCert,
+	}, env.DB.MaxLifetime)
 	if err != nil {
 		slog.Error("Failed to initialize DB", slog.Any("err", err))
 		os.Exit(1)
 	}
 
-	reader, err := queue.NewReader("ejaculation-counter.packets", "ejaculation-counter.packets.queue", "packets", env)
+	reader, err := queue.NewReader(
+		"ejaculation-counter.packets", "ejaculation-counter.packets.queue", "packets",
+		env.Queue.Host, env.Queue.Username, env.Queue.Password,
+		env.Queue.SSLCert, env.Queue.SSLKey, env.Queue.SSLRootCert,
+	)
 	if err != nil {
 		slog.Error("Failed to initialize reader", slog.Any("err", err))
 		os.Exit(1)
@@ -82,30 +93,30 @@ func main() {
 		doublet := hardcoding.NewDoubletRepository()
 		mpyw := client.NewMpyw(c)
 
-		mc := client.NewMastodon(env)
+		mc := client.NewMastodon(env.Mastodon.ServerURL, env.Mastodon.AccessToken)
 		ps := service.NewProcessor(
 			reader,
 			invoker.NewReply(mc),
-			invoker.NewIncrement(env, mc, db),
-			invoker.NewUpdate(env, mc, db),
+			invoker.NewIncrement(mc, db, env.UserID),
+			invoker.NewUpdate(mc, db, env.UserID),
 			invoker.NewAdministration(mc, db),
 			[]service.Action{
-				action.NewOfufutonChallenge(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64())), env),
-				action.NewDB(env),
-				action.NewPyuUpdate(env),
-				action.NewMpyw(mpyw, env),
-				action.NewAVShindanmaker(shindan, env),
-				action.NewBattleChimpoShindanmaker(shindan, env),
-				action.NewBlueArchiveEcchiGameShindanmaker(shindan, env),
-				action.NewChimpoChallengeShindanmaker(shindan, env),
-				action.NewChimpoInsertionChallengeShindanmaker(shindan, env),
-				action.NewChimpoMatchingShindanmaker(shindan, env),
-				action.NewLawChallengeShindanmaker(shindan, env),
-				action.NewOfutonManagerShindanmaker(shindan, env),
-				action.NewPyuppyuManagerShindanmaker(shindan, env),
-				action.NewSushiShindanmaker(shindan, env),
-				action.NewThrough(through, env),
-				action.NewDoublet(doublet, env),
+				action.NewOfufutonChallenge(rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64())), env.Mastodon.UserID),
+				action.NewDB(env.Mastodon.UserID),
+				action.NewPyuUpdate(env.Mastodon.UserID),
+				action.NewMpyw(mpyw, env.Mastodon.UserID, env.External.MpywAPIURL),
+				action.NewAVShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewBattleChimpoShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewBlueArchiveEcchiGameShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewChimpoChallengeShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewChimpoInsertionChallengeShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewChimpoMatchingShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewLawChallengeShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewOfutonManagerShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewPyuppyuManagerShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewSushiShindanmaker(shindan, env.Mastodon.UserID),
+				action.NewThrough(through, env.Mastodon.UserID),
+				action.NewDoublet(doublet, env.Mastodon.UserID),
 			},
 			time.Now,
 		)
@@ -122,8 +133,8 @@ func main() {
 	go func() {
 		through := service.NewThrough(hardcoding.NewThroughRepository())
 		doublet := service.NewDoublet(hardcoding.NewDoubletRepository())
-		engine := server.NewEngine(env.Port, env.TLSCert, env.TLSKey, through, doublet)
-		err = engine.Start(ctx)
+		engine := server.NewEngine(through, doublet, env.Port, env.TLSCert, env.TLSKey)
+		err := engine.Start(ctx)
 		if err != nil {
 			slog.Error("Failed to start web server", slog.Any("err", err))
 			os.Exit(1)

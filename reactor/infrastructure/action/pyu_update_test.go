@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -16,19 +15,15 @@ var JST = time.FixedZone("JST", int(9*time.Hour.Seconds()))
 
 var _ = Describe("PyuUpdate", func() {
 	var (
-		ctrl      *gomock.Controller
-		env       config.Environment
-		pyuUpdate service.Action
+		ctrl           *gomock.Controller
+		mastodonUserID string
+		pyuUpdate      service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		env = config.Environment{
-			Mastodon: config.Mastodon{
-				UserID: "1",
-			},
-		}
-		pyuUpdate = action.NewPyuUpdate(env)
+		mastodonUserID = "1"
+		pyuUpdate = action.NewPyuUpdate(mastodonUserID)
 	})
 
 	AfterEach(func() {

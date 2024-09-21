@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -17,14 +16,14 @@ var (
 )
 
 type battleChimpoShindanmaker struct {
-	Client      client.Shindanmaker
-	Environment config.Environment
+	Client         client.Shindanmaker
+	MastodonUserID string
 }
 
-func NewBattleChimpoShindanmaker(c client.Shindanmaker, environment config.Environment) service.Action {
+func NewBattleChimpoShindanmaker(c client.Shindanmaker, mastodonUserID string) service.Action {
 	return &battleChimpoShindanmaker{
-		Client:      c,
-		Environment: environment,
+		Client:         c,
+		MastodonUserID: mastodonUserID,
 	}
 }
 
@@ -34,7 +33,7 @@ func (bs *battleChimpoShindanmaker) Name() string {
 
 func (bs *battleChimpoShindanmaker) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		(message.Account.ID != bs.Environment.Mastodon.UserID || message.InReplyToID == "") &&
+		(message.Account.ID != bs.MastodonUserID || message.InReplyToID == "") &&
 		BattleChimpoRegex.MatchString(message.Content)
 }
 

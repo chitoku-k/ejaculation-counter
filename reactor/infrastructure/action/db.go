@@ -4,7 +4,6 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 )
 
@@ -13,12 +12,12 @@ var (
 )
 
 type db struct {
-	Environment config.Environment
+	MastodonUserID string
 }
 
-func NewDB(environment config.Environment) service.Action {
+func NewDB(mastodonUserID string) service.Action {
 	return &db{
-		Environment: environment,
+		MastodonUserID: mastodonUserID,
 	}
 }
 
@@ -28,7 +27,7 @@ func (d *db) Name() string {
 
 func (d *db) Target(message service.Message) bool {
 	return !message.IsReblog &&
-		message.Account.ID == d.Environment.Mastodon.UserID &&
+		message.Account.ID == d.MastodonUserID &&
 		DBRegex.MatchString(message.Content)
 }
 
@@ -37,7 +36,7 @@ func (d *db) Event(ctx context.Context, message service.Message) (service.Event,
 	matches := DBRegex.FindStringSubmatch(message.Content)
 
 	if index == nil || matches == nil {
-		return nil, 0, service.NoMatchError
+		return nil, 0, service.ErrNoMatch
 	}
 
 	event := service.AdministrationEvent{

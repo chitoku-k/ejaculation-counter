@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/repository"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	. "github.com/onsi/ginkgo/v2"
@@ -16,22 +15,17 @@ import (
 
 var _ = Describe("Doublet", func() {
 	var (
-		ctrl    *gomock.Controller
-		repo    *repository.MockDoubletRepository
-		env     config.Environment
-		doublet service.Action
+		ctrl           *gomock.Controller
+		repo           *repository.MockDoubletRepository
+		mastodonUserID string
+		doublet        service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		repo = repository.NewMockDoubletRepository(ctrl)
-		env = config.Environment{
-			Port: "80",
-			Mastodon: config.Mastodon{
-				UserID: "1",
-			},
-		}
-		doublet = action.NewDoublet(repo, env)
+		mastodonUserID = "1"
+		doublet = action.NewDoublet(repo, mastodonUserID)
 	})
 
 	AfterEach(func() {

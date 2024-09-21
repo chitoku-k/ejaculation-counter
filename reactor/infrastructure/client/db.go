@@ -6,13 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-)
-
-const (
-	separator = "--------"
 )
 
 type Column struct {
@@ -31,8 +26,7 @@ func (c *Column) String() string {
 }
 
 type db struct {
-	Environment config.Environment
-	Connection  *sqlx.DB
+	Connection *sqlx.DB
 }
 
 type DB interface {
@@ -41,33 +35,26 @@ type DB interface {
 	Close() error
 }
 
-func NewDB(environment config.Environment) (DB, error) {
-	var params []string
-	for k, v := range map[string]string{
-		"user":        environment.DB.Username,
-		"password":    environment.DB.Password,
-		"host":        environment.DB.Host,
-		"dbname":      environment.DB.Database,
-		"sslmode":     environment.DB.SSLMode,
-		"sslcert":     environment.DB.SSLCert,
-		"sslkey":      environment.DB.SSLKey,
-		"sslrootcert": environment.DB.SSLRootCert,
-	} {
-		if v != "" {
-			params = append(params, fmt.Sprintf("%s=%s", k, v))
+func NewDB(params map[string]string, maxLifetime time.Duration) (DB, error) {
+	var dsn strings.Builder
+	for k, v := range params {
+		if v == "" {
+			continue
 		}
+		dsn.WriteString(k)
+		dsn.WriteString("=")
+		dsn.WriteString(v)
+		dsn.WriteString(" ")
 	}
 
-	dsn := strings.Join(params, " ")
-	conn, err := sqlx.Connect("postgres", dsn)
+	conn, err := sqlx.Connect("postgres", dsn.String())
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to DB: %w", err)
 	}
-	conn.SetConnMaxLifetime(environment.DB.MaxLifetime)
+	conn.SetConnMaxLifetime(maxLifetime)
 
 	return &db{
-		Environment: environment,
-		Connection:  conn,
+		Connection: conn,
 	}, nil
 }
 
@@ -89,10 +76,6 @@ func (d *db) Query(ctx context.Context, q string) ([]string, error) {
 
 	var result []string
 	for rows.Next() {
-		if len(result) > 0 {
-			result = append(result, separator)
-		}
-
 		var row []*Column
 		var values []any
 		for _, column := range columns {
@@ -106,9 +89,15 @@ func (d *db) Query(ctx context.Context, q string) ([]string, error) {
 			return nil, fmt.Errorf("failed to scan: %w", err)
 		}
 
-		for _, v := range row {
-			result = append(result, v.String())
+		var sb strings.Builder
+		for i, v := range row {
+			if i > 0 {
+				sb.WriteString("\n")
+			}
+			sb.WriteString(v.String())
 		}
+
+		result = append(result, sb.String())
 	}
 
 	return result, nil

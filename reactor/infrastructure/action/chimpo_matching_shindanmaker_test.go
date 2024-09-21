@@ -8,7 +8,6 @@ import (
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/action"
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
-	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -19,19 +18,15 @@ var _ = Describe("ChimpoMatchingShindanmaker", func() {
 	var (
 		ctrl                       *gomock.Controller
 		c                          *client.MockShindanmaker
-		env                        config.Environment
+		mastodonUserID             string
 		chimpoMatchingShindanmaker service.Action
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		c = client.NewMockShindanmaker(ctrl)
-		env = config.Environment{
-			Mastodon: config.Mastodon{
-				UserID: "1",
-			},
-		}
-		chimpoMatchingShindanmaker = action.NewChimpoMatchingShindanmaker(c, env)
+		mastodonUserID = "1"
+		chimpoMatchingShindanmaker = action.NewChimpoMatchingShindanmaker(c, mastodonUserID)
 	})
 
 	AfterEach(func() {

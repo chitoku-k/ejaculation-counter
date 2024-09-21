@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	NoMatchError = fmt.Errorf("no matches found")
+	ErrNoMatch = fmt.Errorf("no matches found")
 )
 
 type actionResult struct {
