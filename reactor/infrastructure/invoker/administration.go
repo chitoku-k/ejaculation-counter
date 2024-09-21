@@ -3,6 +3,7 @@ package invoker
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/client"
@@ -44,19 +45,51 @@ func NewAdministration(
 	}
 }
 
+func (a *administration) format(acct string, result []string, affected int64) string {
+	n := len("@") + len(acct) + len("\n")
+	for _, r := range result {
+		n += len(r) + len(separator)
+	}
+	n += len("(100000 rows)")
+
+	var sb strings.Builder
+	sb.Grow(n)
+
+	sb.WriteString("@")
+	sb.WriteString(acct)
+	sb.WriteString("\n")
+
+	for _, r := range result {
+		sb.WriteString(r)
+		sb.WriteString(separator)
+	}
+
+	sb.WriteString("(")
+	sb.WriteString(strconv.FormatInt(affected, 10))
+
+	switch affected {
+	case 1:
+		sb.WriteString(" row)")
+	default:
+		sb.WriteString(" rows)")
+	}
+
+	return sb.String()
+}
+
 func (a *administration) Do(ctx context.Context, event service.AdministrationEvent) error {
 	if event.Type != "DB" {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
 		return fmt.Errorf("failed to handle event type: %s", event.Type)
 	}
 
-	result, err := a.DB.Query(ctx, event.Command)
+	result, affected, err := a.DB.Query(ctx, event.Command)
 	if err != nil {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
 		return fmt.Errorf("failed to run query: %w", err)
 	}
 
-	status, n, err := pack(strings.NewReader(fmt.Sprintf("@%s\n%s", event.Acct, strings.Join(result, separator))))
+	status, n, err := pack(strings.NewReader(a.format(event.Acct, result, affected)))
 	if err != nil {
 		ExecutedAdministrationEventsErrorsTotal.Inc()
 		return fmt.Errorf("failed to prepare reply (%v bytes): %w", n, err)
