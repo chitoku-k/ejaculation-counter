@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/gorilla/websocket"
@@ -43,28 +42,28 @@ const (
 )
 
 type mastodon struct {
-	ch          chan service.Status
-	conn        wrapper.Conn
-	Environment config.Environment
-	Client      *mast.Client
-	Dialer      wrapper.Dialer
-	Timer       wrapper.Timer
+	ch     chan service.Status
+	conn   wrapper.Conn
+	Client *mast.Client
+	Dialer wrapper.Dialer
+	Timer  wrapper.Timer
+	Stream string
 }
 
 func NewMastodon(
-	environment config.Environment,
 	dialer wrapper.Dialer,
 	timer wrapper.Timer,
+	serverURL, accessToken, stream string,
 ) service.Streaming {
 	return &mastodon{
-		ch:          make(chan service.Status),
-		Environment: environment,
+		ch: make(chan service.Status),
 		Client: mast.NewClient(&mast.Config{
-			Server:      environment.Mastodon.ServerURL,
-			AccessToken: environment.Mastodon.AccessToken,
+			Server:      serverURL,
+			AccessToken: accessToken,
 		}),
 		Dialer: dialer,
 		Timer:  timer,
+		Stream: stream,
 	}
 }
 
@@ -77,7 +76,7 @@ func convertContent(content string) string {
 }
 
 func convertEmojis(emojis []mast.Emoji) []service.Emoji {
-	var result []service.Emoji
+	result := make([]service.Emoji, 0, len(emojis))
 
 	for _, v := range emojis {
 		result = append(result, service.Emoji{
@@ -89,7 +88,7 @@ func convertEmojis(emojis []mast.Emoji) []service.Emoji {
 }
 
 func convertTags(tags []mast.Tag) []service.Tag {
-	var result []service.Tag
+	result := make([]service.Tag, 0, len(tags))
 
 	for _, v := range tags {
 		result = append(result, service.Tag{
@@ -181,13 +180,13 @@ func (m *mastodon) Run(ctx context.Context) error {
 
 	params := url.Values{}
 	params.Set("access_token", m.Client.Config.AccessToken)
-	params.Set("stream", m.Environment.Mastodon.Stream)
+	params.Set("stream", m.Stream)
 
 	u, err := url.Parse(m.Client.Config.Server)
 	if err != nil {
 		return fmt.Errorf("failed to parse server URL: %w", err)
 	}
-	u.Scheme = strings.ReplaceAll(u.Scheme, "http", "ws")
+	u.Scheme = strings.Replace(u.Scheme, "http", "ws", 1)
 	u.Path = path.Join(u.Path, "/api/v1/streaming")
 	u.RawQuery = params.Encode()
 
@@ -223,9 +222,9 @@ func (m *mastodon) Run(ctx context.Context) error {
 
 		for {
 			var stream mast.Stream
-			err = m.conn.ReadJSON(&stream)
+			err := m.conn.ReadJSON(&stream)
 			if err != nil {
-				err = m.disconnect(ctx, err)
+				err := m.disconnect(ctx, err)
 				if err != nil {
 					return err
 				}
@@ -275,7 +274,7 @@ func (m *mastodon) Run(ctx context.Context) error {
 			}
 
 			if status.InReplyToID != nil {
-				message.InReplyToID = fmt.Sprint(status.InReplyToID)
+				message.InReplyToID = status.InReplyToID.(string)
 			}
 
 			StreamingMessageTotal.WithLabelValues(server).Inc()

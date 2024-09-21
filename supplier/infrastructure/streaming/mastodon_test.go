@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/streaming"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
@@ -39,23 +38,20 @@ var _ = Describe("Mastodon", func() {
 
 	Describe("Run()", func() {
 		var (
-			env      config.Environment
-			mastodon service.Streaming
-			ctx      context.Context
-			cancel   context.CancelFunc
-			ch       chan time.Time
-			stream   mast.Stream
+			serverURL   string
+			accessToken string
+			mastodon    service.Streaming
+			ctx         context.Context
+			cancel      context.CancelFunc
+			ch          chan time.Time
+			stream      mast.Stream
 		)
 
 		Context("parsing server URL fails", func() {
 			BeforeEach(func() {
-				env = config.Environment{
-					Mastodon: config.Mastodon{
-						ServerURL:   ":/",
-						AccessToken: "token",
-					},
-				}
-				mastodon = streaming.NewMastodon(env, d, t)
+				serverURL = ":/"
+				accessToken = "token"
+				mastodon = streaming.NewMastodon(d, t, serverURL, accessToken, "user")
 			})
 
 			It("returns an error", func() {
@@ -66,14 +62,9 @@ var _ = Describe("Mastodon", func() {
 
 		Context("parsing server URL succeeds", func() {
 			BeforeEach(func() {
-				env = config.Environment{
-					Mastodon: config.Mastodon{
-						ServerURL:   "https://mastodon.example.com",
-						Stream:      "user",
-						AccessToken: "token",
-					},
-				}
-				mastodon = streaming.NewMastodon(env, d, t)
+				serverURL = "https://mastodon.example.com"
+				accessToken = "token"
+				mastodon = streaming.NewMastodon(d, t, serverURL, accessToken, "user")
 				ctx, cancel = context.WithCancel(context.Background())
 			})
 
@@ -910,20 +901,17 @@ var _ = Describe("Mastodon", func() {
 
 	Describe("Close()", func() {
 		var (
-			env      config.Environment
-			mastodon service.Streaming
+			serverURL   string
+			accessToken string
+			mastodon    service.Streaming
 		)
 
 		Context("not exit", func() {
 			Context("connection not established", func() {
 				BeforeEach(func() {
-					env = config.Environment{
-						Mastodon: config.Mastodon{
-							ServerURL:   ":/",
-							AccessToken: "token",
-						},
-					}
-					mastodon = streaming.NewMastodon(env, d, t)
+					serverURL = ":/"
+					accessToken = "token"
+					mastodon = streaming.NewMastodon(d, t, serverURL, accessToken, "user")
 				})
 
 				It("does nothing", func() {
@@ -936,13 +924,9 @@ var _ = Describe("Mastodon", func() {
 		Context("exit", func() {
 			Context("connection not established", func() {
 				BeforeEach(func() {
-					env = config.Environment{
-						Mastodon: config.Mastodon{
-							ServerURL:   ":/",
-							AccessToken: "token",
-						},
-					}
-					mastodon = streaming.NewMastodon(env, d, t)
+					serverURL = ":/"
+					accessToken = "token"
+					mastodon = streaming.NewMastodon(d, t, serverURL, accessToken, "user")
 				})
 
 				It("does nothing", func() {

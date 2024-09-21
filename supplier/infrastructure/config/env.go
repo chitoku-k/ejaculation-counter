@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -9,8 +10,7 @@ import (
 
 type Environment struct {
 	Mastodon Mastodon
-
-	Queue Queue
+	Queue    Queue
 
 	LogLevel slog.Level
 	Port     string
@@ -33,51 +33,49 @@ type Queue struct {
 	SSLRootCert string
 }
 
-func Get() (Environment, error) {
-	var missing []string
-	var env Environment
-	var logLevel string
-
-	for k, v := range map[string]*string{
-		"MASTODON_SERVER_URL":   &env.Mastodon.ServerURL,
-		"MASTODON_STREAM":       &env.Mastodon.Stream,
-		"MASTODON_ACCESS_TOKEN": &env.Mastodon.AccessToken,
-		"MQ_HOST":               &env.Queue.Host,
-		"PORT":                  &env.Port,
+func Get() (env Environment, errs error) {
+	for _, entry := range []struct {
+		name     string
+		field    any
+		optional bool
+	}{
+		{name: "MASTODON_SERVER_URL", field: &env.Mastodon.ServerURL},
+		{name: "MASTODON_STREAM", field: &env.Mastodon.Stream},
+		{name: "MASTODON_ACCESS_TOKEN", field: &env.Mastodon.AccessToken},
+		{name: "MQ_HOST", field: &env.Queue.Host},
+		{name: "MQ_USERNAME", field: &env.Queue.Username, optional: true},
+		{name: "MQ_PASSWORD", field: &env.Queue.Password, optional: true},
+		{name: "MQ_SSL_CERT", field: &env.Queue.SSLCert, optional: true},
+		{name: "MQ_SSL_KEY", field: &env.Queue.SSLKey, optional: true},
+		{name: "MQ_SSL_ROOT_CERT", field: &env.Queue.SSLRootCert, optional: true},
+		{name: "LOG_LEVEL", field: &env.LogLevel, optional: true},
+		{name: "PORT", field: &env.Port},
+		{name: "TLS_CERT", field: &env.TLSCert, optional: true},
+		{name: "TLS_KEY", field: &env.TLSKey, optional: true},
 	} {
-		*v = os.Getenv(k)
+		v := os.Getenv(entry.name)
+		if v == "" {
+			if !entry.optional {
+				errs = errors.Join(errs, fmt.Errorf("missing: %v", entry.name))
+			}
+			continue
+		}
 
-		if *v == "" {
-			missing = append(missing, k)
+		switch field := entry.field.(type) {
+		case *string:
+			*field = v
+
+		case *slog.Level:
+			v, err := parseLogLevel(v)
+			if err != nil {
+				errs = errors.Join(errs, fmt.Errorf("%s is invalid: %w", entry.name, err))
+				continue
+			}
+			*field = v
 		}
 	}
 
-	for k, v := range map[string]*string{
-		"TLS_CERT":         &env.TLSCert,
-		"TLS_KEY":          &env.TLSKey,
-		"MQ_SSL_CERT":      &env.Queue.SSLCert,
-		"MQ_SSL_KEY":       &env.Queue.SSLKey,
-		"MQ_SSL_ROOT_CERT": &env.Queue.SSLRootCert,
-		"MQ_USERNAME":      &env.Queue.Username,
-		"MQ_PASSWORD":      &env.Queue.Password,
-		"LOG_LEVEL":        &logLevel,
-	} {
-		*v = os.Getenv(k)
-	}
-
-	if logLevel != "" {
-		var err error
-		env.LogLevel, err = parseLogLevel(logLevel)
-		if err != nil {
-			return env, fmt.Errorf("failed to parse log level: %w", err)
-		}
-	}
-
-	if len(missing) > 0 {
-		return env, fmt.Errorf("missing env(s): %v", strings.Join(missing, ", "))
-	}
-
-	return env, nil
+	return
 }
 
 func parseLogLevel(lvl string) (slog.Level, error) {
