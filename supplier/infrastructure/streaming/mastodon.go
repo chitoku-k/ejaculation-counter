@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/gorilla/websocket"
@@ -43,28 +42,28 @@ const (
 )
 
 type mastodon struct {
-	ch          chan service.Status
-	conn        wrapper.Conn
-	Environment config.Environment
-	Client      *mast.Client
-	Dialer      wrapper.Dialer
-	Timer       wrapper.Timer
+	ch     chan service.Status
+	conn   wrapper.Conn
+	Client *mast.Client
+	Dialer wrapper.Dialer
+	Timer  wrapper.Timer
+	Stream string
 }
 
 func NewMastodon(
-	environment config.Environment,
 	dialer wrapper.Dialer,
 	timer wrapper.Timer,
+	serverURL, accessToken, stream string,
 ) service.Streaming {
 	return &mastodon{
-		ch:          make(chan service.Status),
-		Environment: environment,
+		ch: make(chan service.Status),
 		Client: mast.NewClient(&mast.Config{
-			Server:      environment.Mastodon.ServerURL,
-			AccessToken: environment.Mastodon.AccessToken,
+			Server:      serverURL,
+			AccessToken: accessToken,
 		}),
 		Dialer: dialer,
 		Timer:  timer,
+		Stream: stream,
 	}
 }
 
@@ -181,7 +180,7 @@ func (m *mastodon) Run(ctx context.Context) error {
 
 	params := url.Values{}
 	params.Set("access_token", m.Client.Config.AccessToken)
-	params.Set("stream", m.Environment.Mastodon.Stream)
+	params.Set("stream", m.Stream)
 
 	u, err := url.Parse(m.Client.Config.Server)
 	if err != nil {

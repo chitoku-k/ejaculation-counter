@@ -4,22 +4,19 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/config"
 	"github.com/chitoku-k/ejaculation-counter/supplier/service"
 	"github.com/robfig/cron/v3"
 )
 
 type scheduler struct {
-	cron        *cron.Cron
-	ch          chan service.Tick
-	Environment config.Environment
+	cron *cron.Cron
+	ch   chan service.Tick
 }
 
-func New(environment config.Environment) (service.Scheduler, error) {
+func New() (service.Scheduler, error) {
 	s := scheduler{
-		cron:        cron.New(),
-		ch:          make(chan service.Tick),
-		Environment: environment,
+		cron: cron.New(),
+		ch:   make(chan service.Tick),
 	}
 
 	_, err := s.cron.AddFunc("00 00 * * *", s.handle)

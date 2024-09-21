@@ -39,7 +39,7 @@ func main() {
 	}
 	slog.SetLogLoggerLevel(env.LogLevel)
 
-	s, err := scheduler.New(env)
+	s, err := scheduler.New()
 	if err != nil {
 		slog.Error("Failed to initialize scheduler", slog.Any("err", err))
 		os.Exit(1)
@@ -53,16 +53,23 @@ func main() {
 		wg.Done()
 	}()
 
-	writer, err := queue.NewWriter(ctx, "ejaculation-counter.packets", "packets", env)
+	writer, err := queue.NewWriter(
+		ctx,
+		"ejaculation-counter.packets", "packets",
+		env.Queue.Host, env.Queue.Username, env.Queue.Password,
+		env.Queue.SSLCert, env.Queue.SSLKey, env.Queue.SSLRootCert,
+	)
 	if err != nil {
 		slog.Error("Failed to initialize writer", slog.Any("err", err))
 		os.Exit(1)
 	}
 
 	mastodon := streaming.NewMastodon(
-		env,
 		wrapper.NewDialer(websocket.DefaultDialer),
 		wrapper.NewTimer(),
+		env.Mastodon.ServerURL,
+		env.Mastodon.AccessToken,
+		env.Mastodon.Stream,
 	)
 
 	wg.Add(1)
