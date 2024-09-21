@@ -11,6 +11,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type Count struct {
+	UserID int64     `db:"user_id"`
+	Date   time.Time `db:"date"`
+	Count  int       `db:"count"`
+}
+
 type db struct {
 	Connection *sqlx.DB
 }
@@ -102,38 +108,18 @@ func (d *db) Query(ctx context.Context, q string) (result []string, affected int
 }
 
 func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, count int) error {
-	var current int
-	err := d.Connection.GetContext(
+	_, err := d.Connection.NamedExecContext(
 		ctx,
-		&current,
-		`SELECT COUNT(*) FROM "counts" WHERE "user_id" = $1 AND "date" = $2`,
-		userID,
-		date.Format(time.DateOnly),
+		`INSERT INTO "counts" ("user_id", "date", "count") VALUES (:user_id, :date, :count) ON CONFLICT ("user_id", "date") DO UPDATE SET "count" = :count`,
+		Count{
+			UserID: userID,
+			Date:   date,
+			Count:  count,
+		},
 	)
-	if err != nil {
-		return fmt.Errorf("failed to get current count: %w", err)
-	}
-
-	if current > 0 {
-		_, err = d.Connection.ExecContext(
-			ctx,
-			`UPDATE "counts" SET "count" = $1 WHERE "user_id" = $2 AND "date" = $3`,
-			count,
-			userID,
-			date.Format(time.DateOnly),
-		)
-	} else {
-		_, err = d.Connection.ExecContext(
-			ctx,
-			`INSERT INTO "counts" ("user_id", "date", "count") VALUES ($1, $2, $3)`,
-			userID,
-			date.Format(time.DateOnly),
-			count,
-		)
-	}
-
 	if err != nil {
 		return fmt.Errorf("failed to update count on DB: %w", err)
 	}
+
 	return nil
 }
