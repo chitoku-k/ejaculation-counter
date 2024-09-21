@@ -18,7 +18,7 @@ var _ = Describe("Environment", func() {
 
 			It("returns an error", func() {
 				_, err := config.Get()
-				Expect(err).To(MatchError(MatchRegexp("^missing env\\(s\\): ")))
+				Expect(err).To(MatchError(HavePrefix("missing:")))
 			})
 		})
 
@@ -68,7 +68,7 @@ var _ = Describe("Environment", func() {
 
 				It("returns an error", func() {
 					_, err := config.Get()
-					Expect(err).To(MatchError(MatchRegexp("^failed to parse log level: ")))
+					Expect(err).To(MatchError(HavePrefix("LOG_LEVEL is invalid:")))
 				})
 			})
 
