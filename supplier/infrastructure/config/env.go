@@ -79,14 +79,14 @@ func Get() (env Environment, errs error) {
 }
 
 func parseLogLevel(lvl string) (slog.Level, error) {
-	switch strings.ToLower(lvl) {
-	case "error":
+	switch {
+	case strings.EqualFold(lvl, "error"):
 		return slog.LevelError, nil
-	case "warn", "warning":
+	case strings.EqualFold(lvl, "warn"), strings.EqualFold(lvl, "warning"):
 		return slog.LevelWarn, nil
-	case "info":
+	case strings.EqualFold(lvl, "info"):
 		return slog.LevelInfo, nil
-	case "debug":
+	case strings.EqualFold(lvl, "debug"):
 		return slog.LevelDebug, nil
 	}
 
