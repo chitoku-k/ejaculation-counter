@@ -6,31 +6,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 )
-
-type Column struct {
-	Name  string
-	Value any
-}
-
-func NewColumn(name string) *Column {
-	return &Column{
-		Name: name,
-	}
-}
-
-func (c *Column) String() string {
-	return fmt.Sprintf("%v: %v", c.Name, c.Value)
-}
 
 type db struct {
 	Connection *sqlx.DB
 }
 
 type DB interface {
-	Query(ctx context.Context, q string) ([]string, error)
+	Query(ctx context.Context, q string) ([]string, int64, error)
 	UpdateCount(ctx context.Context, userID int64, date time.Time, count int) error
 	Close() error
 }
@@ -47,7 +33,7 @@ func NewDB(params map[string]string, maxLifetime time.Duration) (DB, error) {
 		dsn.WriteString(" ")
 	}
 
-	conn, err := sqlx.Connect("postgres", dsn.String())
+	conn, err := sqlx.Connect("pgx", dsn.String())
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to DB: %w", err)
 	}
@@ -62,45 +48,57 @@ func (d *db) Close() error {
 	return d.Connection.Close()
 }
 
-func (d *db) Query(ctx context.Context, q string) ([]string, error) {
-	rows, err := d.Connection.QueryContext(ctx, q)
+func (d *db) query(ctx context.Context, conn *pgx.Conn, q string) (result []string, affected int64, err error) {
+	rows, err := conn.Query(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query: %w", err)
+		return result, affected, err
 	}
-	defer rows.Close()
+	defer func() {
+		rows.Close()
+		affected = rows.CommandTag().RowsAffected()
+	}()
 
-	columns, err := rows.Columns()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get columns: %w", err)
-	}
-
-	var result []string
+	columns := rows.FieldDescriptions()
 	for rows.Next() {
-		var row []*Column
-		var values []any
-		for _, column := range columns {
-			c := NewColumn(column)
-			row = append(row, c)
-			values = append(values, &c.Value)
-		}
-
-		err := rows.Scan(values...)
+		values, err := rows.Values()
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan: %w", err)
+			return result, affected, fmt.Errorf("failed to get values: %w", err)
 		}
 
 		var sb strings.Builder
-		for i, v := range row {
+		for i, v := range values {
 			if i > 0 {
 				sb.WriteString("\n")
 			}
-			sb.WriteString(v.String())
+			sb.WriteString(columns[i].Name)
+			sb.WriteString(": ")
+			sb.WriteString(fmt.Sprint(v))
 		}
 
 		result = append(result, sb.String())
 	}
 
-	return result, nil
+	return
+}
+
+func (d *db) Query(ctx context.Context, q string) (result []string, affected int64, err error) {
+	conn, err := d.Connection.Conn(ctx)
+	if err != nil {
+		return nil, affected, fmt.Errorf("failed to open: %w", err)
+	}
+	defer conn.Close()
+
+	err = conn.Raw(func(driverConn any) error {
+		conn, ok := driverConn.(*stdlib.Conn)
+		if !ok {
+			return fmt.Errorf("failed to get conn from %T", driverConn)
+		}
+
+		result, affected, err = d.query(ctx, conn.Conn(), q)
+		return err
+	})
+
+	return result, affected, err
 }
 
 func (d *db) UpdateCount(ctx context.Context, userID int64, date time.Time, count int) error {
