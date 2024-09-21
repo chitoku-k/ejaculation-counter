@@ -37,9 +37,7 @@ func main() {
 		slog.Error("Failed to initialize config", slog.Any("err", err))
 		os.Exit(1)
 	}
-
-	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: env.LogLevel})
-	slog.SetDefault(slog.New(handler))
+	slog.SetLogLoggerLevel(env.LogLevel)
 
 	s, err := scheduler.New(env)
 	if err != nil {
