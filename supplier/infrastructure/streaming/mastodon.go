@@ -76,7 +76,7 @@ func convertContent(content string) string {
 }
 
 func convertEmojis(emojis []mast.Emoji) []service.Emoji {
-	var result []service.Emoji
+	result := make([]service.Emoji, 0, len(emojis))
 
 	for _, v := range emojis {
 		result = append(result, service.Emoji{
@@ -88,7 +88,7 @@ func convertEmojis(emojis []mast.Emoji) []service.Emoji {
 }
 
 func convertTags(tags []mast.Tag) []service.Tag {
-	var result []service.Tag
+	result := make([]service.Tag, 0, len(tags))
 
 	for _, v := range tags {
 		result = append(result, service.Tag{
@@ -186,7 +186,7 @@ func (m *mastodon) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse server URL: %w", err)
 	}
-	u.Scheme = strings.ReplaceAll(u.Scheme, "http", "ws")
+	u.Scheme = strings.Replace(u.Scheme, "http", "ws", 1)
 	u.Path = path.Join(u.Path, "/api/v1/streaming")
 	u.RawQuery = params.Encode()
 
@@ -222,9 +222,9 @@ func (m *mastodon) Run(ctx context.Context) error {
 
 		for {
 			var stream mast.Stream
-			err = m.conn.ReadJSON(&stream)
+			err := m.conn.ReadJSON(&stream)
 			if err != nil {
-				err = m.disconnect(ctx, err)
+				err := m.disconnect(ctx, err)
 				if err != nil {
 					return err
 				}
@@ -274,7 +274,7 @@ func (m *mastodon) Run(ctx context.Context) error {
 			}
 
 			if status.InReplyToID != nil {
-				message.InReplyToID = fmt.Sprint(status.InReplyToID)
+				message.InReplyToID = status.InReplyToID.(string)
 			}
 
 			StreamingMessageTotal.WithLabelValues(server).Inc()
