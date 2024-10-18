@@ -21,6 +21,7 @@ import (
 type MockDialer struct {
 	ctrl     *gomock.Controller
 	recorder *MockDialerMockRecorder
+	isgomock struct{}
 }
 
 // MockDialerMockRecorder is the mock recorder for MockDialer.
@@ -60,6 +61,7 @@ func (mr *MockDialerMockRecorder) DialContext(ctx, urlStr, requestHeader any) *g
 type MockConn struct {
 	ctrl     *gomock.Controller
 	recorder *MockConnMockRecorder
+	isgomock struct{}
 }
 
 // MockConnMockRecorder is the mock recorder for MockConn.

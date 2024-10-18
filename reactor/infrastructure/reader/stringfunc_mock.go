@@ -19,6 +19,7 @@ import (
 type MockStringGenerator struct {
 	ctrl     *gomock.Controller
 	recorder *MockStringGeneratorMockRecorder
+	isgomock struct{}
 }
 
 // MockStringGeneratorMockRecorder is the mock recorder for MockStringGenerator.

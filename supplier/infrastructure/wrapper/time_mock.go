@@ -20,6 +20,7 @@ import (
 type MockTimer struct {
 	ctrl     *gomock.Controller
 	recorder *MockTimerMockRecorder
+	isgomock struct{}
 }
 
 // MockTimerMockRecorder is the mock recorder for MockTimer.

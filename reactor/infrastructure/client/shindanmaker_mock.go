@@ -21,6 +21,7 @@ import (
 type MockShindanmaker struct {
 	ctrl     *gomock.Controller
 	recorder *MockShindanmakerMockRecorder
+	isgomock struct{}
 }
 
 // MockShindanmakerMockRecorder is the mock recorder for MockShindanmaker.
