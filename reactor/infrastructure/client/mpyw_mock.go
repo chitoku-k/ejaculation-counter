@@ -21,6 +21,7 @@ import (
 type MockMpyw struct {
 	ctrl     *gomock.Controller
 	recorder *MockMpywMockRecorder
+	isgomock struct{}
 }
 
 // MockMpywMockRecorder is the mock recorder for MockMpyw.

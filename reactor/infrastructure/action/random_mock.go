@@ -19,6 +19,7 @@ import (
 type MockRandom struct {
 	ctrl     *gomock.Controller
 	recorder *MockRandomMockRecorder
+	isgomock struct{}
 }
 
 // MockRandomMockRecorder is the mock recorder for MockRandom.
