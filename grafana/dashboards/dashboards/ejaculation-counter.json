@@ -21,7 +21,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "11.2.2"
+      "version": "11.3.0"
     },
     {
       "type": "datasource",
@@ -69,7 +69,6 @@
   "graphTooltip": 0,
   "id": null,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -131,7 +130,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.2.2",
+      "pluginVersion": "11.3.0",
       "targets": [
         {
           "datasource": {
@@ -226,7 +225,7 @@
         "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "11.2.2",
+      "pluginVersion": "11.3.0",
       "targets": [
         {
           "datasource": {
@@ -363,7 +362,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.2.2",
+      "pluginVersion": "11.3.0",
       "targets": [
         {
           "datasource": {
@@ -485,7 +484,6 @@
         "x": 0,
         "y": 6
       },
-      "hideTimeOverride": false,
       "id": 8,
       "options": {
         "legend": {
@@ -500,7 +498,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.3",
+      "pluginVersion": "11.3.0",
       "targets": [
         {
           "datasource": {
@@ -550,7 +548,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 39,
+  "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": [
@@ -558,13 +556,11 @@
         "current": {},
         "hide": 2,
         "includeAll": false,
-        "multi": false,
         "name": "DS_DATABASE",
         "options": [],
         "query": "postgres",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "type": "datasource"
       }
     ]
@@ -574,18 +570,7 @@
     "to": "now"
   },
   "timepicker": {
-    "refresh_intervals": [
-      "5s",
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ]
+    "hidden": true
   },
   "timezone": "",
   "title": "ぴゅっぴゅカウンター",
