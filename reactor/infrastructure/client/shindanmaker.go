@@ -56,6 +56,7 @@ func (s *shindanmaker) token(ctx context.Context, targetURL string) (string, err
 		return "", fmt.Errorf("failed to create sindan page request: %w", err)
 	}
 
+	req.Header.Set("Accept", "*")
 	req.Header.Set("User-Agent", UserAgent)
 
 	res, err := s.Client.Do(req)
@@ -100,6 +101,7 @@ func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (s
 	if err != nil {
 		return "", fmt.Errorf("failed to create shindan result request: %w", err)
 	}
+	req.Header.Set("Accept", "*")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("User-Agent", UserAgent)
 
