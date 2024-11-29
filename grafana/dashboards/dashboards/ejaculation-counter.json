@@ -7,6 +7,13 @@
       "type": "datasource",
       "pluginId": "grafana-postgresql-datasource",
       "pluginName": "PostgreSQL"
+    },
+    {
+      "name": "VAR_USER_ID",
+      "type": "constant",
+      "label": "User ID",
+      "value": "1",
+      "description": ""
     }
   ],
   "__elements": {},
@@ -137,37 +144,30 @@
             "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
-          "format": "time_series",
+          "editorMode": "code",
+          "format": "table",
           "group": [],
           "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  count AS \"time\",\n  count\nFROM counts\nWHERE\n  \"user_id\" = 1\nORDER BY 1",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  \"count\"\nFROM \"counts\"\nWHERE\n  \"user_id\" = ${USER_ID}",
           "refId": "A",
-          "select": [
-            [
+          "sql": {
+            "columns": [
               {
-                "params": [
-                  "count"
-                ],
-                "type": "column"
+                "parameters": [],
+                "type": "function"
               }
-            ]
-          ],
-          "table": "counts",
-          "timeColumn": "count",
-          "timeColumnType": "int",
-          "where": [
-            {
-              "datatype": "int4",
-              "name": "",
-              "params": [
-                "\"user_id\"",
-                "=",
-                "1"
-              ],
-              "type": "expression"
-            }
-          ]
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
       "title": "Total",
@@ -232,33 +232,31 @@
             "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
-          "format": "time_series",
+          "editorMode": "code",
+          "format": "table",
           "group": [],
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  SUM(\"count\") AS \"count\",\n  NOW() AS \"time\"\nFROM \"counts\"\nWHERE $__timeFilter(\"date\") AND \"user_id\" = 1\n",
+          "rawSql": "SELECT\n  SUM(\"count\") AS \"count\"\nFROM \"counts\"\nWHERE\n  \"user_id\" = ${USER_ID} AND\n  \"date\" BETWEEN '${__from:date:YYYY-MM-DD}' AND '${__to:date:YYYY-MM-DD}'",
           "refId": "A",
-          "select": [
-            [
+          "sql": {
+            "columns": [
               {
-                "params": [
-                  "count"
-                ],
-                "type": "column"
-              },
-              {
-                "params": [
-                  "count"
-                ],
-                "type": "alias"
+                "parameters": [],
+                "type": "function"
               }
-            ]
-          ],
-          "table": "counts",
-          "timeColumn": "date",
-          "timeColumnType": "date",
-          "where": []
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
       "timeFrom": "30d",
@@ -332,7 +330,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Date"
+              "options": "Time"
             },
             "properties": [
               {
@@ -360,7 +358,13 @@
           ],
           "show": false
         },
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Time"
+          }
+        ]
       },
       "pluginVersion": "11.3.1",
       "targets": [
@@ -369,32 +373,30 @@
             "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
-          "format": "table",
+          "editorMode": "code",
+          "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  \"date\" AS \"time\",\n  \"count\"\nFROM \"counts\"\nWHERE\n  $__timeFilter(\"date\")\nORDER BY \"date\" DESC",
+          "rawSql": "SELECT\n  \"date\" AS \"time\",\n  \"count\"\nFROM \"counts\"\nWHERE\n  \"user_id\" = ${USER_ID} AND\n  \"date\" BETWEEN '${__from:date:YYYY-MM-DD}' AND '${__to:date:YYYY-MM-DD}'",
           "refId": "A",
-          "select": [
-            [
+          "sql": {
+            "columns": [
               {
-                "params": [
-                  "count"
-                ],
-                "type": "column"
+                "parameters": [],
+                "type": "function"
               }
-            ]
-          ],
-          "table": "counts",
-          "timeColumn": "date",
-          "timeColumnType": "date",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
       "title": "Metrics",
@@ -505,42 +507,30 @@
             "type": "grafana-postgresql-datasource",
             "uid": "${DS_DATABASE}"
           },
+          "editorMode": "code",
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  EXTRACT(EPOCH FROM \"date\") AS \"time\",\n  \"count\" AS \"value\"\nFROM \"counts\"\nWHERE $__timeFilter(\"date\")\nORDER BY \"date\" ASC\n",
+          "rawSql": "SELECT\n  EXTRACT(EPOCH FROM \"date\") AS \"time\",\n  \"count\" AS \"value\"\nFROM \"counts\"\nWHERE\n  \"user_id\" = ${USER_ID} AND\n  \"date\" BETWEEN '${__from:date:YYYY-MM-DD}' AND '${__to:date:YYYY-MM-DD}'\nORDER BY \"date\" ASC",
           "refId": "A",
-          "select": [
-            [
+          "sql": {
+            "columns": [
               {
-                "params": [
-                  "count"
-                ],
-                "type": "column"
+                "parameters": [],
+                "type": "function"
               }
-            ]
-          ],
-          "table": "counts",
-          "timeColumn": "date",
-          "timeColumnType": "date",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "int",
-              "name": "",
-              "params": [
-                "user_id",
-                "=",
-                "1"
-              ],
-              "type": "expression"
-            }
-          ]
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
         }
       ],
       "title": "Daily",
@@ -562,6 +552,27 @@
         "refresh": 1,
         "regex": "",
         "type": "datasource"
+      },
+      {
+        "description": "",
+        "hide": 2,
+        "label": "User ID",
+        "name": "USER_ID",
+        "query": "${VAR_USER_ID}",
+        "skipUrlSync": true,
+        "type": "constant",
+        "current": {
+          "value": "${VAR_USER_ID}",
+          "text": "${VAR_USER_ID}",
+          "selected": false
+        },
+        "options": [
+          {
+            "value": "${VAR_USER_ID}",
+            "text": "${VAR_USER_ID}",
+            "selected": false
+          }
+        ]
       }
     ]
   },
