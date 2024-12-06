@@ -14,7 +14,7 @@ require (
 	github.com/rivo/uniseg v0.4.7
 	go.uber.org/mock v0.5.0
 	golang.org/x/sync v0.10.0
-	golang.org/x/sys v0.27.0
+	golang.org/x/sys v0.28.0
 )
 
 require (
