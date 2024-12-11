@@ -7,13 +7,6 @@
       "type": "datasource",
       "pluginId": "grafana-postgresql-datasource",
       "pluginName": "PostgreSQL"
-    },
-    {
-      "name": "VAR_USER_ID",
-      "type": "constant",
-      "label": "User ID",
-      "value": "1",
-      "description": ""
     }
   ],
   "__elements": {},
@@ -554,25 +547,21 @@
         "type": "datasource"
       },
       {
-        "description": "",
+        "current": {},
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "${DS_DATABASE}"
+        },
+        "definition": "SELECT \"id\" FROM \"users\"",
         "hide": 2,
         "label": "User ID",
         "name": "USER_ID",
-        "query": "${VAR_USER_ID}",
-        "skipUrlSync": true,
-        "type": "constant",
-        "current": {
-          "value": "${VAR_USER_ID}",
-          "text": "${VAR_USER_ID}",
-          "selected": false
-        },
-        "options": [
-          {
-            "value": "${VAR_USER_ID}",
-            "text": "${VAR_USER_ID}",
-            "selected": false
-          }
-        ]
+        "options": [],
+        "query": "SELECT \"id\" FROM \"users\"",
+        "refresh": 1,
+        "regex": "",
+        "sort": 3,
+        "type": "query"
       }
     ]
   },
