@@ -91,9 +91,9 @@ func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (s
 	}
 
 	values := url.Values{
-		"type":        []string{"name"},
-		"shindanName": []string{name},
-		"_token":      []string{token},
+		"type":               []string{"name"},
+		"user_input_value_1": []string{name},
+		"_token":             []string{token},
 	}
 	body := strings.NewReader(values.Encode())
 
