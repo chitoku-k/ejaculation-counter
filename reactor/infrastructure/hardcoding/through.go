@@ -488,6 +488,7 @@ var (
 		"þurht",
 		"þuro",
 		"þurow",
+		"þurrh",
 		"þurru",
 		"þurth",
 		"þurthe",
