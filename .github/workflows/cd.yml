@@ -30,14 +30,17 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/bake-action@v6
-        env:
-          TAG: ${{ github.ref_name }}
         with:
           files: docker-bake.hcl
           push: true
           set: |
             supplier.args.PORT=443
             reactor.args.PORT=443
+            supplier.tags=ghcr.io/chitoku-k/ejaculation-counter/supplier:${{ github.ref_name }}
+            reactor.tags=ghcr.io/chitoku-k/ejaculation-counter/reactor:${{ github.ref_name }}
+            grafana.tags=ghcr.io/chitoku-k/ejaculation-counter/grafana:${{ github.ref_name }}
+            mq.tags=ghcr.io/chitoku-k/ejaculation-counter/mq:${{ github.ref_name }}
+            web.tags=ghcr.io/chitoku-k/ejaculation-counter/web:${{ github.ref_name }}
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
   deploy:
