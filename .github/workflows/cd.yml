@@ -66,16 +66,16 @@ jobs:
           kubectl config use-context k8s.chitoku.jp
       - name: Update images
         run: |
-          kubectl set image deployment/ejaculation-counter-supplier \
+          kubectl set image --field-manager=github-actions deployment/ejaculation-counter-supplier \
             supplier=ghcr.io/chitoku-k/ejaculation-counter/supplier:${{ github.ref_name }}
 
-          kubectl set image deployment/ejaculation-counter-reactor \
+          kubectl set image --field-manager=github-actions deployment/ejaculation-counter-reactor \
             reactor=ghcr.io/chitoku-k/ejaculation-counter/reactor:${{ github.ref_name }}
 
-          kubectl set image deployment/ejaculation-counter-web \
+          kubectl set image --field-manager=github-actions deployment/ejaculation-counter-web \
             web=ghcr.io/chitoku-k/ejaculation-counter/web:${{ github.ref_name }} \
             grafana=ghcr.io/chitoku-k/ejaculation-counter/grafana:${{ github.ref_name }}
 
-          kubectl patch rabbitmqclusters.rabbitmq.com/ejaculation-counter-mq-cluster \
+          kubectl patch --field-manager=github-actions rabbitmqclusters.rabbitmq.com/ejaculation-counter-mq-cluster \
             --type=merge \
             --patch='{"spec": {"image": "ghcr.io/chitoku-k/ejaculation-counter/mq:${{ github.ref_name }}"}}'
