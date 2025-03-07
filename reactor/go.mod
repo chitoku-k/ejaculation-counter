@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.9
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
-	github.com/prometheus/client_golang v1.21.0
+	github.com/prometheus/client_golang v1.21.1
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/rivo/uniseg v0.4.7
 	go.uber.org/mock v0.5.0
