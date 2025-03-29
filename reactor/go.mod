@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	github.com/jackc/pgx/v5 v5.7.2
+	github.com/jackc/pgx/v5 v5.7.4
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/mattn/go-mastodon v0.0.9
 	github.com/onsi/ginkgo/v2 v2.23.2
