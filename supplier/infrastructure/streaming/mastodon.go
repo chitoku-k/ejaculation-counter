@@ -283,7 +283,6 @@ func (m *mastodon) Run(ctx context.Context) error {
 				return ctx.Err()
 
 			case m.ch <- message:
-				break
 			}
 		}
 	}

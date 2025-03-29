@@ -92,7 +92,9 @@ func (d *db) Query(ctx context.Context, q string) (result []string, affected int
 	if err != nil {
 		return nil, affected, fmt.Errorf("failed to open: %w", err)
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	err = conn.Raw(func(driverConn any) error {
 		conn, ok := driverConn.(*stdlib.Conn)
