@@ -63,7 +63,9 @@ func (s *shindanmaker) token(ctx context.Context, targetURL string) (string, err
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch shindan page: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, res.Body)
@@ -109,7 +111,9 @@ func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (s
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch shindan result: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, res.Body)

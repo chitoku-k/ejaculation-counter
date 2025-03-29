@@ -24,13 +24,26 @@ var _ = Describe("Environment", func() {
 
 		Context("all required vars set", func() {
 			BeforeEach(func() {
-				os.Setenv("MASTODON_SERVER_URL", "mastodon")
-				os.Setenv("MASTODON_STREAM", "direct")
-				os.Setenv("MASTODON_ACCESS_TOKEN", "token")
-				os.Setenv("MQ_HOST", "mq")
-				os.Setenv("MQ_USERNAME", "shiko")
-				os.Setenv("MQ_PASSWORD", "shiko")
-				os.Setenv("PORT", "8080")
+				err := os.Setenv("MASTODON_SERVER_URL", "mastodon")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = os.Setenv("MASTODON_STREAM", "direct")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = os.Setenv("MASTODON_ACCESS_TOKEN", "token")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = os.Setenv("MQ_HOST", "mq")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = os.Setenv("MQ_USERNAME", "shiko")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = os.Setenv("MQ_PASSWORD", "shiko")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = os.Setenv("PORT", "8080")
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			It("returns config", func() {
@@ -56,14 +69,29 @@ var _ = Describe("Environment", func() {
 		Context("all vars set", func() {
 			Context("invalid log level is given", func() {
 				BeforeEach(func() {
-					os.Setenv("MASTODON_SERVER_URL", "mastodon")
-					os.Setenv("MASTODON_STREAM", "direct")
-					os.Setenv("MASTODON_ACCESS_TOKEN", "token")
-					os.Setenv("MQ_HOST", "mq")
-					os.Setenv("MQ_USERNAME", "shiko")
-					os.Setenv("MQ_PASSWORD", "shiko")
-					os.Setenv("PORT", "8080")
-					os.Setenv("LOG_LEVEL", "unknown")
+					err := os.Setenv("MASTODON_SERVER_URL", "mastodon")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MASTODON_STREAM", "direct")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MASTODON_ACCESS_TOKEN", "token")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MQ_HOST", "mq")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MQ_USERNAME", "shiko")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MQ_PASSWORD", "shiko")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("PORT", "8080")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("LOG_LEVEL", "unknown")
+					Expect(err).NotTo(HaveOccurred())
 				})
 
 				It("returns an error", func() {
@@ -74,14 +102,29 @@ var _ = Describe("Environment", func() {
 
 			Context("valid log level is given", func() {
 				BeforeEach(func() {
-					os.Setenv("MASTODON_SERVER_URL", "mastodon")
-					os.Setenv("MASTODON_STREAM", "direct")
-					os.Setenv("MASTODON_ACCESS_TOKEN", "token")
-					os.Setenv("MQ_HOST", "mq")
-					os.Setenv("MQ_USERNAME", "shiko")
-					os.Setenv("MQ_PASSWORD", "shiko")
-					os.Setenv("PORT", "8080")
-					os.Setenv("LOG_LEVEL", "debug")
+					err := os.Setenv("MASTODON_SERVER_URL", "mastodon")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MASTODON_STREAM", "direct")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MASTODON_ACCESS_TOKEN", "token")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MQ_HOST", "mq")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MQ_USERNAME", "shiko")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("MQ_PASSWORD", "shiko")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("PORT", "8080")
+					Expect(err).NotTo(HaveOccurred())
+
+					err = os.Setenv("LOG_LEVEL", "debug")
+					Expect(err).NotTo(HaveOccurred())
 				})
 
 				It("returns config", func() {

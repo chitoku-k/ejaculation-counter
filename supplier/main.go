@@ -85,7 +85,10 @@ func main() {
 	wg.Add(1)
 	go func() {
 		<-ctx.Done()
-		mastodon.Close(true)
+		err := mastodon.Close(true)
+		if err != nil {
+			slog.Error("Failed to close streaming", slog.Any("err", err))
+		}
 		wg.Done()
 	}()
 

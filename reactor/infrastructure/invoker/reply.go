@@ -76,7 +76,7 @@ func pack(r io.Reader) (string, int, error) {
 func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
 	defer func() {
 		_, _ = io.Copy(io.Discard, event.Body)
-		event.Body.Close()
+		_ = event.Body.Close()
 	}()
 
 	status, n, err := pack(io.MultiReader(strings.NewReader(fmt.Sprintf("@%s ", event.Acct)), event.Body))
