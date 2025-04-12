@@ -1,4 +1,4 @@
-//go:generate mockgen -source=time.go -destination=time_mock.go -package=wrapper -self_package=github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper
+//go:generate go tool mockgen -source=time.go -destination=time_mock.go -package=wrapper -self_package=github.com/chitoku-k/ejaculation-counter/supplier/infrastructure/wrapper
 
 package wrapper
 

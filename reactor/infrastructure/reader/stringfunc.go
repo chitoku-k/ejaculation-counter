@@ -1,4 +1,4 @@
-//go:generate mockgen -source=stringfunc.go -destination=stringfunc_mock.go -package=reader -self_package=github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader
+//go:generate go tool mockgen -source=stringfunc.go -destination=stringfunc_mock.go -package=reader -self_package=github.com/chitoku-k/ejaculation-counter/reactor/infrastructure/reader
 
 package reader
 
