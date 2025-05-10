@@ -1,6 +1,6 @@
 FROM ubuntu:latest AS rabbitmq-message-deduplication
-ARG RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=0.7.0
-ARG RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME=plugins-rmqv4.1.x-erl27-elx1.18.zip
+ARG RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=0.7.1
+ARG RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME=
 ADD https://github.com/noxdafox/rabbitmq-message-deduplication/releases/download/$RABBITMQ_MESSAGE_DEDUPLICATION_VERSION/$RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME /usr/src/
 RUN --mount=type=cache,id=mq:/var/cache/apt,target=/var/cache/apt \
     --mount=type=cache,id=mq:/var/lib/apt/lists,target=/var/lib/apt/lists \
