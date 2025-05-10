@@ -26,25 +26,27 @@ jobs:
       - name: Get current version
         id: current-version
         run: |
+          sed -n -E 's/FROM rabbitmq:([0-9]+\.[0-9]+)\.[0-9]+.*/RABBITMQ_VERSION=\1/p' mq/Dockerfile >> "$GITHUB_OUTPUT"
           sed -n -E 's/^ARG\s+//; /RABBITMQ_MESSAGE_DEDUPLICATION.*_VERSION=/p' mq/Dockerfile >> "$GITHUB_OUTPUT"
       - name: Get new version
         id: new-version
         run: |
+          rabbitmq_version=${{ steps.current-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION }}
           releases=$(gh api repos/noxdafox/rabbitmq-message-deduplication/releases/latest)
-          jq -r '.assets[].name | select(test("rabbitmq_message_deduplication")) | "RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=\(gsub("(.+)-|\\.ez"; ""))"' <<< "$releases" >> "$GITHUB_OUTPUT"
-          jq -r '.assets[].name | select(test("elixir")) | "RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION=\(gsub("(.+)-|\\.ez"; ""))"' <<< "$releases" >> "$GITHUB_OUTPUT"
+          jq -r '.tag_name | "RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=\(.)"' <<< "$releases" >> "$GITHUB_OUTPUT"
+          jq -r --arg rabbitmq "$rabbitmq_version" '.assets[].name | select(test("rmqv" + $rabbitmq + ".x")) | "RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME=\(.)"' <<< "$releases" >> "$GITHUB_OUTPUT"
       - name: Update version
         if: ${{ steps.current-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION != steps.new-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION }}
         run: |
           current_version=${{ steps.current-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION }}
           new_version=${{ steps.new-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_VERSION }}
-          new_elixir_version=${{ steps.new-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION }}
+          new_filename=${{ steps.new-version.outputs.RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME }}
 
           title="Bump rabbitmq-message-deduplication from $current_version to $new_version in /mq"
           body="Bumps rabbitmq-message-deduplication from $current_version to $new_version."
 
           sed -i -E "s/(RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=).+/\\1$new_version/" mq/Dockerfile
-          sed -i -E "s/(RABBITMQ_MESSAGE_DEDUPLICATION_ELIXIR_VERSION=).+/\\1$new_elixir_version/" mq/Dockerfile
+          sed -i -E "s/(RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME=).+/\\1$new_filename/" mq/Dockerfile
 
           git checkout -b "dependencies/docker/mq/rabbitmq-message-deduplication-$new_version"
           git add --all
