@@ -21,13 +21,13 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "12.0.2"
+      "version": "12.1.0"
     },
     {
       "type": "datasource",
       "id": "grafana-postgresql-datasource",
       "name": "PostgreSQL",
-      "version": "12.0.2"
+      "version": "12.1.0"
     },
     {
       "type": "panel",
@@ -95,7 +95,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "#c7d0d9"
+                "color": "#c7d0d9",
+                "value": 0
               }
             ]
           },
@@ -129,7 +130,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.1.0",
       "targets": [
         {
           "datasource": {
@@ -182,7 +183,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red"
+                "color": "red",
+                "value": 0
               },
               {
                 "color": "green",
@@ -216,7 +218,7 @@
         "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.1.0",
       "targets": [
         {
           "datasource": {
@@ -280,7 +282,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               }
             ]
           },
@@ -305,7 +308,8 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "orange"
+                      "color": "orange",
+                      "value": 0
                     },
                     {
                       "color": "green",
@@ -355,7 +359,7 @@
           }
         ]
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.1.0",
       "targets": [
         {
           "datasource": {
@@ -456,7 +460,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "red",
@@ -489,7 +494,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.1.0",
       "targets": [
         {
           "datasource": {
