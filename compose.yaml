@@ -53,7 +53,7 @@ services:
         target: /usr/src/app
 
   web:
-    image: nginx:1.27
+    image: nginx:1.28
     ports:
       - "${COUNTER_PORT-8080}:80"
     environment:
@@ -103,7 +103,7 @@ services:
         target: /var/lib/rabbitmq
 
   database:
-    image: postgres:17.2
+    image: postgres:17.5
     volumes:
       - type: bind
         source: ./database
