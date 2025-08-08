@@ -10,7 +10,7 @@ RUN --mount=type=cache,id=mq:/var/cache/apt,target=/var/cache/apt \
     mkdir -p /opt/rabbitmq/plugins && \
     unzip -d /opt/rabbitmq/plugins "/usr/src/$RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME"
 
-FROM rabbitmq:4.1.2-management
+FROM rabbitmq:4.1.3-management
 COPY --from=rabbitmq-message-deduplication /opt/rabbitmq/plugins /opt/rabbitmq/plugins
 RUN chown rabbitmq:rabbitmq /opt/rabbitmq/plugins/*.ez && \
     rabbitmq-plugins enable --offline rabbitmq_message_deduplication
