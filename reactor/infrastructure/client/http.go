@@ -12,7 +12,6 @@ func NewHttpClient() (*http.Client, error) {
 	}
 
 	transport := http.DefaultTransport.(*http.Transport)
-	transport.ForceAttemptHTTP2 = false
 	transport.MaxIdleConnsPerHost = 16
 
 	return &http.Client{
