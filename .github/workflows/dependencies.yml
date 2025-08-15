@@ -20,7 +20,7 @@ jobs:
       GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.PAT }}
       - name: Get current version
