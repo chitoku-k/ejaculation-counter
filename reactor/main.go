@@ -65,24 +65,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		reader.Consume(ctx)
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		<-ctx.Done()
 		err := reader.Close(true)
 		if err != nil {
 			slog.Error("Failed to close reader", slog.Any("err", err))
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		c, err := client.NewHttpClient()
 		if err != nil {
 			slog.Error("Failed to initialize Cookie Jar", slog.Any("err", err))
@@ -126,11 +121,9 @@ func main() {
 		if err != nil {
 			slog.Error("Failed to close connection to DB", slog.Any("err", err))
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		through := service.NewThrough(hardcoding.NewThroughRepository())
 		doublet := service.NewDoublet(hardcoding.NewDoubletRepository())
 		engine := server.NewEngine(through, doublet, env.Port, env.TLSCert, env.TLSKey)
@@ -139,8 +132,7 @@ func main() {
 			slog.Error("Failed to start web server", slog.Any("err", err))
 			os.Exit(1)
 		}
-		wg.Done()
-	}()
+	})
 
 	wg.Wait()
 }
