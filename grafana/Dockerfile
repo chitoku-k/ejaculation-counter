@@ -1,2 +1,2 @@
-FROM grafana/grafana:12.1.0
+FROM grafana/grafana:12.1.1
 COPY . /etc/grafana/provisioning/
