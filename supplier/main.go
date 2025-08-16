@@ -46,12 +46,10 @@ func main() {
 	}
 	tick := s.Start()
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		<-ctx.Done()
 		s.Stop()
-		wg.Done()
-	}()
+	})
 
 	writer, err := queue.NewWriter(
 		ctx,
@@ -72,28 +70,23 @@ func main() {
 		env.Mastodon.Stream,
 	)
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		err := mastodon.Run(ctx)
 		if err != nil && !errors.Is(err, context.Canceled) {
 			slog.Error("Error in starting streaming", slog.Any("err", err))
 			os.Exit(1)
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		<-ctx.Done()
 		err := mastodon.Close(true)
 		if err != nil {
 			slog.Error("Failed to close streaming", slog.Any("err", err))
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		ps := service.NewProcessor(writer)
 		ps.Execute(ctx, tick, mastodon.Statuses())
 
@@ -101,19 +94,16 @@ func main() {
 		if err != nil {
 			slog.Error("Failed to close writer", slog.Any("err", err))
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		engine := server.NewEngine(env.Port, env.TLSCert, env.TLSKey)
 		err := engine.Start(ctx)
 		if err != nil {
 			slog.Error("Failed to start web server", slog.Any("err", err))
 			os.Exit(1)
 		}
-		wg.Done()
-	}()
+	})
 
 	wg.Wait()
 }
