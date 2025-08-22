@@ -12,7 +12,7 @@ require (
 	github.com/prometheus/client_golang v1.23.0
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/rivo/uniseg v0.4.7
-	go.uber.org/mock v0.5.2
+	go.uber.org/mock v0.6.0
 	golang.org/x/sync v0.16.0
 	golang.org/x/sys v0.35.0
 )
