@@ -75,7 +75,6 @@ func pack(r io.Reader) (string, int, error) {
 
 func (r *reply) Send(ctx context.Context, event service.ReplyEvent) error {
 	defer func() {
-		_, _ = io.Copy(io.Discard, event.Body)
 		_ = event.Body.Close()
 	}()
 
