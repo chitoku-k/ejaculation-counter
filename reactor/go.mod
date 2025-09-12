@@ -4,7 +4,7 @@ go 1.25
 
 require (
 	github.com/gin-gonic/gin v1.10.1
-	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/mattn/go-mastodon v0.0.10
 	github.com/onsi/ginkgo/v2 v2.25.3
