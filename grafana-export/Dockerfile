@@ -14,6 +14,6 @@ RUN --mount=type=cache,target=/go \
 FROM base AS dev
 COPY --from=golangci/golangci-lint /usr/bin/golangci-lint /usr/bin
 
-FROM mcr.microsoft.com/playwright:v1.52.0-noble
+FROM mcr.microsoft.com/playwright:v1.55.1-noble
 COPY --link --from=build /usr/src/grafana-export /usr/local/bin/grafana-export
 CMD ["/usr/local/bin/grafana-export"]
