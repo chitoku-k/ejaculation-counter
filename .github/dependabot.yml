@@ -34,4 +34,4 @@ updates:
   open-pull-requests-limit: 99
   ignore:
   # The version must match with github.com/playwright-community/playwright-go
-  - dependency-name: mcr.microsoft.com/playwright
+  - dependency-name: playwright
