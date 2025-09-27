@@ -21,13 +21,13 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "12.1.1"
+      "version": "12.2.0"
     },
     {
       "type": "datasource",
       "id": "grafana-postgresql-datasource",
       "name": "PostgreSQL",
-      "version": "12.1.1"
+      "version": "12.2.0"
     },
     {
       "type": "panel",
@@ -532,7 +532,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 41,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": [
