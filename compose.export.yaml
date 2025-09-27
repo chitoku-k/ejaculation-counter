@@ -1,0 +1,12 @@
+services:
+  grafana-export:
+    build:
+      context: ./grafana-export
+    command: >-
+      grafana-export
+      http://grafana:3000/grafana/d/ejaculation-counter/?shareView=export
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./grafana/dashboards
+        target: /dest
