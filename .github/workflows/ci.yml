@@ -105,6 +105,7 @@ jobs:
             -f compose.yaml \
             -f compose.export.yaml \
             up \
+            --exit-code-from=grafana-export \
             grafana-export
 
           sudo chown runner:runner ./grafana/dashboards/dashboards/*.json
