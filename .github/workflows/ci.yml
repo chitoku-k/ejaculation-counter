@@ -107,6 +107,8 @@ jobs:
             up \
             grafana-export
 
+          ls -l ./grafana/dashboards/dashboards
+
           if git diff --exit-code &> /dev/null; then
             exit 0
           fi
