@@ -75,3 +75,44 @@ jobs:
             web.tags=ghcr.io/chitoku-k/ejaculation-counter/web:latest
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
+
+  update-dashboard:
+    name: Update dashboard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GIT_AUTHOR_NAME: 'github-actions[bot]'
+      GIT_AUTHOR_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
+      GIT_COMMITTER_NAME: 'github-actions[bot]'
+      GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || '' }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Update dashboard
+        run: |
+          docker compose up -d grafana
+
+          until docker compose exec grafana curl -f http://localhost:3000/api/health &> /dev/null; do
+            sleep 0.05
+          done
+
+          docker compose \
+            -f compose.yaml \
+            -f compose.export.yaml \
+            up \
+            grafana-export
+
+          sudo chown runner:runner ./grafana/dashboards/dashboards/*.json
+
+          if git diff --exit-code &> /dev/null; then
+            exit 0
+          fi
+
+          git add ./grafana/dashboards/dashboards
+          git commit --message="Update dashboard"
+          git push
