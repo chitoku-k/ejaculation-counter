@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         context:
+          - grafana-export
           - reactor
           - supplier
     steps:

@@ -9,6 +9,7 @@ updates:
     timezone: Asia/Tokyo
 - package-ecosystem: gomod
   directories:
+  - "/grafana-export"
   - "/reactor"
   - "/supplier"
   schedule:
@@ -21,6 +22,7 @@ updates:
   directories:
   - "/"
   - "/grafana"
+  - "/grafana-export"
   - "/mq"
   - "/reactor"
   - "/supplier"
