@@ -12,3 +12,7 @@ datasources:
       password: $POSTGRES_PASSWORD
     jsonData:
       sslmode: $POSTGRES_SSLMODE
+      # FIXME: Remove `jsonData.database` when it is no longer required:
+      # - https://github.com/grafana/grafana/blob/v12.2.0/packages/grafana-sql/src/datasource/SqlDatasource.ts#L54-L61
+      # - https://github.com/grafana/grafana/blob/v12.2.0/packages/grafana-sql/src/datasource/SqlDatasource.ts#L152-L157
+      database: $POSTGRES_DB
