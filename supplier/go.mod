@@ -2,6 +2,8 @@ module github.com/chitoku-k/ejaculation-counter/supplier
 
 go 1.25
 
+toolchain go1.25.4
+
 require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gorilla/websocket v1.5.3

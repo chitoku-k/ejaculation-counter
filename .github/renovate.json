@@ -1,0 +1,74 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":disableDependencyDashboard"],
+  "schedule": ["* 0-3 * * 6"],
+  "timezone": "Asia/Tokyo",
+  "labels": ["dependencies"],
+  "commitMessageAction": "Bump",
+  "commitMessageExtra": "",
+  "commitMessageSuffix": "from {{currentVersion}} to {{newVersion}}",
+  "commitMessageTopic": "{{depName}}",
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0,
+  "hostRules": [
+    {
+      "matchHost": "api.github.com",
+      "token": "{{secrets.RENOVATE_GITHUB_COM_TOKEN}}",
+      "authType": "Token-Only"
+    }
+  ],
+  "customDatasources": {
+    "github-release-assets": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/{{packageName}}/releases/latest",
+      "format": "json",
+      "transformTemplates": ["{\"releases\": $.assets.{\"version\": name}}"]
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["ARG\\s*RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "rabbitmq-message-deduplication",
+      "lookupNameTemplate": "noxdafox/rabbitmq-message-deduplication",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["ARG\\s*RABBITMQ_MESSAGE_DEDUPLICATION_FILENAME=(?<currentValue>.+)"],
+      "depNameTemplate": "rabbitmq-message-deduplication-filename",
+      "lookupNameTemplate": "noxdafox/rabbitmq-message-deduplication",
+      "datasourceTemplate": "custom.github-release-assets",
+      "versioningTemplate": "regex:^plugins-rmqv(?<major>\\d+)\\.(?<minor>\\d+)\\.(?:(?<patch>\\d+|x))(-.*)?\\.zip$"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "The version must match with github.com/playwright-community/playwright-go",
+      "matchDepNames": ["playwright"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "addLabels": ["docker"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"]
+    },
+    {
+      "matchManagers": ["gomod"],
+      "addLabels": ["go"]
+    },
+    {
+      "matchDepNames": ["go", "golang"],
+      "groupName": "go",
+      "minimumGroupSize": 2
+    },
+    {
+      "matchDepNames": ["rabbitmq-message-deduplication", "rabbitmq-message-deduplication-filename"],
+      "groupName": "rabbitmq-message-deduplication"
+    }
+  ]
+}
