@@ -17,7 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         context:
-          - grafana-export
           - reactor
           - supplier
     steps:
@@ -93,27 +92,40 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || '' }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Update dashboard
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: grafana-export/go.mod
+          cache-dependency-path: grafana-export/go.sum
+      - name: Set up Playwright
+        working-directory: grafana-export
         run: |
-          docker compose up -d grafana
-
-          until docker compose exec grafana curl -f http://localhost:3000/api/health &> /dev/null; do
-            sleep 0.05
-          done
-
+          go tool playwright install --with-deps
+      - name: Build
+        working-directory: grafana-export
+        run: |
+          go build .
+      - name: Start Grafana
+        run: |
           docker compose \
             -f compose.yaml \
-            -f compose.export.yaml \
-            up \
-            --exit-code-from=grafana-export \
-            grafana-export
+            -f <(echo '{"services": {"grafana": {"ports": ["3000:3000"]}}}') \
+            up -d grafana
 
-          sudo chown runner:runner ./grafana/dashboards/dashboards/*.json
+          until curl -f http://localhost:3000/api/health &> /dev/null; do
+            sleep 0.05
+          done
+      - name: Update dashboard
+        working-directory: grafana-export
+        run: |
+          ./grafana-export \
+            http://localhost:3000/grafana/d/ejaculation-counter/?shareView=export \
+            ../grafana/dashboards/dashboards/ejaculation-counter.json
 
           if git diff --exit-code &> /dev/null; then
             exit 0
           fi
 
-          git add ./grafana/dashboards/dashboards
+          git add ../grafana/dashboards/dashboards
           git commit --message="Update dashboard"
           git push
