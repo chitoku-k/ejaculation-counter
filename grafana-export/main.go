@@ -9,13 +9,14 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 2 {
+	if len(os.Args) != 3 {
 		println("Usage:")
-		println("  " + os.Args[0] + " URL")
+		println("  " + os.Args[0] + " URL FILENAME")
 		os.Exit(1)
 	}
 
 	url := os.Args[1]
+	filename := os.Args[2]
 
 	if err := playwright.Install(&playwright.RunOptions{SkipInstallBrowsers: true}); err != nil {
 		log.Fatalf("Failed to install playwright: %v", err)
@@ -65,7 +66,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to download: %v", err)
 	}
-	if err := download.SaveAs("/dest/dashboards/ejaculation-counter.json"); err != nil {
+	if err := download.SaveAs(filename); err != nil {
 		log.Fatalf("Failed to save: %v", err)
 	}
 

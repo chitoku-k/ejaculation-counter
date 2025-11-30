@@ -45,11 +45,6 @@
   ],
   "packageRules": [
     {
-      "description": "The version must match with github.com/playwright-community/playwright-go",
-      "matchDepNames": ["playwright"],
-      "enabled": false
-    },
-    {
       "matchManagers": ["dockerfile"],
       "addLabels": ["docker"]
     },

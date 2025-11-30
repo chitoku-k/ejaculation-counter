@@ -11,3 +11,5 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 )
+
+tool github.com/playwright-community/playwright-go/cmd/playwright
