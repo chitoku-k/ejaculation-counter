@@ -4,10 +4,6 @@
   "schedule": ["* 0-3 * * 6"],
   "timezone": "Asia/Tokyo",
   "labels": ["dependencies"],
-  "commitMessageAction": "Bump",
-  "commitMessageExtra": "",
-  "commitMessageSuffix": "from {{currentVersion}} to {{newVersion}}",
-  "commitMessageTopic": "{{depName}}",
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
   "hostRules": [
@@ -68,6 +64,13 @@
     {
       "matchDepNames": ["rabbitmq", "rabbitmq-message-deduplication", "rabbitmq-message-deduplication-filename"],
       "groupName": "rabbitmq"
+    },
+    {
+      "matchDepNames": ["*"],
+      "commitMessageAction": "Bump",
+      "commitMessageExtra": "",
+      "commitMessageSuffix": "from {{currentVersion}} to {{newVersion}}",
+      "commitMessageTopic": "{{depName}}"
     }
   ]
 }
