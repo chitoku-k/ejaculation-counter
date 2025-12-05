@@ -53,7 +53,7 @@ services:
         target: /usr/src/app
 
   web:
-    image: nginx:1.28
+    image: nginx:1.29
     ports:
       - "${COUNTER_PORT-8080}:80"
     environment:
