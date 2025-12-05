@@ -218,7 +218,7 @@
         "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "12.1.1",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -273,6 +273,9 @@
               "type": "auto"
             },
             "filterable": false,
+            "footer": {
+              "reducers": []
+            },
             "inspect": false
           },
           "decimals": 0,
@@ -343,14 +346,6 @@
       "id": 10,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
         "showHeader": true,
         "sortBy": [
           {
@@ -359,7 +354,7 @@
           }
         ]
       },
-      "pluginVersion": "12.1.1",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
