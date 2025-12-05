@@ -6,6 +6,7 @@
   "labels": ["dependencies"],
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
+  "rangeStrategy": "bump",
   "hostRules": [
     {
       "matchHost": "api.github.com",
@@ -55,7 +56,8 @@
     {
       "matchDepNames": ["go", "golang"],
       "groupName": "go",
-      "minimumGroupSize": 2
+      "minimumGroupSize": 2,
+      "rangeStrategy": "auto"
     },
     {
       "matchDepNames": ["rabbitmq-message-deduplication", "rabbitmq-message-deduplication-filename"],
