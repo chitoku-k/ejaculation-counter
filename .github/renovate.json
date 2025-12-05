@@ -64,6 +64,10 @@
     {
       "matchDepNames": ["rabbitmq-message-deduplication", "rabbitmq-message-deduplication-filename"],
       "groupName": "rabbitmq-message-deduplication"
+    },
+    {
+      "matchDepNames": ["rabbitmq", "rabbitmq-message-deduplication", "rabbitmq-message-deduplication-filename"],
+      "groupName": "rabbitmq"
     }
   ]
 }
