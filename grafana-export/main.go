@@ -54,6 +54,21 @@ func main() {
 		log.Fatalf("Failed to load (HTTP %v)", status)
 	}
 
+	panelContent := page.Locator(`[data-testid="data-testid panel content"]`).First()
+	if err := panelContent.WaitFor(playwright.LocatorWaitForOptions{State: playwright.WaitForSelectorStateAttached}); err != nil {
+		log.Fatalf("Failed to wait for the panel content to appear: %v", err)
+	}
+
+	loadingBars, err := page.Locator(`[aria-label="Panel loading bar"]`).All()
+	if err != nil {
+		log.Fatalf("Failed to wait for the loading bars: %v", err)
+	}
+	for _, loadingBar := range loadingBars {
+		if loadingBar.WaitFor(playwright.LocatorWaitForOptions{State: playwright.WaitForSelectorStateDetached}); err != nil {
+			log.Fatalf("Failed to wait for the loading bars to disappear: %v", err)
+		}
+	}
+
 	toggle := page.Locator(`[data-testid="data-testid export as json externally switch"]`)
 	if err := toggle.DispatchEvent("click", nil); err != nil {
 		log.Fatalf("Failed to check the toggle: %v", err)
