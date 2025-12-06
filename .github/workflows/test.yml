@@ -1,0 +1,71 @@
+name: Test
+on:
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  lint:
+    name: Lint ${{ matrix.target }} (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - reactor
+          - supplier
+        platform:
+          - name: linux/amd64
+            label: ubuntu-24.04
+          - name: linux/arm64
+            label: ubuntu-24.04-arm
+          - name: windows/amd64
+            label: windows-2025
+        include:
+          - target: grafana-export
+            platform:
+              name: linux/amd64
+              label: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.target }}/go.mod
+          cache-dependency-path:  ${{ matrix.target }}/go.sum
+      - name: Lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          working-directory: ${{ matrix.target }}
+
+  test:
+    name: Test ${{ matrix.target }} (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - reactor
+          - supplier
+        platform:
+          - name: linux/amd64
+            label: ubuntu-24.04
+          - name: linux/arm64
+            label: ubuntu-24.04-arm
+          - name: windows/amd64
+            label: windows-2025
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.target }}/go.mod
+          cache-dependency-path: ${{ matrix.target }}/go.sum
+      - name: Test
+        working-directory: ${{ matrix.target }}
+        run: |
+          go test ./...
