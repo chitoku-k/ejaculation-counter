@@ -1,0 +1,85 @@
+name: Build
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      publish:
+        type: boolean
+        default: false
+      image-set:
+        type: string
+      image-tag:
+        type: string
+        default: latest
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  executable:
+    name: Executable ${{ matrix.target }} (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - reactor
+          - supplier
+        platform:
+          - name: linux/amd64
+            label: ubuntu-24.04
+          - name: linux/arm64
+            label: ubuntu-24.04-arm
+          - name: windows/amd64
+            label: windows-2025
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.target }}/go.mod
+          cache-dependency-path: ${{ matrix.target }}/go.sum
+      - name: Build
+        working-directory: ${{ matrix.target }}
+        run: |
+          go build .
+
+  image:
+    name: Image (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: linux/amd64
+            label: ubuntu-24.04
+          - name: linux/arm64
+            label: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log into Container Registry
+        if: ${{ inputs.publish || false }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Build
+        uses: docker/bake-action@v6
+        with:
+          files: docker-bake.hcl
+          push: ${{ inputs.publish || false }}
+          set: |
+            ${{ inputs.image-set }}
+            supplier.tags=ghcr.io/chitoku-k/ejaculation-counter/supplier:${{ inputs.image-tag || 'latest' }}
+            reactor.tags=ghcr.io/chitoku-k/ejaculation-counter/reactor:${{ inputs.image-tag || 'latest' }}
+            grafana.tags=ghcr.io/chitoku-k/ejaculation-counter/grafana:${{ inputs.image-tag || 'latest' }}
+            mq.tags=ghcr.io/chitoku-k/ejaculation-counter/mq:${{ inputs.image-tag || 'latest' }}
+            web.tags=ghcr.io/chitoku-k/ejaculation-counter/web:${{ inputs.image-tag || 'latest' }}
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
