@@ -31,7 +31,6 @@ jobs:
       set: |
         supplier.args.PORT=443
         reactor.args.PORT=443
-      tag: ${{ github.ref_name }}
 
   combine:
     name: Combine ${{ matrix.target }}
