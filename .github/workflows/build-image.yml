@@ -1,0 +1,75 @@
+name: Build image
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      push:
+        type: boolean
+        default: false
+      set:
+        type: string
+      tag:
+        type: string
+        default: latest
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  image:
+    name: ${{ matrix.target }} (${{ matrix.platform.os }}/${{ matrix.platform.arch }})
+    runs-on: ${{ matrix.platform.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - supplier
+          - reactor
+          - grafana
+          - mq
+          - web
+        platform:
+          - os: linux
+            arch: amd64
+            label: ubuntu-24.04
+          - os: linux
+            arch: arm64
+            label: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log into Container Registry
+        if: ${{ inputs.push || false }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Build
+        uses: docker/bake-action@v6
+        with:
+          files: docker-bake.hcl
+          targets: ${{ matrix.target }}
+          set: |
+            ${{ matrix.target }}.tags=ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}:${{ inputs.tag || 'latest' }}
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+            *.output=type=image,push=${{ inputs.push || false }},push-by-digest=${{ inputs.push || false }}
+            ${{ inputs.set }}
+      - name: Save digests
+        if: ${{ inputs.push || false }}
+        run: |
+          mkdir -p ${{ runner.temp }}/digests
+          digest=${{ fromJSON(steps.build.outputs.metadata)[matrix.target]['containerimage.digest'] }}
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+      - name: Upload digests
+        if: ${{ inputs.push || false }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: digests-${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1

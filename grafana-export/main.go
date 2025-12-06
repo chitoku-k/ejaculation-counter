@@ -64,7 +64,7 @@ func main() {
 		log.Fatalf("Failed to wait for the loading bars: %v", err)
 	}
 	for _, loadingBar := range loadingBars {
-		if loadingBar.WaitFor(playwright.LocatorWaitForOptions{State: playwright.WaitForSelectorStateDetached}); err != nil {
+		if err := loadingBar.WaitFor(playwright.LocatorWaitForOptions{State: playwright.WaitForSelectorStateDetached}); err != nil {
 			log.Fatalf("Failed to wait for the loading bars to disappear: %v", err)
 		}
 	}

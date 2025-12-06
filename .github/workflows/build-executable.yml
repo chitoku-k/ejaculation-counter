@@ -1,0 +1,61 @@
+name: Build executable
+on:
+  pull_request:
+  workflow_call:
+    inputs:
+      upload:
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: ${{ matrix.target }} (${{ matrix.platform.os }}/${{ matrix.platform.arch }})
+    runs-on: ${{ matrix.platform.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - supplier
+          - reactor
+        platform:
+          - os: linux
+            arch: amd64
+            label: ubuntu-24.04
+          - os: linux
+            arch: arm64
+            label: ubuntu-24.04-arm
+          - os: windows
+            arch: amd64
+            label: windows-2025
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.target }}/go.mod
+          cache-dependency-path: ${{ matrix.target }}/go.sum
+      - name: Build
+        working-directory: ${{ matrix.target }}
+        run: |
+          go build .
+      - name: Compress
+        if: ${{ inputs.upload || false }}
+        uses: TheDoctor0/zip-release@0.7.6
+        with:
+          type: ${{ matrix.platform.os != 'windows' && 'tar' || 'zip' }}
+          filename: ${{ runner.temp }}/release
+          directory: ${{ matrix.target }}
+          path: ${{ matrix.target }}
+      - name: Upload
+        if: ${{ inputs.upload || false }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ matrix.platform.os != 'windows' && 'tar.gz' || 'zip' }}
+          path: ${{ runner.temp }}/release
+          if-no-files-found: error
+          retention-days: 1

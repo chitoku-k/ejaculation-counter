@@ -11,17 +11,22 @@ RUN --mount=type=cache,target=/go \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -ldflags='-s -w'
 
-FROM base AS dev
-COPY --from=golangci/golangci-lint /usr/bin/golangci-lint /usr/bin
+FROM scratch AS production-linux-amd64
+ARG DEB_BUILD_MULTIARCH=x86_64-linux-gnu
+ARG LD=/lib64/ld-linux-x86-64.so.2
 
-FROM scratch AS production
+FROM scratch AS production-linux-arm64
+ARG DEB_BUILD_MULTIARCH=aarch64-linux-gnu
+ARG LD=/lib/ld-linux-aarch64.so.1
+
+FROM production-${TARGETPLATFORM//\//-} AS production
 ARG PORT=80
 ENV PORT=$PORT
 ENV GIN_MODE=release
-COPY --link --from=build /lib/x86_64-linux-gnu/ld-linux-x86-64.* /lib/x86_64-linux-gnu/
-COPY --link --from=build /lib/x86_64-linux-gnu/libc.so* /lib/x86_64-linux-gnu/
-COPY --link --from=build /lib/x86_64-linux-gnu/libresolv.so* /lib/x86_64-linux-gnu/
-COPY --link --from=build /lib64 /lib64
+COPY --link --from=build $LD $LD
+COPY --link --from=build /lib/$DEB_BUILD_MULTIARCH/ld-linux-x86-64.* /lib/$DEB_BUILD_MULTIARCH/
+COPY --link --from=build /lib/$DEB_BUILD_MULTIARCH/libc.so* /lib/$DEB_BUILD_MULTIARCH/
+COPY --link --from=build /lib/$DEB_BUILD_MULTIARCH/libresolv.so* /lib/$DEB_BUILD_MULTIARCH/
 COPY --link --from=build /usr/src/supplier /supplier
 COPY --link --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --link --from=build /usr/share/zoneinfo /usr/share/zoneinfo
