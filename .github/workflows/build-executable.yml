@@ -52,19 +52,11 @@ jobs:
         working-directory: ${{ matrix.target }}
         run: |
           go build -ldflags="-s -w -X main.version=$(git describe --tags --always --dirty)" .
-      - name: Compress
-        if: ${{ inputs.upload || false }}
-        uses: TheDoctor0/zip-release@0.7.6
-        with:
-          type: ${{ matrix.platform.os == 'windows' && 'zip' || 'tar' }}
-          filename: ${{ runner.temp }}/${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ matrix.platform.os == 'windows' && 'zip' || 'tar.gz' }}
-          directory: ${{ matrix.target }}
-          path: ${{ matrix.target }}${{ matrix.platform.os == 'windows' && '.exe' || '' }}
       - name: Upload
         if: ${{ inputs.upload || false }}
         uses: actions/upload-artifact@v5
         with:
-          name: ${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ matrix.platform.os == 'windows' && 'zip' || 'tar.gz' }}
-          path: ${{ runner.temp }}/${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ matrix.platform.os == 'windows' && 'zip' || 'tar.gz' }}
+          name: artifacts-${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+          path: ${{ matrix.target }}/${{ matrix.target }}${{ matrix.platform.os == 'windows' && '.exe' || '' }}
           if-no-files-found: error
           retention-days: 1
