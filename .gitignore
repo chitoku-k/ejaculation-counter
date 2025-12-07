@@ -3,6 +3,7 @@
 
 ### Go ###
 # Binaries for programs and plugins
+/grafana-export/grafana-export
 /reactor/reactor
 /supplier/supplier
 *.exe
