@@ -1,30 +1,25 @@
-name: Publish
+name: Publish image
 on:
   push:
     branches:
       - master
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
 
 defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  test:
-    name: Test
-    uses: ./.github/workflows/test.yml
-
-  build-executable:
-    name: Build executable
-    needs:
-      - test
-    uses: ./.github/workflows/build-executable.yml
-    with:
-      upload: true
-
-  build-image:
-    name: Build image
-    needs:
-      - test
+  build:
+    name: Build
     uses: ./.github/workflows/build-image.yml
     with:
       push: true
@@ -33,9 +28,9 @@ jobs:
         reactor.args.PORT=443
 
   combine:
-    name: Combine ${{ matrix.target }}
+    name: ${{ matrix.target }}
     needs:
-      - build-image
+      - build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -65,5 +60,5 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           docker buildx imagetools create \
-            --tag=ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}:latest \
+            --tag=ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}:${{ inputs.tag || 'latest' }} \
             $(printf 'ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}@sha256:%s ' *)

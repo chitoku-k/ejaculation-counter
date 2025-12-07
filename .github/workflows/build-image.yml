@@ -13,6 +13,10 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   image:
     name: ${{ matrix.target }} (${{ matrix.platform.os }}/${{ matrix.platform.arch }})

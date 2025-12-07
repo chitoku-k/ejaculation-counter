@@ -1,0 +1,77 @@
+name: Release
+on:
+  release:
+    types:
+      - published
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
+
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
+
+  publish-executable:
+    name: Publish executable
+    needs:
+      - lint
+      - test
+    uses: ./.github/workflows/publish-executable.yml
+    with:
+      tag: ${{ github.event.release.tag_name }}
+
+  publish-image:
+    name: Publish image
+    needs:
+      - lint
+      - test
+    uses: ./.github/workflows/publish-image.yml
+    with:
+      tag: ${{ github.event.release.tag_name }}
+
+  deploy:
+    name: Deploy
+    needs:
+      - publish-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Set up ID token
+        uses: actions/github-script@v8
+        id: id-token
+        with:
+          result-encoding: string
+          script: |
+            return await core.getIDToken('k8s.chitoku.jp');
+      - name: Set context
+        run: |
+          kubectl config set-cluster k8s.chitoku.jp --server=https://k8s.chitoku.jp
+          kubectl config set-credentials github-actions --token=${{ steps.id-token.outputs.result }}
+          kubectl config set-context k8s.chitoku.jp --cluster=k8s.chitoku.jp --user=github-actions
+          kubectl config use-context k8s.chitoku.jp
+      - name: Update images
+        run: |
+          kubectl set image --field-manager=github-actions deployment/ejaculation-counter-supplier \
+            supplier=ghcr.io/chitoku-k/ejaculation-counter/supplier:${{ github.event.release.tag_name }}
+
+          kubectl set image --field-manager=github-actions deployment/ejaculation-counter-reactor \
+            reactor=ghcr.io/chitoku-k/ejaculation-counter/reactor:${{ github.event.release.tag_name }}
+
+          kubectl set image --field-manager=github-actions deployment/ejaculation-counter-web \
+            web=ghcr.io/chitoku-k/ejaculation-counter/web:${{ github.event.release.tag_name }} \
+            grafana=ghcr.io/chitoku-k/ejaculation-counter/grafana:${{ github.event.release.tag_name }}
+
+          kubectl patch --field-manager=github-actions rabbitmqclusters.rabbitmq.com/ejaculation-counter-mq-cluster \
+            --type=merge \
+            --patch='{"spec": {"image": "ghcr.io/chitoku-k/ejaculation-counter/mq:${{ github.event.release.tag_name }}"}}'

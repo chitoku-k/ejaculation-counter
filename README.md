@@ -135,4 +135,4 @@ $ docker compose up -d --build
 `GET /metrics`
 
 [workflow-link]:    https://github.com/chitoku-k/ejaculation-counter/actions?query=branch:master
-[workflow-badge]:   https://img.shields.io/github/actions/workflow/status/chitoku-k/ejaculation-counter/ci.yml?branch=master&style=flat-square
+[workflow-badge]:   https://img.shields.io/github/actions/workflow/status/chitoku-k/ejaculation-counter/publish-image.yml?branch=master&style=flat-square

@@ -1,6 +1,9 @@
 name: Test
 on:
   pull_request:
+  push:
+    branches:
+      - master
   workflow_call:
 
 defaults:
@@ -15,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - reactor
           - supplier
+          - reactor
         platform:
           - os: linux
             arch: amd64

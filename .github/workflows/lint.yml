@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - reactor
           - supplier
+          - reactor
         platform:
           - os: linux
             arch: amd64

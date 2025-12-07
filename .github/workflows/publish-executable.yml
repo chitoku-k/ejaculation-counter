@@ -1,0 +1,40 @@
+name: Publish executable
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/build-executable.yml
+    with:
+      upload: true
+
+  upload:
+    name: Upload
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download
+        uses: actions/download-artifact@v6
+        with:
+          path: ${{ runner.temp }}/artifacts
+          pattern: '*.{tar.gz,zip}'
+          merge-multiple: true
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          tag: ${{ inputs.tag }}
+          file: ${{ runner.temp }}/artifacts/*
+          file_glob: true
