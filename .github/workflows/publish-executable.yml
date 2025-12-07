@@ -42,6 +42,10 @@ jobs:
           path: ${{ runner.temp }}/artifacts
           pattern: artifacts-*-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
           merge-multiple: true
+      - name: Change permission
+        if: ${{ matrix.platform.os != 'windows' }}
+        run: |
+          chmod +x ${{ runner.temp }}/artifacts/*
       - name: Compress
         uses: TheDoctor0/zip-release@0.7.6
         with:
