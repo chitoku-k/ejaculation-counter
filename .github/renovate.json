@@ -23,6 +23,17 @@
   },
   "customManagers": [
     {
+      "customType": "jsonata",
+      "fileFormat": "yaml",
+      "managerFilePatterns": [".github/workflows/*.yml"],
+      "matchStrings": [
+        "jobs.*.strategy.matrix.platform[label].{\"depName\": $substringBefore(label, \"-\"), \"currentValue\": $substringAfter(label, \"-\")}",
+        "jobs.*.strategy.matrix.exclude.platform[label].{\"depName\": $substringBefore(label, \"-\"), \"currentValue\": $substringAfter(label, \"-\")}",
+        "jobs.*.strategy.matrix.include.platform[label].{\"depName\": $substringBefore(label, \"-\"), \"currentValue\": $substringAfter(label, \"-\")}"
+      ],
+      "datasourceTemplate": "github-runners"
+    },
+    {
       "customType": "regex",
       "managerFilePatterns": ["/(^|/)Dockerfile$/"],
       "matchStrings": ["ARG\\s*RABBITMQ_MESSAGE_DEDUPLICATION_VERSION=(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
@@ -47,6 +58,10 @@
     },
     {
       "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"]
+    },
+    {
+      "matchDatasources": ["github-runners"],
       "addLabels": ["github_actions"]
     },
     {
