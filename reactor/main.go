@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"math/rand/v2"
 	"os"
@@ -19,9 +20,16 @@ import (
 	"github.com/chitoku-k/ejaculation-counter/reactor/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/spf13/pflag"
 )
 
-var signals = []os.Signal{os.Interrupt}
+var (
+	signals = []os.Signal{os.Interrupt}
+	name    = "ejaculation-counter reactor"
+	version = "v0.0.0-dev"
+
+	flagversion = pflag.BoolP("version", "V", false, "show version")
+)
 
 func init() {
 	prometheus.DefaultRegisterer.Unregister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
@@ -29,6 +37,12 @@ func init() {
 }
 
 func main() {
+	pflag.Parse()
+	if *flagversion {
+		fmt.Println(name + " " + version)
+		return
+	}
+
 	var wg sync.WaitGroup
 	ctx, stop := signal.NotifyContext(context.Background(), signals...)
 	defer stop()
