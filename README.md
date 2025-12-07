@@ -101,24 +101,23 @@ EXT_MPYW_API_URL=https://mpyw.hinanawi.net/api
 
 ## 本番環境
 
-BuildKit（または Docker の対応するバージョン）あるいは Buildah のインストールが必要です。
+Supplier + Reactor + Grafana + RabbitMQ + nginx + PostgreSQL で構成します。
 
-- `docker build` を利用する場合: Docker 18.09 以上
-- `docker buildx` を利用する場合: Docker 19.03 以上
+### コンテナーイメージ版
 
-nginx + RabbitMQ + PostgreSQL + Go App で構成されています。
+- [ghcr.io/chitoku-k/ejaculation-counter/supplier](https://github.com/chitoku-k/ejaculation-counter/pkgs/container/ejaculation-counter%2Fsupplier)
+- [ghcr.io/chitoku-k/ejaculation-counter/reactor](https://github.com/chitoku-k/ejaculation-counter/pkgs/container/ejaculation-counter%2Freactor)
+- [ghcr.io/chitoku-k/ejaculation-counter/grafana](https://github.com/chitoku-k/ejaculation-counter/pkgs/container/ejaculation-counter%2Fgrafana)
+- [ghcr.io/chitoku-k/ejaculation-counter/mq](https://github.com/chitoku-k/ejaculation-counter/pkgs/container/ejaculation-counter%2Fmq)
+- [ghcr.io/chitoku-k/ejaculation-counter/web](https://github.com/chitoku-k/ejaculation-counter/pkgs/container/ejaculation-counter%2Fweb)
 
-### ビルド
+### 実行ファイル版
 
-```sh
-$ docker buildx bake
-```
+- [GitHub Releases](https://github.com/chitoku-k/ejaculation-counter/releases)
 
 ## 開発環境
 
-### 実行
-
-```sh
+```console
 $ docker compose up -d --build
 ```
 
