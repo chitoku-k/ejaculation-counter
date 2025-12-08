@@ -48,19 +48,8 @@ jobs:
     steps:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
-      - name: Set up ID token
-        uses: actions/github-script@v8
-        id: id-token
-        with:
-          result-encoding: string
-          script: |
-            return await core.getIDToken('k8s.chitoku.jp');
-      - name: Set context
-        run: |
-          kubectl config set-cluster k8s.chitoku.jp --server=https://k8s.chitoku.jp
-          kubectl config set-credentials github-actions --token=${{ steps.id-token.outputs.result }}
-          kubectl config set-context k8s.chitoku.jp --cluster=k8s.chitoku.jp --user=github-actions
-          kubectl config use-context k8s.chitoku.jp
+      - name: Set up kubectl context
+        uses: chitoku-k/actions/setup-kubectl-context@master
       - name: Update images
         run: |
           kubectl set image --field-manager=github-actions deployment/ejaculation-counter-supplier \

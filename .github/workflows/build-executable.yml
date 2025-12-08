@@ -48,10 +48,13 @@ jobs:
         with:
           go-version-file: ${{ matrix.target }}/go.mod
           cache-dependency-path: ${{ matrix.target }}/go.sum
+      - name: Get version
+        uses: chitoku-k/actions/describe-git-tag@master
+        id: version
       - name: Build
         working-directory: ${{ matrix.target }}
         run: |
-          go build -ldflags="-s -w -X main.version=$(git describe --tags --always --dirty)" .
+          go build -ldflags="-s -w -X main.version=${{ steps.version.outputs.value }}" .
       - name: Upload
         if: ${{ inputs.upload || false }}
         uses: actions/upload-artifact@v5
