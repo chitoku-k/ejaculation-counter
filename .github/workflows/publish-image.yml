@@ -5,7 +5,7 @@ on:
       - master
   workflow_call:
     inputs:
-      tag:
+      tags:
         type: string
         required: true
 
@@ -58,7 +58,9 @@ jobs:
           password: ${{ github.token }}
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
+        env:
+          TAGS: ${{ inputs.tags || 'latest' }}
         run: |
           docker buildx imagetools create \
-            --tag=ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}:${{ inputs.tag || 'latest' }} \
+            $(printf -- '--tag=ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}:%s ' $(tr ',' ' ' <<< "$TAGS")) \
             $(printf 'ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}@sha256:%s ' *)

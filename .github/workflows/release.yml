@@ -38,7 +38,7 @@ jobs:
       - test
     uses: ./.github/workflows/publish-image.yml
     with:
-      tag: ${{ github.event.release.tag_name }}
+      tags: ${{ github.event.release.tag_name }},latest
 
   deploy:
     name: Deploy
