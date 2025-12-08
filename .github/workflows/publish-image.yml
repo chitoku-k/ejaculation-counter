@@ -13,14 +13,12 @@ defaults:
   run:
     shell: bash
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   build:
     name: Build
     uses: ./.github/workflows/build-image.yml
+    permissions:
+      packages: write
     with:
       push: true
       set: |
@@ -32,6 +30,8 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     strategy:
       fail-fast: false
       matrix:

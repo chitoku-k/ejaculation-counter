@@ -8,11 +8,6 @@ defaults:
   run:
     shell: bash
 
-permissions:
-  contents: write
-  packages: write
-  id-token: write
-
 jobs:
   lint:
     name: Lint
@@ -28,6 +23,8 @@ jobs:
       - lint
       - test
     uses: ./.github/workflows/publish-executable.yml
+    permissions:
+      contents: write
     with:
       tag: ${{ github.event.release.tag_name }}
 
@@ -37,6 +34,8 @@ jobs:
       - lint
       - test
     uses: ./.github/workflows/publish-image.yml
+    permissions:
+      packages: write
     with:
       tags: ${{ github.event.release.tag_name }},latest
 
@@ -45,6 +44,8 @@ jobs:
     needs:
       - publish-image
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
