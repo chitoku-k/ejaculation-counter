@@ -62,5 +62,8 @@ jobs:
           TAGS: ${{ inputs.tags || 'latest' }}
         run: |
           docker buildx imagetools create \
+            --annotation=index:org.opencontainers.image.source=${{ github.repositoryUrl }} \
+            --annotation=index:org.opencontainers.image.revision=${{ github.sha }} \
+            --annotation=index:org.opencontainers.image.version=${{ needs.build.outputs.version }} \
             $(printf -- '--tag=ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}:%s ' $(tr ',' ' ' <<< "$TAGS")) \
             $(printf 'ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}@sha256:%s ' *)

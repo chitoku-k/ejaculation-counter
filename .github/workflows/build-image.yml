@@ -8,6 +8,9 @@ on:
         default: false
       set:
         type: string
+    outputs:
+      version:
+        value: ${{ jobs.image.outputs.version }}
 
 defaults:
   run:
@@ -37,6 +40,8 @@ jobs:
           - os: linux
             arch: arm64
             label: ubuntu-24.04-arm
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -68,6 +73,9 @@ jobs:
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
             *.output=type=image,push=${{ inputs.push || false }},push-by-digest=${{ inputs.push || false }}
+            *.annotations=org.opencontainers.image.source=${{ github.repositoryUrl }}
+            *.annotations=org.opencontainers.image.revision=${{ github.sha }}
+            *.annotations=org.opencontainers.image.version=${{ steps.version.outputs.version }}
             ${{ inputs.set }}
       - name: Save digests
         if: ${{ inputs.push || false }}
