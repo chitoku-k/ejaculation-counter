@@ -4,10 +4,12 @@ group "default" {
 
 target "supplier" {
     context = "./supplier"
+    target = "production"
 }
 
 target "reactor" {
     context = "./reactor"
+    target = "production"
 }
 
 target "grafana" {
@@ -19,5 +21,5 @@ target "mq" {
 }
 
 target "web" {
-    context = "."
+    context = "./web"
 }

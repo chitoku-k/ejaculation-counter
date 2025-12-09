@@ -61,10 +61,10 @@ services:
       GF_HOST: grafana
     volumes:
       - type: bind
-        source: ./public
+        source: ./web/public
         target: /var/www/html
       - type: bind
-        source: ./conf
+        source: ./web/conf
         target: /etc/nginx/templates
 
   grafana:
