@@ -54,12 +54,13 @@ jobs:
       - name: Build
         working-directory: ${{ matrix.target }}
         run: |
-          go build -trimpath -ldflags="-s -w -X main.version=${{ steps.version.outputs.value }}"
+          mkdir -p "${{ runner.temp }}/artifacts"
+          go build -o ${{ runner.temp }}/artifacts -trimpath -ldflags="-s -w -X main.version=${{ steps.version.outputs.value }}"
       - name: Upload
         if: ${{ inputs.upload || false }}
         uses: actions/upload-artifact@v5
         with:
           name: artifacts-${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
-          path: ${{ matrix.target }}/${{ matrix.target }}${{ matrix.platform.os == 'windows' && '.exe' || '' }}
+          path: ${{ runner.temp }}/artifacts/*
           if-no-files-found: error
           retention-days: 1
