@@ -39,7 +39,7 @@ jobs:
             arch: arm64
             label: ubuntu-24.04-arm
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.version.outputs.value }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -64,7 +64,7 @@ jobs:
         with:
           targets: ${{ matrix.target }}
           set: |
-            ${{ matrix.target }}.tags=ghcr.io/chitoku-k/ejaculation-counter/${{ matrix.target }}
+            ${{ matrix.target }}.tags=ghcr.io/${{ github.repository }}/${{ matrix.target }}
             ${{ matrix.target }}.args.VERSION=${{ steps.version.outputs.value }}
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
