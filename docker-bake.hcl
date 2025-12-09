@@ -19,5 +19,5 @@ target "mq" {
 }
 
 target "web" {
-    context = "."
+    context = "./web"
 }
