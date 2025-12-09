@@ -39,7 +39,7 @@ func init() {
 func main() {
 	pflag.Parse()
 	if *flagversion {
-		fmt.Println(name + " " + version)
+		fmt.Println(name, version)
 		return
 	}
 
