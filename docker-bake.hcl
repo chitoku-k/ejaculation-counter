@@ -4,10 +4,12 @@ group "default" {
 
 target "supplier" {
     context = "./supplier"
+    target = "production"
 }
 
 target "reactor" {
     context = "./reactor"
+    target = "production"
 }
 
 target "grafana" {

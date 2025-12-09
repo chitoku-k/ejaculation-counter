@@ -111,6 +111,10 @@ Supplier + Reactor + Grafana + RabbitMQ + nginx + PostgreSQL で構成します�
 - [ghcr.io/chitoku-k/ejaculation-counter/mq](https://github.com/chitoku-k/ejaculation-counter/pkgs/container/ejaculation-counter%2Fmq)
 - [ghcr.io/chitoku-k/ejaculation-counter/web](https://github.com/chitoku-k/ejaculation-counter/pkgs/container/ejaculation-counter%2Fweb)
 
+```console
+$ docker buildx bake
+```
+
 ### 実行ファイル版
 
 - [GitHub Releases](https://github.com/chitoku-k/ejaculation-counter/releases)
