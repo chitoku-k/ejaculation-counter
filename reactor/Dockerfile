@@ -25,7 +25,6 @@ ARG PORT=80
 ENV PORT=$PORT
 ENV GIN_MODE=release
 COPY --link --from=build $LD $LD
-COPY --link --from=build /lib/$DEB_BUILD_MULTIARCH/ld-linux-x86-64.* /lib/$DEB_BUILD_MULTIARCH/
 COPY --link --from=build /lib/$DEB_BUILD_MULTIARCH/libc.so* /lib/$DEB_BUILD_MULTIARCH/
 COPY --link --from=build /lib/$DEB_BUILD_MULTIARCH/libresolv.so* /lib/$DEB_BUILD_MULTIARCH/
 COPY --link --from=build /usr/src/reactor /reactor
