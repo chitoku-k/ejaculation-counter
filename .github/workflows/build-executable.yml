@@ -14,7 +14,6 @@ defaults:
   run:
     shell: bash
 
-
 jobs:
   build:
     name: ${{ matrix.target }} (${{ matrix.platform.os }}/${{ matrix.platform.arch }})
