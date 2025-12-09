@@ -10,7 +10,7 @@ FROM base AS build
 ARG VERSION=v0.0.0-dev
 RUN --mount=type=cache,target=/go \
     --mount=type=cache,target=/root/.cache/go-build \
-    go build -ldflags="-s -w -X main.version=$VERSION"
+    go build -trimpath -ldflags="-s -w -X main.version=$VERSION"
 
 FROM scratch AS production-linux-amd64
 ARG DEB_BUILD_MULTIARCH=x86_64-linux-gnu
