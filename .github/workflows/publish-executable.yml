@@ -36,7 +36,7 @@ jobs:
             arch: amd64
     steps:
       - name: Download
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           path: ${{ runner.temp }}/artifacts
           pattern: artifacts-*-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
