@@ -57,7 +57,7 @@ jobs:
           go build -o "${{ runner.temp }}/artifacts" -trimpath -ldflags="-s -w -X main.version=${{ steps.version.outputs.value }}"
       - name: Upload
         if: ${{ inputs.upload || false }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: artifacts-${{ matrix.target }}-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
           path: ${{ runner.temp }}/artifacts/*
