@@ -51,6 +51,8 @@ jobs:
       - name: Get version
         uses: chitoku-k/actions/describe-git-tag@master
         id: version
+        with:
+          semantic-versioning: true
       - name: Log into Container Registry
         if: ${{ inputs.push || false }}
         uses: docker/login-action@v3
