@@ -50,6 +50,8 @@ jobs:
       - name: Get version
         uses: chitoku-k/actions/describe-git-tag@master
         id: version
+        with:
+          semantic-versioning: true
       - name: Build
         working-directory: ${{ matrix.target }}
         run: |
