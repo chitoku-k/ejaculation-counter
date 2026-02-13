@@ -48,11 +48,11 @@ jobs:
       - name: Compress
         uses: TheDoctor0/zip-release@0.7.6
         with:
-          type: ${{ matrix.platform.os == 'windows' && 'zip' || 'tar' }}
-          filename: ${{ runner.temp }}/ejaculation-counter-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ matrix.platform.os == 'windows' && 'zip' || 'tar.gz' }}
+          type: ${{ case(matrix.platform.os != 'windows', 'tar', 'zip') }}
+          filename: ${{ runner.temp }}/ejaculation-counter-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ case(matrix.platform.os != 'windows', 'tar.gz', 'zip') }}
           directory: ${{ runner.temp }}/artifacts
       - name: Upload
         uses: svenstaro/upload-release-action@v2
         with:
           tag: ${{ inputs.tag }}
-          file: ${{ runner.temp }}/ejaculation-counter-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ matrix.platform.os == 'windows' && 'zip' || 'tar.gz' }}
+          file: ${{ runner.temp }}/ejaculation-counter-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ case(matrix.platform.os != 'windows', 'tar.gz', 'zip') }}
