@@ -74,11 +74,9 @@ func (d *db) query(ctx context.Context, conn *pgx.Conn, q string) (result []stri
 		var sb strings.Builder
 		for i, v := range values {
 			if i > 0 {
-				sb.WriteString("\n")
+				fmt.Fprintln(&sb)
 			}
-			sb.WriteString(columns[i].Name)
-			sb.WriteString(": ")
-			sb.WriteString(fmt.Sprint(v))
+			fmt.Fprint(&sb, columns[i].Name, ": ", v)
 		}
 
 		result = append(result, sb.String())
