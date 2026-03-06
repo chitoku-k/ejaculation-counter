@@ -2,7 +2,7 @@ module github.com/chitoku-k/ejaculation-counter/reactor
 
 go 1.25
 
-toolchain go1.26.0
+toolchain go1.26.1
 
 require (
 	github.com/gin-gonic/gin v1.11.0
