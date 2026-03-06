@@ -21,13 +21,13 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "12.3.3"
+      "version": "12.4.0"
     },
     {
       "type": "datasource",
       "id": "grafana-postgresql-datasource",
       "name": "PostgreSQL",
-      "version": "12.3.3"
+      "version": "12.4.0"
     },
     {
       "type": "panel",
@@ -67,7 +67,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
   "links": [],
   "panels": [
     {
@@ -130,7 +129,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.3.3",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -218,7 +217,7 @@
         "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "12.3.3",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -228,7 +227,6 @@
           "editorMode": "code",
           "format": "table",
           "group": [],
-          "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT\n  SUM(\"count\") AS \"count\"\nFROM \"counts\"\nWHERE\n  \"user_id\" = ${USER_ID} AND\n  \"date\" BETWEEN '${__from:date:YYYY-MM-DD}' AND '${__to:date:YYYY-MM-DD}'",
@@ -261,7 +259,6 @@
         "type": "grafana-postgresql-datasource",
         "uid": "${DS_DATABASE}"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -354,7 +351,7 @@
           }
         ]
       },
-      "pluginVersion": "12.3.3",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -490,7 +487,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.3",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -562,6 +559,7 @@
         "query": "SELECT \"id\" FROM \"users\"",
         "refresh": 1,
         "regex": "",
+        "regexApplyTo": "value",
         "sort": 3,
         "type": "query"
       }
@@ -574,7 +572,7 @@
   "timepicker": {
     "hidden": true
   },
-  "timezone": "",
+  "timezone": "browser",
   "title": "ぴゅっぴゅカウンター",
   "uid": "ejaculation-counter",
   "version": 1,
