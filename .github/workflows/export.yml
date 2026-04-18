@@ -57,6 +57,12 @@ jobs:
             http://localhost:3000/grafana/d/ejaculation-counter/?shareView=export \
             ../grafana/dashboards/dashboards/ejaculation-counter.json
 
+          jq \
+            '.metadata.creationTimestamp = null' \
+            ../grafana/dashboards/dashboards/ejaculation-counter.json > ../grafana/dashboards/dashboards/ejaculation-counter.tmp.json
+
+          mv ../grafana/dashboards/dashboards/ejaculation-counter{.tmp,}.json
+
           if git diff --exit-code &> /dev/null; then
             exit 0
           fi
