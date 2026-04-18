@@ -27,7 +27,7 @@ main {
 
 .graph-container iframe {
     width: 100%;
-    height: calc(648px + 1rem);
+    height: calc(668px + 1rem);
 }
 
 @media (max-width: 816px) {
