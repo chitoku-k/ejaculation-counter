@@ -17,10 +17,10 @@
             "kind": "DataQuery",
             "group": "datasource",
             "version": "v0",
-            "spec": {},
             "labels": {
               "grafana.app/export-label": "datasource-1"
-            }
+            },
+            "spec": {}
           },
           "enable": true,
           "hide": true,
