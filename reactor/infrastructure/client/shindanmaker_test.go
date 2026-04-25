@@ -70,19 +70,19 @@ var _ = Describe("Shindanmaker", func() {
 	Describe("Do()", func() {
 		Describe("token", func() {
 			Context("fetching fails", func() {
-				BeforeEach(func() {
-					server.Close()
+				Context("connection fails", func() {
+					BeforeEach(func() {
+						server.Close()
+					})
+
+					It("returns an error", func() {
+						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						Expect(actual).To(BeEmpty())
+						Expect(err).To(MatchError(HavePrefix("failed to fetch shindan page:")))
+					})
 				})
 
-				It("returns an error", func() {
-					actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
-					Expect(actual).To(BeEmpty())
-					Expect(err).To(MatchError(HavePrefix("failed to fetch shindan page:")))
-				})
-			})
-
-			Context("fetching succeeds", func() {
-				Context("parsing fails", func() {
+				Context("status is unexpected", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
@@ -103,6 +103,27 @@ var _ = Describe("Shindanmaker", func() {
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 								`),
+							),
+						)
+					})
+
+					It("returns an error", func() {
+						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						Expect(actual).To(BeEmpty())
+						Expect(err).To(MatchError("failed response from shindan page (403 Forbidden)"))
+					})
+				})
+			})
+
+			Context("fetching succeeds", func() {
+				Context("parsing fails", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyHeaderKV("Accept", "*"),
+								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
+								ghttp.RespondWith(http.StatusOK, ""),
 							),
 						)
 					})
@@ -679,41 +700,41 @@ var _ = Describe("Shindanmaker", func() {
 
 		Describe("fetch", func() {
 			Context("fetching fails", func() {
-				BeforeEach(func() {
-					server.AppendHandlers(
-						ghttp.CombineHandlers(
-							ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
-							ghttp.VerifyHeaderKV("Accept", "*"),
-							ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-							ghttp.RespondWith(http.StatusOK, `
-								<!doctype html>
-								<html lang="ja">
-								<head>
-									<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-									<title>ちんぽ揃えゲーム</title>
-								</head>
-								<body>
-								</body>
-								</html>
-							`),
-						),
-						func(w http.ResponseWriter, r *http.Request) {
-							c, _, err := w.(http.Hijacker).Hijack()
-							Expect(err).NotTo(HaveOccurred())
-							Expect(c.Close()).NotTo(HaveOccurred())
-						},
-					)
+				Context("connection fails", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyHeaderKV("Accept", "*"),
+								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							func(w http.ResponseWriter, r *http.Request) {
+								c, _, err := w.(http.Hijacker).Hijack()
+								Expect(err).NotTo(HaveOccurred())
+								Expect(c.Close()).NotTo(HaveOccurred())
+							},
+						)
+					})
+
+					It("returns an error", func() {
+						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						Expect(actual).To(Equal(""))
+						Expect(err).To(MatchError(HavePrefix("failed to fetch shindan result:")))
+					})
 				})
 
-				It("returns an error", func() {
-					actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
-					Expect(actual).To(Equal(""))
-					Expect(err).To(MatchError(HavePrefix("failed to fetch shindan result:")))
-				})
-			})
-
-			Context("fetching succeeds", func() {
-				Context("parsing fails", func() {
+				Context("status is unexpected", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
@@ -755,6 +776,48 @@ var _ = Describe("Shindanmaker", func() {
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 									<!-- a padding to disable MSIE and Chrome friendly error page -->
 								`),
+							),
+						)
+					})
+
+					It("returns an error", func() {
+						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
+						Expect(actual).To(Equal(""))
+						Expect(err).To(MatchError(HavePrefix("failed response from shindan result (403 Forbidden)")))
+					})
+				})
+			})
+
+			Context("fetching succeeds", func() {
+				Context("parsing fails", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyHeaderKV("Accept", "*"),
+								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
+								ghttp.RespondWith(http.StatusOK, `
+									<!doctype html>
+									<html lang="ja">
+									<head>
+										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
+										<title>ちんぽ揃えゲーム</title>
+									</head>
+									<body>
+									</body>
+									</html>
+								`),
+							),
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodPost, "/855159"),
+								ghttp.VerifyHeaderKV("Accept", "*"),
+								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
+								ghttp.VerifyForm(url.Values{
+									"type":               []string{"name"},
+									"user_input_value_1": []string{"テスト"},
+									"_token":             []string{"theQuickBrownFoxJumpsOverTheLazyDog"},
+								}),
+								ghttp.RespondWith(http.StatusOK, ""),
 							),
 						)
 					})

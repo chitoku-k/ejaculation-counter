@@ -44,5 +44,10 @@ func (m *mpyw) Do(ctx context.Context, targetURL string, count int) (io.ReadClos
 		return nil, fmt.Errorf("failed to fetch challenge result: %w", err)
 	}
 
+	if res.StatusCode < 200 || res.StatusCode > 399 {
+		_ = res.Body.Close()
+		return nil, fmt.Errorf("failed response from challenge result (%v)", res.Status)
+	}
+
 	return res.Body, nil
 }
