@@ -67,6 +67,10 @@ func (s *shindanmaker) token(ctx context.Context, targetURL string) (string, err
 		_ = res.Body.Close()
 	}()
 
+	if res.StatusCode < 200 || res.StatusCode > 399 {
+		return "", fmt.Errorf("failed response from shindan page (%v)", res.Status)
+	}
+
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, res.Body)
 	if err != nil {
@@ -114,6 +118,10 @@ func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (s
 	defer func() {
 		_ = res.Body.Close()
 	}()
+
+	if res.StatusCode < 200 || res.StatusCode > 399 {
+		return "", fmt.Errorf("failed response from shindan result (%v)", res.Status)
+	}
 
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, res.Body)

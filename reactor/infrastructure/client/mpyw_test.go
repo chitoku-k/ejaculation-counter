@@ -38,13 +38,31 @@ var _ = Describe("Mpyw", func() {
 
 		Context("targetURL is correct", func() {
 			Context("fetching fails", func() {
-				BeforeEach(func() {
-					server.Close()
+				Context("connection fails", func() {
+					BeforeEach(func() {
+						server.Close()
+					})
+
+					It("returns an error", func() {
+						_, err := mpyw.Do(context.Background(), serverURL+"/api", 1)
+						Expect(err).To(MatchError(HavePrefix("failed to fetch challenge result:")))
+					})
 				})
 
-				It("returns an error", func() {
-					_, err := mpyw.Do(context.Background(), serverURL+"/api", 1)
-					Expect(err).To(MatchError(HavePrefix("failed to fetch challenge result:")))
+				Context("status is unexpected", func() {
+					BeforeEach(func() {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest(http.MethodGet, "/api", "count=1"),
+								ghttp.RespondWith(http.StatusNotFound, "not found"),
+							),
+						)
+					})
+
+					It("returns an error", func() {
+						_, err := mpyw.Do(context.Background(), serverURL+"/api", 1)
+						Expect(err).To(MatchError("failed response from challenge result (404 Not Found)"))
+					})
 				})
 			})
 
