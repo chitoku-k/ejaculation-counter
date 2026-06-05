@@ -6,7 +6,7 @@ toolchain go1.26.4
 
 require (
 	github.com/gin-gonic/gin v1.12.0
-	github.com/jackc/pgx/v5 v5.9.2
+	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/mattn/go-mastodon v0.0.11
 	github.com/onsi/ginkgo/v2 v2.29.0
