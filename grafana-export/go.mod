@@ -2,7 +2,7 @@ module github.com/chitoku-k/ejaculation-counter/grafana-export
 
 go 1.25
 
-toolchain go1.26.3
+toolchain go1.26.4
 
 require github.com/playwright-community/playwright-go v0.5700.1
 
