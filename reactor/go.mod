@@ -9,7 +9,7 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/mattn/go-mastodon v0.0.11
-	github.com/onsi/ginkgo/v2 v2.30.0
+	github.com/onsi/ginkgo/v2 v2.31.0
 	github.com/onsi/gomega v1.41.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rabbitmq/amqp091-go v1.11.0
