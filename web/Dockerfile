@@ -1,3 +1,3 @@
-FROM nginx:1.31.1
+FROM nginx:1.31.2
 COPY conf /etc/nginx/templates
 COPY public /var/www/html
