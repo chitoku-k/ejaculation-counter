@@ -10,7 +10,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.11
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/onsi/ginkgo/v2 v2.31.0
-	github.com/onsi/gomega v1.41.0
+	github.com/onsi/gomega v1.42.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rabbitmq/amqp091-go v1.12.0
 	github.com/robfig/cron/v3 v3.0.1
