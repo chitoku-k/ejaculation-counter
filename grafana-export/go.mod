@@ -4,7 +4,7 @@ go 1.25
 
 toolchain go1.26.4
 
-require github.com/playwright-community/playwright-go v0.5700.1
+require github.com/playwright-community/playwright-go v0.6100.0
 
 require (
 	github.com/deckarep/golang-set/v2 v2.8.0 // indirect
