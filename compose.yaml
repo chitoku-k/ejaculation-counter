@@ -110,7 +110,7 @@ services:
         target: /docker-entrypoint-initdb.d
       - type: volume
         source: database
-        target: /var/lib/postgresql/data
+        target: /var/lib/postgresql
     environment:
       TZ:
       POSTGRES_DB: ejaculation
