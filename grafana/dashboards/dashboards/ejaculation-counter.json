@@ -54,6 +54,10 @@
                       "kind": "DataQuery",
                       "group": "grafana-postgresql-datasource",
                       "version": "v0",
+                      "labels": {
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}",
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1"
+                      },
                       "datasource": {
                         "name": "${DS_DATABASE}"
                       },
@@ -218,6 +222,10 @@
                       "kind": "DataQuery",
                       "group": "grafana-postgresql-datasource",
                       "version": "v0",
+                      "labels": {
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}",
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1"
+                      },
                       "datasource": {
                         "name": "${DS_DATABASE}"
                       },
@@ -332,6 +340,10 @@
                       "kind": "DataQuery",
                       "group": "grafana-postgresql-datasource",
                       "version": "v0",
+                      "labels": {
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}",
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1"
+                      },
                       "datasource": {
                         "name": "${DS_DATABASE}"
                       },
@@ -438,6 +450,10 @@
                       "kind": "DataQuery",
                       "group": "grafana-postgresql-datasource",
                       "version": "v0",
+                      "labels": {
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}",
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1"
+                      },
                       "datasource": {
                         "name": "${DS_DATABASE}"
                       },
@@ -679,6 +695,10 @@
             "kind": "DataQuery",
             "group": "grafana-postgresql-datasource",
             "version": "v0",
+            "labels": {
+              "grafana.app/export-datasource-name": "${DS_DATABASE}",
+              "grafana.app/export-label": "grafana-postgresql-datasource-1"
+            },
             "datasource": {
               "name": "${DS_DATABASE}"
             },
