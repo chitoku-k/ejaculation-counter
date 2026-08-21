@@ -81,6 +81,10 @@
                           ],
                           "limit": 50
                         }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1",
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}"
                       }
                     },
                     "refId": "A",
@@ -245,6 +249,10 @@
                           ],
                           "limit": 50
                         }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1",
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}"
                       }
                     },
                     "refId": "A",
@@ -359,6 +367,10 @@
                           ],
                           "limit": 50
                         }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1",
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}"
                       }
                     },
                     "refId": "A",
@@ -465,6 +477,10 @@
                           ],
                           "limit": 50
                         }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "grafana-postgresql-datasource-1",
+                        "grafana.app/export-datasource-name": "${DS_DATABASE}"
                       }
                     },
                     "refId": "A",
@@ -684,6 +700,10 @@
             },
             "spec": {
               "__legacyStringValue": "SELECT \"id\" FROM \"users\""
+            },
+            "labels": {
+              "grafana.app/export-label": "grafana-postgresql-datasource-1",
+              "grafana.app/export-datasource-name": "${DS_DATABASE}"
             }
           },
           "regex": "",
