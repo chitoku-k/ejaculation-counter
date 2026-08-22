@@ -1,7 +1,7 @@
 package reader
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
 	"io"
 )
 
@@ -11,7 +11,7 @@ type jsonStreamReader struct {
 	depth         int
 	currentDepth  int
 	currentLength int
-	decoder       *json.Decoder
+	decoder       *jsontext.Decoder
 	reader        io.ReadCloser
 }
 
@@ -19,7 +19,7 @@ func NewJsonStreamReader(separator string, depth int, reader io.ReadCloser) io.R
 	return &jsonStreamReader{
 		separator: separator,
 		depth:     depth,
-		decoder:   json.NewDecoder(reader),
+		decoder:   jsontext.NewDecoder(reader),
 		reader:    reader,
 	}
 }
@@ -38,29 +38,24 @@ func (j *jsonStreamReader) Read(p []byte) (n int, err error) {
 	}
 
 	for {
-		token, err := j.decoder.Token()
+		token, err := j.decoder.ReadToken()
 		if err != nil {
 			return 0, err
 		}
 
-		delim, ok := token.(json.Delim)
-		if ok {
-			switch delim {
-			case '[', '{':
-				j.currentDepth++
-
-			case ']', '}':
-				j.currentDepth--
-			}
+		switch token.Kind() {
+		case jsontext.KindBeginArray, jsontext.KindBeginObject:
+			j.currentDepth++
+		case jsontext.KindEndArray, jsontext.KindEndObject:
+			j.currentDepth--
 		}
 
 		if j.currentDepth != j.depth {
 			continue
 		}
 
-		v, ok := token.(string)
-		if ok {
-			str += v
+		if token.Kind() == jsontext.KindString {
+			str += token.String()
 			break
 		}
 	}

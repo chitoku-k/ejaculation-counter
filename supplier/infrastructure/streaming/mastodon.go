@@ -2,7 +2,7 @@ package streaming
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"html"
 	"log/slog"
@@ -234,11 +234,11 @@ func (m *mastodon) Run(ctx context.Context) error {
 			var status mast.Status
 			switch stream.Event {
 			case "update":
-				err = json.NewDecoder(strings.NewReader(stream.Payload.(string))).Decode(&status)
+				err = json.UnmarshalRead(strings.NewReader(stream.Payload.(string)), &status)
 
 			case "conversation":
 				var conversation mast.Conversation
-				err = json.NewDecoder(strings.NewReader(stream.Payload.(string))).Decode(&conversation)
+				err = json.UnmarshalRead(strings.NewReader(stream.Payload.(string)), &conversation)
 				if conversation.LastStatus != nil {
 					status = *conversation.LastStatus
 				}

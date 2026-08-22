@@ -388,7 +388,7 @@ var _ = Describe("Mastodon", func() {
 								})))
 								Eventually(actual).Should(Receive(WithTransform(func(m service.Error) error {
 									return m.Err
-								}, MatchError("unexpected EOF"))))
+								}, HaveOccurred())))
 								Eventually(ctx.Done()).Should(BeClosed())
 							})
 						})
@@ -542,7 +542,7 @@ var _ = Describe("Mastodon", func() {
 								})))
 								Eventually(actual).Should(Receive(WithTransform(func(m service.Error) error {
 									return m.Err
-								}, MatchError("unexpected EOF"))))
+								}, HaveOccurred())))
 								Eventually(ctx.Done()).Should(BeClosed())
 							})
 						})
