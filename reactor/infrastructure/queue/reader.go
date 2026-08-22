@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -318,8 +318,7 @@ func (r *reader) Consume(ctx context.Context) {
 			switch packet.Type {
 			case "packets.tick":
 				tick := service.NewTick(packet.DeliveryTag, packet.Timestamp)
-				err := json.Unmarshal(packet.Body, &tick)
-				if err != nil {
+				if err := json.Unmarshal(packet.Body, &tick); err != nil {
 					slog.Error("Failed to decode message", slog.String("packet-type", packet.Type), slog.Any("err", err))
 					continue
 				}
@@ -327,8 +326,7 @@ func (r *reader) Consume(ctx context.Context) {
 
 			case "packets.message":
 				message := service.NewMessage(packet.DeliveryTag, packet.Timestamp)
-				err := json.Unmarshal(packet.Body, &message)
-				if err != nil {
+				if err := json.Unmarshal(packet.Body, &message); err != nil {
 					slog.Error("Failed to decode message", slog.String("packet-type", packet.Type), slog.Any("err", err))
 					continue
 				}

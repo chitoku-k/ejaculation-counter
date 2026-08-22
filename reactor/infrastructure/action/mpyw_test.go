@@ -202,7 +202,6 @@ var _ = Describe("Mpyw", func() {
 				})
 				Expect(index).To(Equal(0))
 				Expect(err).To(MatchError(`failed to create event: failed to fetch challenge result: Get "https://mpyw.hinanawi.net/api": dial tcp [::1]:443: connect: connection refused`))
-
 			})
 		})
 
