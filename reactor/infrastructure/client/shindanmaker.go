@@ -5,6 +5,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"encoding/json/v2"
 	"fmt"
 	"html"
 	"io"
@@ -23,7 +24,6 @@ const (
 var (
 	NameRegex          = regexp.MustCompile(`[$\\]{?\d+`)
 	ShindanNameRegex   = regexp.MustCompile(`[@＠].+|[\(（].+[\)）]`)
-	ShindanTokenRegex  = regexp.MustCompile(`<meta[^>]*name="csrf-token"[^>]*content="([\s\S]*?)"[^>]*>`)
 	ShindanResultRegex = regexp.MustCompile(`<textarea[^>]*id="copy-textarea-140"[^>]*>([\s\S]*?)<\/textarea>`)
 )
 
@@ -51,9 +51,15 @@ func (s *shindanmaker) Name(account service.Account) string {
 }
 
 func (s *shindanmaker) token(ctx context.Context, targetURL string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
+	tokenURL, err := url.Parse(targetURL)
 	if err != nil {
-		return "", fmt.Errorf("failed to create sindan page request: %w", err)
+		return "", fmt.Errorf("failed to parse targetURL: %w", err)
+	}
+	tokenURL.Path = "/csrf-token"
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, tokenURL.String(), nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create token endpoint request: %w", err)
 	}
 
 	req.Header.Set("Accept", "*")
@@ -61,28 +67,25 @@ func (s *shindanmaker) token(ctx context.Context, targetURL string) (string, err
 
 	res, err := s.Client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch shindan page: %w", err)
+		return "", fmt.Errorf("failed to fetch token endpoint: %w", err)
 	}
 	defer func() {
 		_ = res.Body.Close()
 	}()
 
 	if res.StatusCode < 200 || res.StatusCode > 399 {
-		return "", fmt.Errorf("failed response from shindan page (%v)", res.Status)
+		return "", fmt.Errorf("failed response from token endpoint (%v)", res.Status)
 	}
 
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, res.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read shindan page: %w", err)
+	var token struct {
+		Token string `json:"token"`
 	}
 
-	matches := ShindanTokenRegex.FindSubmatch(buf.Bytes())
-	if matches == nil {
-		return "", fmt.Errorf("failed to parse shindan page")
+	if err := json.UnmarshalRead(res.Body, &token); err != nil {
+		return "", fmt.Errorf("failed to parse token endpoint")
 	}
 
-	return string(matches[1]), nil
+	return token.Token, nil
 }
 
 func (s *shindanmaker) Do(ctx context.Context, name string, targetURL string) (string, error) {
