@@ -78,7 +78,7 @@ var _ = Describe("Shindanmaker", func() {
 					It("returns an error", func() {
 						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
 						Expect(actual).To(BeEmpty())
-						Expect(err).To(MatchError(HavePrefix("failed to fetch shindan page:")))
+						Expect(err).To(MatchError(HavePrefix("failed to fetch token endpoint:")))
 					})
 				})
 
@@ -86,7 +86,7 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.RespondWith(http.StatusForbidden, `
@@ -110,7 +110,7 @@ var _ = Describe("Shindanmaker", func() {
 					It("returns an error", func() {
 						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
 						Expect(actual).To(BeEmpty())
-						Expect(err).To(MatchError("failed response from shindan page (403 Forbidden)"))
+						Expect(err).To(MatchError("failed response from token endpoint (403 Forbidden)"))
 					})
 				})
 			})
@@ -120,7 +120,7 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
 								ghttp.RespondWith(http.StatusOK, ""),
@@ -131,7 +131,7 @@ var _ = Describe("Shindanmaker", func() {
 					It("returns an error", func() {
 						actual, err := shindanmaker.Do(context.Background(), "テスト", serverURL+"/a/855159")
 						Expect(actual).To(BeEmpty())
-						Expect(err).To(MatchError("failed to parse shindan page"))
+						Expect(err).To(MatchError("failed to parse token endpoint"))
 					})
 				})
 
@@ -139,20 +139,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -180,20 +170,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -217,20 +197,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -254,20 +224,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -291,20 +251,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -328,20 +278,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -365,20 +305,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -402,20 +332,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -439,20 +359,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -476,20 +386,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -515,20 +415,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -552,20 +442,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -589,20 +469,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -626,20 +496,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -663,20 +523,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -704,20 +554,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							func(w http.ResponseWriter, r *http.Request) {
 								c, _, err := w.(http.Hijacker).Hijack()
@@ -738,20 +578,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -793,20 +623,10 @@ var _ = Describe("Shindanmaker", func() {
 					BeforeEach(func() {
 						server.AppendHandlers(
 							ghttp.CombineHandlers(
-								ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+								ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 								ghttp.VerifyHeaderKV("Accept", "*"),
 								ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-								ghttp.RespondWith(http.StatusOK, `
-									<!doctype html>
-									<html lang="ja">
-									<head>
-										<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-										<title>ちんぽ揃えゲーム</title>
-									</head>
-									<body>
-									</body>
-									</html>
-								`),
+								ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 							),
 							ghttp.CombineHandlers(
 								ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -835,20 +655,10 @@ var _ = Describe("Shindanmaker", func() {
 							BeforeEach(func() {
 								server.AppendHandlers(
 									ghttp.CombineHandlers(
-										ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+										ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 										ghttp.VerifyHeaderKV("Accept", "*"),
 										ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-										ghttp.RespondWith(http.StatusOK, `
-											<!doctype html>
-											<html lang="ja">
-											<head>
-												<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-												<title>ちんぽ揃えゲーム</title>
-											</head>
-											<body>
-											</body>
-											</html>
-										`),
+										ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 									),
 									ghttp.CombineHandlers(
 										ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -910,20 +720,10 @@ https://shindanmaker.com/855159`))
 							BeforeEach(func() {
 								server.AppendHandlers(
 									ghttp.CombineHandlers(
-										ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+										ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 										ghttp.VerifyHeaderKV("Accept", "*"),
 										ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-										ghttp.RespondWith(http.StatusOK, `
-											<!doctype html>
-											<html lang="ja">
-											<head>
-												<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-												<title>ちんぽ揃えゲーム</title>
-											</head>
-											<body>
-											</body>
-											</html>
-										`),
+										ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 									),
 									ghttp.CombineHandlers(
 										ghttp.VerifyRequest(http.MethodPost, "/855159"),
@@ -988,20 +788,10 @@ https://shindanmaker.com/855159`))
 						BeforeEach(func() {
 							server.AppendHandlers(
 								ghttp.CombineHandlers(
-									ghttp.VerifyRequest(http.MethodGet, "/a/855159"),
+									ghttp.VerifyRequest(http.MethodGet, "/csrf-token"),
 									ghttp.VerifyHeaderKV("Accept", "*"),
 									ghttp.VerifyHeaderKV("User-Agent", "Mozilla/5.0 (compatible)"),
-									ghttp.RespondWith(http.StatusOK, `
-										<!doctype html>
-										<html lang="ja">
-										<head>
-											<meta name="csrf-token" content="theQuickBrownFoxJumpsOverTheLazyDog">
-											<title>ちんぽ揃えゲーム</title>
-										</head>
-										<body>
-										</body>
-										</html>
-									`),
+									ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{"token": "theQuickBrownFoxJumpsOverTheLazyDog"}),
 								),
 								ghttp.CombineHandlers(
 									ghttp.VerifyRequest(http.MethodPost, "/855159"),
