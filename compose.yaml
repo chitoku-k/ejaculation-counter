@@ -16,6 +16,12 @@ services:
       LOG_LEVEL: debug
     deploy:
       replicas: 2
+    user: "65534"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     volumes:
       - type: bind
         source: ./supplier
@@ -45,6 +51,12 @@ services:
       LOG_LEVEL: debug
     deploy:
       replicas: 2
+    user: "65534"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     volumes:
       - type: bind
         source: ./reactor
@@ -57,13 +69,25 @@ services:
     environment:
       REACTOR_HOST: reactor
       GF_HOST: grafana
+    user: "101"
+    group_add:
+      - "0"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     volumes:
       - type: bind
         source: ./web/public
         target: /var/www/html
+      - type: tmpfs
+        target: /etc/nginx/conf.d
       - type: bind
         source: ./web/conf
         target: /etc/nginx/templates
+      - type: tmpfs
+        target: /tmp
 
   grafana:
     build:
@@ -81,6 +105,12 @@ services:
       POSTGRES_USER: shiko
       POSTGRES_PASSWORD: shiko
       POSTGRES_SSLMODE: disable
+    user: "472"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     volumes:
       - type: bind
         source: ./grafana/dashboards
@@ -88,6 +118,13 @@ services:
       - type: bind
         source: ./grafana/datasources
         target: /etc/grafana/provisioning/datasources
+      - type: volume
+        source: grafana
+        target: /var/lib/grafana
+      - type: tmpfs
+        target: /var/log/grafana
+      - type: tmpfs
+        target: /tmp
 
   mq:
     build:
@@ -95,6 +132,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: shiko
       RABBITMQ_DEFAULT_PASS: shiko
+    user: "999"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     volumes:
       - type: volume
         source: mq
@@ -102,20 +145,32 @@ services:
 
   database:
     image: postgres:18.6
-    volumes:
-      - type: bind
-        source: ./database
-        target: /docker-entrypoint-initdb.d
-      - type: volume
-        source: database
-        target: /var/lib/postgresql
     environment:
       TZ:
       POSTGRES_DB: ejaculation
       POSTGRES_USER: shiko
       POSTGRES_PASSWORD: shiko
+    user: "999"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    volumes:
+      - type: bind
+        source: ./database
+        target: /docker-entrypoint-initdb.d
+      - type: tmpfs
+        target: /run/postgresql
+      - type: tmpfs
+        target: /tmp
+      - type: volume
+        source: database
+        target: /var/lib/postgresql
 
 volumes:
+  grafana:
+    driver: local
   mq:
     driver: local
   database:
