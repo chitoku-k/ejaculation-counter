@@ -15,7 +15,6 @@ services:
       PORT: 80
       LOG_LEVEL: debug
     deploy:
-      mode: replicated
       replicas: 2
     volumes:
       - type: bind
@@ -45,7 +44,6 @@ services:
       PORT: 80
       LOG_LEVEL: debug
     deploy:
-      mode: replicated
       replicas: 2
     volumes:
       - type: bind
