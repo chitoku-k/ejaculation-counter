@@ -36,7 +36,7 @@ jobs:
             arch: amd64
     steps:
       - name: Download
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
         with:
           path: ${{ runner.temp }}/artifacts
           pattern: artifacts-*-${{ matrix.platform.os }}-${{ matrix.platform.arch }}
@@ -52,7 +52,7 @@ jobs:
           filename: ${{ runner.temp }}/ejaculation-counter-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ case(matrix.platform.os != 'windows', 'tar.gz', 'zip') }}
           directory: ${{ runner.temp }}/artifacts
       - name: Upload
-        uses: svenstaro/upload-release-action@v2
+        uses: svenstaro/upload-release-action@2.11.5
         with:
           tag: ${{ inputs.tag }}
           file: ${{ runner.temp }}/ejaculation-counter-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.${{ case(matrix.platform.os != 'windows', 'tar.gz', 'zip') }}

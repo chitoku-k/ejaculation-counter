@@ -22,13 +22,13 @@ jobs:
       GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ case(github.event_name == 'pull_request', github.event.pull_request.head.ref, '') }}
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.4.1
       - name: Set up Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@v7.0.0
         with:
           go-version-file: grafana-export/go.mod
           cache-dependency-path: grafana-export/go.sum

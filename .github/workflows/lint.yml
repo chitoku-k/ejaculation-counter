@@ -38,13 +38,13 @@ jobs:
               label: ubuntu-26.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Set up Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@v7.0.0
         with:
           go-version-file: ${{ matrix.target }}/go.mod
           cache-dependency-path: ${{ matrix.target }}/go.sum
       - name: Lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@v9.3.0
         with:
           working-directory: ${{ matrix.target }}
