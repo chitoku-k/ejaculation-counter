@@ -12,7 +12,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	github.com/prometheus/client_golang v1.25.0
-	github.com/rabbitmq/amqp091-go v1.16.0
+	github.com/rabbitmq/amqp091-go v1.17.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/pflag v1.1.0
 	go.uber.org/mock v0.6.0
