@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
       - name: Set up Go
-        uses: actions/setup-go@v7.0.0
+        uses: actions/setup-go@v7.1.0
         with:
           go-version-file: ${{ matrix.target }}/go.mod
           cache-dependency-path: ${{ matrix.target }}/go.sum
